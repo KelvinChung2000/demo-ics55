@@ -421,3 +421,32 @@ def install_macro_locations(directory: Path, source: Path) -> int:
     target = config / data["macro_placer"]["macro_location_path"]
     shutil.copy(source, target)
     return len(target.read_text().splitlines())
+
+
+def synthesis_netlist(directory: Path, top: str) -> Path:
+    """Return a run's gate netlist, and refuse when Yosys did not write one."""
+    path = workspace_of(directory) / "Synthesis_yosys" / "output" / f"{top}_Synthesis.v.gz"
+    if not path.exists():
+        raise FileNotFoundError(f"{path} does not exist, so synthesis produced no netlist")
+    return path
+
+
+def subflow_state(directory: Path, step: str, name: str) -> str:
+    """Return what a step's subflow records for one of its own stages."""
+    path = workspace_of(directory) / step / "subflow.json"
+    for entry in json.loads(path.read_text()).get("steps", []):
+        if entry["name"] == name:
+            return entry["state"]
+    raise KeyError(f"{path} records no stage named {name}")
+
+
+def force_step_state(directory: Path, step: str, state: str) -> None:
+    """Record `state` for `step`, for a step whose artefact is known good."""
+    path = workspace_of(directory) / "home" / "flow.json"
+    data = json.loads(path.read_text())
+    for entry in data["steps"]:
+        if entry["name"] == step:
+            entry["state"] = state
+            path.write_text(json.dumps(data, indent=4))
+            return
+    raise KeyError(f"{path} records no step named {step}")

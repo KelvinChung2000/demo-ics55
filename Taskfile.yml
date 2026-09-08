@@ -1,0 +1,102 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# https://taskfile.dev
+#
+# Harden this FABulous fabric on ICS55 with ECC, abut it and prove every seam.
+# Override any variable via CLI: task harden JOBS=6 TILE=LUT4AB
+version: "3"
+
+vars:
+  # The LUT4AB width every other tile is scaled against, from eFPGA_geometry.csv's
+  # proportions. Tiles do not close routing at 90; see FINDINGS.md.
+  ANCHOR: '{{.ANCHOR | default "110"}}'
+  JOBS: '{{.JOBS | default "3"}}'
+  TILE: '{{.TILE | default "LUT4AB"}}'
+  STEP: '{{.STEP | default "filler_ecc"}}'
+  BUILD: '{{.BUILD | default "build"}}'
+  ECC: '{{.ECC | default "../eccw"}}'
+  VIEWER: '{{.VIEWER | default "/home/kelvin/side-project/ecos-studio/ecos/chip-viewer/target/release/chip-viewer-native"}}'
+  FLOW: python3 -m flow.cli
+
+tasks:
+  build:
+    aliases: [default]
+    desc: Plan, harden all thirteen tile types, paint, stitch and floorplan the fabric
+    cmds:
+      - task: plan
+      - task: check
+      - task: harden
+      - task: paint
+      - task: stitch
+      - task: top
+
+  plan:
+    desc: Size every tile and place every pin, writing build/fabric_plan.json
+    cmds:
+      - "{{.FLOW}} plan --anchor-micron {{.ANCHOR}}"
+
+  check:
+    desc: Test the plan's wiring properties without running any EDA tool
+    cmds:
+      - "{{.FLOW}} check"
+
+  harden:
+    desc: Run every tile type from synthesis to macro. Takes about forty minutes.
+    cmds:
+      - "{{.FLOW}} harden --jobs {{.JOBS}}"
+
+  harden-one:
+    desc: Harden one tile type, discarding any existing run. Set TILE.
+    cmds:
+      - "{{.FLOW}} harden --force --jobs 1 --tile {{.TILE}}"
+
+  paint:
+    desc: Draw each hardened tile's pins and boundary power into its GDS
+    cmds:
+      - "{{.FLOW}} paint"
+
+  stitch:
+    desc: Abut the fabric and prove every seam conducts and pairs correctly
+    cmds:
+      - "{{.FLOW}} stitch"
+
+  top:
+    desc: Write the fabric-level ECC project and floorplan it with the tiles as macros
+    cmds:
+      - "{{.FLOW}} top"
+
+  flat:
+    desc: Harden the whole eFPGA as one design, composed from the tiles' gate netlists
+    cmds:
+      - "{{.FLOW}} flat"
+
+  view-fabric:
+    desc: Open the macro-placed fabric in the ECOS layout viewer
+    cmds:
+      - "{{.VIEWER}} --manifest {{.BUILD}}/fabric/runs/default/Floorplan_ecc/output/geometry/geometry.manifest"
+
+  view-tile:
+    desc: Open one tile in the ECOS layout viewer, with its DRC overlay. Set TILE and STEP.
+    cmds:
+      - >-
+        {{.VIEWER}}
+        --manifest {{.BUILD}}/tiles/{{.TILE}}/runs/default/{{.STEP}}/output/geometry/geometry.manifest
+        --drc-statis {{.BUILD}}/tiles/{{.TILE}}/runs/default/drc_ecc/analysis/drc_statis.csv
+
+  image:
+    desc: Render the stitched fabric to a PNG
+    cmds:
+      - "{{.ECC}} layout-image --gds {{.BUILD}}/eFPGA.gds --image {{.BUILD}}/eFPGA.png --width 3000 --height 4800"
+
+  drc:
+    desc: Report every tile type's signoff DRC count
+    cmds:
+      - >-
+        python3 -c 'import json, pathlib;
+        [print(f"{d.name:16s}", next((m["value"] for m in json.loads((d / "runs/default/drc_ecc/analysis/qor_metrics.json").read_text())["metrics"] if m["id"] == "drc_count"), "-"))
+        for d in sorted(pathlib.Path("{{.BUILD}}/tiles").iterdir()) if d.is_dir()]'
+
+  clean:
+    desc: Delete every build artefact. Everything here is reproducible with `task build`.
+    prompt: This removes {{.BUILD}}, which is several gigabytes of ECC workspaces. Continue?
+    cmds:
+      - rm -rf {{.BUILD}}

@@ -1,0 +1,21 @@
+# ECC workspaces and everything derived from them. One tile run is about
+# 250 MB and the whole build is several gigabytes; `task build` reproduces all
+# of it from what is committed here.
+build/
+
+# FABulous regenerates these from fabric.csv. The bitstream spec alone is 14 MB.
+.FABulous/bitStreamSpec.bin
+.FABulous/bitStreamSpec.csv
+.FABulous/pips.txt
+.FABulous/bel.txt
+.FABulous/bel.v2.txt
+.FABulous/bel.v3.txt
+.FABulous/.fabulous_history
+
+__pycache__/
+*.pyc
+.ruff_cache/
+
+# Harness state, not project state.
+.claude/
+.mcp.json

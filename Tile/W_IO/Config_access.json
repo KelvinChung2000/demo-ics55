@@ -1,0 +1,53 @@
+{
+  "creator": "Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)",
+  "modules": {
+    "Config_access": {
+      "attributes": {
+        "C_bit3": 3,
+        "C_bit2": 2,
+        "C_bit1": 1,
+        "C_bit0": 0,
+        "BelMap": 1,
+        "FABulous": 1,
+        "dynports": 1,
+        "top": 1,
+        "src": "/home/kelvin/FABulous.worktrees/main/demo-ics55/Tile/W_IO/Config_access.v:10.1-22.10"
+      },
+      "parameter_default_values": {
+        "NoConfigBits": 4
+      },
+      "ports": {
+        "C_bit": {
+          "direction": "output",
+          "bits": [ 2, 3, 4, 5 ]
+        },
+        "ConfigBits": {
+          "direction": "input",
+          "bits": [ 2, 3, 4, 5 ]
+        }
+      },
+      "cells": {
+      },
+      "netnames": {
+        "C_bit": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5 ],
+          "attributes": {
+            "EXTERNAL": 1,
+            "FABulous": 1,
+            "src": "/home/kelvin/FABulous.worktrees/main/demo-ics55/Tile/W_IO/Config_access.v:14.47-14.52"
+          }
+        },
+        "ConfigBits": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5 ],
+          "attributes": {
+            "FABulous": 1,
+            "GLOBAL": 1,
+            "src": "/home/kelvin/FABulous.worktrees/main/demo-ics55/Tile/W_IO/Config_access.v:16.57-16.67"
+          }
+        }
+      }
+    }
+  }
+}

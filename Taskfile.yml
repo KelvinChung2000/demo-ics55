@@ -69,6 +69,13 @@ tasks:
     cmds:
       - "{{.FLOW}} flat"
 
+  find:
+    desc: >-
+      Find names in a chip-viewer snapshot by regex and copy one to the clipboard,
+      for pasting into the viewer's search box. Pass arguments after --
+    cmds:
+      - "{{.FLOW}} find {{.CLI_ARGS}}"
+
   view-fabric:
     desc: Open the macro-placed fabric in the ECOS layout viewer
     cmds:

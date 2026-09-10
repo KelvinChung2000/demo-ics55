@@ -99,6 +99,72 @@ class Plan:
     def read(path: Path) -> "Plan":
         return _decode(json.loads(path.read_text()))
 
+    def window(self, columns: range, rows: range) -> "Plan":
+        """Return the part of the fabric inside a grid window, seams and all.
+
+        The tiles keep their coordinates, so a window is the same layout the full
+        fabric would have there, and a check on it is exact for the seams it
+        contains. A supertile straddling the edge is refused rather than cut,
+        since half a macro is not a thing that can be placed.
+        """
+        kept, cut = [], []
+        for placement in self.placements:
+            covered = range(placement.row, placement.row + self.rows_of(placement.tile_type))
+            if placement.column not in columns:
+                continue
+            if all(row in rows for row in covered):
+                kept.append(placement)
+            elif any(row in rows for row in covered):
+                cut.append(placement.name)
+        if cut:
+            raise ValueError(f"the window cuts {len(cut)} supertiles in half: {cut[:3]}")
+        if not kept:
+            raise ValueError(f"no tile sits in columns {columns} and rows {rows}")
+
+        left = min(p.x for p in kept)
+        right = max(p.x + self.tile_size[p.tile_type][0] for p in kept)
+        bottom = min(p.y for p in kept)
+        top = max(p.y + self.tile_size[p.tile_type][1] for p in kept)
+        # An interior seam has a tile on both sides; one on the window's own edge
+        # does not, so it is dropped rather than checked against nothing. A
+        # vertical seam's `at` is an x and its band a y range, and a horizontal
+        # seam's the other way round.
+        def inside(seam: Seam) -> bool:
+            if seam.orientation == "vertical":
+                return left < seam.at < right and bottom <= seam.low and seam.high <= top
+            return bottom < seam.at < top and left <= seam.low and seam.high <= right
+
+        seams = [seam for seam in self.seams if inside(seam)]
+        return Plan(
+            column_width=self.column_width,
+            row_height=self.row_height,
+            column_x=self.column_x,
+            row_y=self.row_y,
+            tile_size={name: self.tile_size[name] for name in {p.tile_type for p in kept}},
+            placements=kept,
+            pins={name: self.pins[name] for name in {p.tile_type for p in kept}},
+            seams=seams,
+            stripe_pitch=self.stripe_pitch,
+            # A window's tiles keep their fabric coordinates, so its width and
+            # height are the far edge rather than the extent; everything that
+            # reads them uses them as the far bound of a search from zero.
+            width=right,
+            height=top,
+        )
+
+    def rows_of(self, tile_type: str) -> int:
+        """Return how many grid rows a tile type covers, from its planned height."""
+        height = self.tile_size[tile_type][1]
+        covered = {
+            length
+            for length in range(1, len(self.row_height) + 1)
+            for start in range(len(self.row_height) - length + 1)
+            if sum(self.row_height[start : start + length]) == height
+        }
+        if not covered:
+            raise ValueError(f"{tile_type}'s height matches no run of rows")
+        return min(covered)
+
     def pins_of(self, tile_type: str) -> dict[str, PinPlacement]:
         return {pin.name: pin for pin in self.pins[tile_type]}
 

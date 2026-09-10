@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -47,6 +48,7 @@ HARDEN_STEPS: tuple[tuple[str, str], ...] = (
 )
 PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
 CORE_MARGIN_MICRON = 2
+SITE_HEIGHT_MICRON = 1.4  # core7
 # FABulous writes an instantiation with the module name alone on its line and a
 # `ifdef EMULATION` parameter block between it and the instance name, so the two
 # cannot be matched together. The leading token of a line is enough, since a
@@ -73,7 +75,9 @@ class StepResult:
 
 
 def _mask_comments(text: str) -> str:
-    without_block = re.sub(r"/\*.*?\*/", lambda m: " " * len(m.group(0)), text, flags=re.S)
+    without_block = re.sub(
+        r"/\*.*?\*/", lambda m: " " * len(m.group(0)), text, flags=re.S
+    )
     return re.sub(r"//[^\n]*", lambda m: " " * len(m.group(0)), without_block)
 
 
@@ -89,9 +93,13 @@ def source_index(roots: list[Path]) -> dict[str, Path]:
     for root in roots:
         local: dict[str, Path] = {}
         for path in sorted(root.rglob("*.v")):
-            for module in re.findall(r"^module\s+(\w+)", _mask_comments(path.read_text()), re.M):
+            for module in re.findall(
+                r"^module\s+(\w+)", _mask_comments(path.read_text()), re.M
+            ):
                 if module in local:
-                    raise ValueError(f"{root} declares {module} in {local[module]} and {path}")
+                    raise ValueError(
+                        f"{root} declares {module} in {local[module]} and {path}"
+                    )
                 local[module] = path
         for module, path in local.items():
             index.setdefault(module, path)
@@ -140,7 +148,13 @@ def create_project(
     names = []
     for source in sources:
         target = rtl / source.name
-        target.write_bytes(source.read_bytes())
+        content = source.read_bytes()
+        # Only write on a real change, and carry the source's timestamp over, so
+        # that a copy's mtime still says whether a netlist built from it is
+        # stale. Rewriting an identical file with a fresh timestamp made a valid
+        # netlist look older than the sources it came from.
+        if not target.exists() or target.read_bytes() != content:
+            shutil.copy2(source, target)
         names.append(f"rtl/{source.name}")
     (directory / "filelist.f").write_text("\n".join(names) + "\n")
     (directory / "ecc.toml").write_text(
@@ -154,7 +168,14 @@ def create_project(
 
 
 def workspace_of(directory: Path) -> Path:
-    return directory / "runs" / "default"
+    """Return a run's workspace as an absolute path.
+
+    `run` invokes ECC with `cwd=directory`, so a relative `--workspace` is
+    resolved against the project directory rather than against the caller's:
+    `build/flat_0.5` came back as `build/flat_0.5/build/flat_0.5/runs/default`
+    and ECC rejected it as invalid.
+    """
+    return directory.resolve() / "runs" / "default"
 
 
 def run(directory: Path, arguments: list[str], log: Path) -> StepResult:  # noqa: D401
@@ -171,10 +192,14 @@ def run(directory: Path, arguments: list[str], log: Path) -> StepResult:  # noqa
         handle.write(f"\n=== ecc {' '.join(arguments)} ===\n")
         handle.flush()
         completed = subprocess.run(
-            [str(ECC), *arguments], cwd=directory, stdout=handle, stderr=subprocess.STDOUT
+            [str(ECC), *arguments],
+            cwd=directory,
+            stdout=handle,
+            stderr=subprocess.STDOUT,
         )
     return StepResult(
-        step=arguments[-1] if arguments else "", returncode=completed.returncode,
+        step=arguments[-1] if arguments else "",
+        returncode=completed.returncode,
         seconds=time.monotonic() - start,
     )
 
@@ -190,8 +215,14 @@ def step_state(directory: Path, step: str) -> str:
 
 def run_step(directory: Path, step: str, log: Path) -> StepResult:
     workspace = workspace_of(directory)
-    result = run(directory, ["run", "--workspace", str(workspace), "--only", step, "--force"], log)
-    return StepResult(step, result.returncode, result.seconds, step_state(directory, step))
+    result = run(
+        directory,
+        ["run", "--workspace", str(workspace), "--only", step, "--force"],
+        log,
+    )
+    return StepResult(
+        step, result.returncode, result.seconds, step_state(directory, step)
+    )
 
 
 def run_from(directory: Path, step: str, log: Path) -> StepResult:
@@ -202,11 +233,17 @@ def run_from(directory: Path, step: str, log: Path) -> StepResult:
     """
     workspace = workspace_of(directory)
     result = run(directory, ["run", "--workspace", str(workspace), "--from", step], log)
-    return StepResult(step, result.returncode, result.seconds, step_state(directory, step))
+    return StepResult(
+        step, result.returncode, result.seconds, step_state(directory, step)
+    )
 
 
 def patch_floorplan(
-    directory: Path, *, width_micron: float, height_micron: float, stripe_pitch_micron: float
+    directory: Path,
+    *,
+    width_micron: float,
+    height_micron: float,
+    stripe_pitch_micron: float,
 ) -> None:
     """Pin the tile's die and bring the PDN stripes onto the fabric row pitch.
 
@@ -223,14 +260,19 @@ def patch_floorplan(
     data = json.loads(config.read_text())
     die_builder = data["die_builder"]
     die_builder["mode"] = "die_size"
-    die_builder["die_size"] = {"width_micron": width_micron, "height_micron": height_micron}
+    die_builder["die_size"] = {
+        "width_micron": width_micron,
+        "height_micron": height_micron,
+    }
     for stripe in data["pdn_generator"]["stripe"]:
         stripe["pitch_micron"] = stripe_pitch_micron
     config.write_text(json.dumps(data, indent=4))
 
 
 def floorplan_def(directory: Path, top: str) -> Path:
-    return workspace_of(directory) / "Floorplan_ecc" / "output" / f"{top}_Floorplan.def.gz"
+    return (
+        workspace_of(directory) / "Floorplan_ecc" / "output" / f"{top}_Floorplan.def.gz"
+    )
 
 
 def drop_floorplan_database(directory: Path, top: str) -> None:
@@ -242,7 +284,9 @@ def drop_floorplan_database(directory: Path, top: str) -> None:
     """
     import shutil
 
-    database = workspace_of(directory) / "Floorplan_ecc" / "output" / f"{top}_Floorplan_db"
+    database = (
+        workspace_of(directory) / "Floorplan_ecc" / "output" / f"{top}_Floorplan_db"
+    )
     if database.exists():
         shutil.rmtree(database)
 
@@ -252,7 +296,9 @@ def final_def(directory: Path, top: str) -> Path:
 
 
 def final_gds(directory: Path, top: str) -> Path:
-    candidates = sorted((workspace_of(directory) / "filler_ecc" / "output").glob("*.gds"))
+    candidates = sorted(
+        (workspace_of(directory) / "filler_ecc" / "output").glob("*.gds")
+    )
     if len(candidates) != 1:
         raise FileNotFoundError(
             f"expected one GDS in {workspace_of(directory)}/filler_ecc/output, found {candidates}"
@@ -274,13 +320,26 @@ def create_workspace(directory: Path, log: Path) -> StepResult:
     return run(directory, ["run", "--project", str(directory.resolve())], log)
 
 
-def install_harden_flow(directory: Path) -> None:
-    """Extend the synthesis-only flow to the full harden list, keeping synthesis done."""
+def install_harden_flow(directory: Path, *, last: str | None = None) -> None:
+    """Extend the synthesis-only flow to the harden list, keeping synthesis done.
+
+    `last` truncates the list after a step. A run whose deliverable is a routed
+    and filled layout stops at `filler`, since `sta` on a design this size has
+    never returned and costs about an hour before it is killed.
+    """
     path = workspace_of(directory) / "home" / "flow.json"
     data = json.loads(path.read_text())
     done = {step["name"] for step in data["steps"] if step["state"] == "Success"}
     if "Synthesis" not in done:
-        raise ValueError(f"{path} does not record a successful Synthesis, so there is nothing to extend")
+        raise ValueError(
+            f"{path} does not record a successful Synthesis, so there is nothing to extend"
+        )
+    steps = HARDEN_STEPS
+    if last is not None:
+        ordered = [name for name, _ in HARDEN_STEPS]
+        if last not in ordered:
+            raise KeyError(f"{last} is not one of the harden steps: {ordered}")
+        steps = HARDEN_STEPS[: ordered.index(last) + 1]
     data["steps"] = [
         {
             "name": name,
@@ -290,7 +349,7 @@ def install_harden_flow(directory: Path) -> None:
             "peak memory (mb)": 0,
             "info": {},
         }
-        for name, tool in HARDEN_STEPS
+        for name, tool in steps
     ]
     path.write_text(json.dumps(data, indent=4))
 
@@ -319,7 +378,9 @@ def add_macro_views(directory: Path, *, lefs: list[Path], libs: list[Path]) -> N
     data = json.loads(config.read_text())
     for key, additions in (("lef_paths", lefs), ("lib_path", libs)):
         existing = data["INPUT"][key]
-        data["INPUT"][key] = existing + [str(p) for p in additions if str(p) not in existing]
+        data["INPUT"][key] = existing + [
+            str(p) for p in additions if str(p) not in existing
+        ]
     config.write_text(json.dumps(data, indent=4))
 
 
@@ -338,7 +399,9 @@ def _floorplan_cells(directory: Path) -> set[str]:
     Taken from `phy_placer` rather than written out here, so a PDK with
     different tap and endcap cells needs no change.
     """
-    data = json.loads((workspace_of(directory) / "config" / "fp_default_config.json").read_text())
+    data = json.loads(
+        (workspace_of(directory) / "config" / "fp_default_config.json").read_text()
+    )
     placer = data["phy_placer"]
     names = {placer["well_tap"]["cell_name"]}
     names.update(placer["side_endcap"].values())
@@ -373,7 +436,9 @@ def needs_placement(directory: Path, step_def: Path) -> bool:
     return movable >= len(re.findall(r"^ROW ", text, re.M))
 
 
-def bypass_placement(directory: Path, top: str, source_step: str, source_dir: str) -> None:
+def bypass_placement(
+    directory: Path, top: str, source_step: str, source_dir: str
+) -> None:
     """Hand a tile with no logic straight from `source_step` to routing.
 
     Placement, CTS and legalisation have nothing to do on a tile whose only
@@ -385,7 +450,11 @@ def bypass_placement(directory: Path, top: str, source_step: str, source_dir: st
 
     workspace = workspace_of(directory)
     origin = workspace / source_dir / "output"
-    skipped = (("place", "place_dreamplace"), ("CTS", "CTS_ecc"), ("legalization", "legalization_dreamplace"))
+    skipped = (
+        ("place", "place_dreamplace"),
+        ("CTS", "CTS_ecc"),
+        ("legalization", "legalization_dreamplace"),
+    )
     for name, folder in skipped:
         target = workspace / folder / "output"
         if target.exists():
@@ -394,7 +463,9 @@ def bypass_placement(directory: Path, top: str, source_step: str, source_dir: st
         for suffix in ("def.gz", "v.gz"):
             source = origin / f"{top}_{source_step}.{suffix}"
             if not source.exists():
-                raise FileNotFoundError(f"{source} does not exist, so {name} cannot be seeded")
+                raise FileNotFoundError(
+                    f"{source} does not exist, so {name} cannot be seeded"
+                )
             shutil.copy(source, target / f"{top}_{name}.{suffix}")
 
     path = workspace / "home" / "flow.json"
@@ -425,9 +496,13 @@ def install_macro_locations(directory: Path, source: Path) -> int:
 
 def synthesis_netlist(directory: Path, top: str) -> Path:
     """Return a run's gate netlist, and refuse when Yosys did not write one."""
-    path = workspace_of(directory) / "Synthesis_yosys" / "output" / f"{top}_Synthesis.v.gz"
+    path = (
+        workspace_of(directory) / "Synthesis_yosys" / "output" / f"{top}_Synthesis.v.gz"
+    )
     if not path.exists():
-        raise FileNotFoundError(f"{path} does not exist, so synthesis produced no netlist")
+        raise FileNotFoundError(
+            f"{path} does not exist, so synthesis produced no netlist"
+        )
     return path
 
 
@@ -450,3 +525,65 @@ def force_step_state(directory: Path, step: str, state: str) -> None:
             path.write_text(json.dumps(data, indent=4))
             return
     raise KeyError(f"{path} records no step named {step}")
+
+
+def netlist_is_current(directory: Path, top: str) -> bool:
+    """Say whether the gate netlist is at least as new as every source it came from.
+
+    The workspace's own subflow record is not enough on its own: a run that is
+    stopped and returns later rewrites it, so a netlist that is present and
+    current can be filed under a step marked unstarted.
+    """
+    netlist = synthesis_netlist(directory, top)
+    newest = max(path.stat().st_mtime for path in (directory / "rtl").glob("*.v"))
+    return netlist.stat().st_mtime >= newest
+
+
+def set_core_util(directory: Path, utilisation: float) -> None:
+    """Change a workspace's target core utilisation without re-running synthesis.
+
+    `_refresh_floorplan_config` reads `Core.Utilitization` out of the run's own
+    parameters on every floorplan, so a die can be resized from an existing
+    netlist. `ecc.toml` is read only when the workspace is created, so editing it
+    alone changes nothing, and recreating the workspace repeats a synthesis whose
+    analysis stage fails on a design this size.
+    """
+    path = workspace_of(directory) / "home" / "parameters.json"
+    data = json.loads(path.read_text())
+    data["Core"]["Utilitization"] = utilisation
+    path.write_text(json.dumps(data, indent=4))
+
+
+def reset_from(directory: Path, step: str) -> None:
+    """Mark `step` and every step after it unstarted, so `--from` will run them."""
+    path = workspace_of(directory) / "home" / "flow.json"
+    data = json.loads(path.read_text())
+    reached = False
+    for entry in data["steps"]:
+        reached = reached or entry["name"] == step
+        if reached:
+            entry["state"] = "Unstart"
+    if not reached:
+        raise KeyError(f"{path} records no step named {step}")
+    path.write_text(json.dumps(data, indent=4))
+
+
+def floorplan_measurement(directory: Path) -> Path:
+    """Return the feature file recording what the last floorplan actually built."""
+    return workspace_of(directory) / "Floorplan_ecc" / "feature" / "Floorplan.db.json"
+
+
+def die_side(directory: Path, top: str, utilisation: float) -> float:
+    """Return the square die, in microns, that fills to `utilisation` with logic.
+
+    The cell area comes from the last floorplan's own measurement rather than
+    from a target, because ECC's `Core.Utilitization` is rewritten from the
+    finished floorplan and does not survive being set beforehand. The core
+    height is rounded up to a whole number of `core7` rows, since `buildCore`
+    aligns down and would otherwise drop one.
+    """
+    layout = json.loads(floorplan_measurement(directory).read_text())["Design Layout"]
+    cell_area = layout["core_area"] * layout["core_usage"]
+    core = (cell_area / utilisation) ** 0.5
+    rows = -(-core // (SITE_HEIGHT_MICRON))
+    return round(rows * SITE_HEIGHT_MICRON + 2 * CORE_MARGIN_MICRON, 3)

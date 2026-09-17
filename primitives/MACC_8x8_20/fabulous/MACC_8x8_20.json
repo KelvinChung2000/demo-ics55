@@ -1,0 +1,885 @@
+{
+  "creator": "Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)",
+  "modules": {
+    "MACC_8x8_20": {
+      "attributes": {
+        "CLK_INV": 6,
+        "ACC_OUT": 5,
+        "ACC_SEL": 4,
+        "SIGN_EXT": 3,
+        "BelMap": 1,
+        "FABulous": 1,
+        "dynports": 1,
+        "C_REG": 2,
+        "B_REG": 1,
+        "A_REG": 0,
+        "top": 1,
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:24.1-107.10"
+      },
+      "parameter_default_values": {
+        "NoConfigBits": 7
+      },
+      "ports": {
+        "CLK": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "EN": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "ACC_RST": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "ACC_CI": {
+          "direction": "input",
+          "bits": [ 5 ]
+        },
+        "ACC_CO": {
+          "direction": "output",
+          "bits": [ 6 ]
+        },
+        "A": {
+          "direction": "input",
+          "bits": [ 7, 8, 9, 10, 11, 12, 13, 14 ]
+        },
+        "B": {
+          "direction": "input",
+          "bits": [ 15, 16, 17, 18, 19, 20, 21, 22 ]
+        },
+        "C": {
+          "direction": "input",
+          "bits": [ 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 ]
+        },
+        "Q": {
+          "direction": "output",
+          "bits": [ 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62 ]
+        },
+        "ConfigBits": {
+          "direction": "input",
+          "bits": [ 63, 64, 65, 66, 67, 68, 69 ]
+        }
+      },
+      "cells": {
+        "$add$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102$11": {
+          "hide_name": 1,
+          "type": "$add",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 20,
+            "B_SIGNED": 0,
+            "B_WIDTH": 21,
+            "Y_WIDTH": 21
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102.28-102.60"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 ],
+            "B": [ 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, "0" ],
+            "Y": [ 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130 ]
+          }
+        },
+        "$add$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102$12": {
+          "hide_name": 1,
+          "type": "$add",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 21,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 21
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102.28-102.69"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130 ],
+            "B": [ 5 ],
+            "Y": [ 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 6 ]
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57$1": {
+          "hide_name": 1,
+          "type": "$logic_not",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57.28-57.32"
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 2 ],
+            "Y": [ 151 ]
+          }
+        },
+        "$mul$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:81$7": {
+          "hide_name": 1,
+          "type": "$mul",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 8,
+            "B_SIGNED": 0,
+            "B_WIDTH": 8,
+            "Y_WIDTH": 16
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:81.22-81.31"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 152, 153, 154, 155, 156, 157, 158, 159 ],
+            "B": [ 160, 161, 162, 163, 164, 165, 166, 167 ],
+            "Y": [ 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183 ]
+          }
+        },
+        "$procdff$25": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 20
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:92.5-100.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 184 ],
+            "D": [ 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204 ],
+            "Q": [ 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224 ]
+          }
+        },
+        "$procdff$26": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 8
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:63.5-69.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 184 ],
+            "D": [ 225, 226, 227, 228, 229, 230, 231, 232 ],
+            "Q": [ 233, 234, 235, 236, 237, 238, 239, 240 ]
+          }
+        },
+        "$procdff$27": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 8
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:63.5-69.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 184 ],
+            "D": [ 241, 242, 243, 244, 245, 246, 247, 248 ],
+            "Q": [ 249, 250, 251, 252, 253, 254, 255, 256 ]
+          }
+        },
+        "$procdff$28": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 20
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:63.5-69.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 184 ],
+            "D": [ 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276 ],
+            "Q": [ 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296 ]
+          }
+        },
+        "$procmux$14": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:96.17-96.19|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:96.13-98.16"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224 ],
+            "B": [ 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150 ],
+            "S": [ 3 ],
+            "Y": [ 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316 ]
+          }
+        },
+        "$procmux$17": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:93.13-93.20|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:93.9-99.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316 ],
+            "B": [ "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0" ],
+            "S": [ 4 ],
+            "Y": [ 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204 ]
+          }
+        },
+        "$procmux$19": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:64.13-64.15|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:64.9-68.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296 ],
+            "B": [ 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 ],
+            "S": [ 3 ],
+            "Y": [ 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276 ]
+          }
+        },
+        "$procmux$21": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 8
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:64.13-64.15|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:64.9-68.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 249, 250, 251, 252, 253, 254, 255, 256 ],
+            "B": [ 15, 16, 17, 18, 19, 20, 21, 22 ],
+            "S": [ 3 ],
+            "Y": [ 241, 242, 243, 244, 245, 246, 247, 248 ]
+          }
+        },
+        "$procmux$23": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 8
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:64.13-64.15|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:64.9-68.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 233, 234, 235, 236, 237, 238, 239, 240 ],
+            "B": [ 7, 8, 9, 10, 11, 12, 13, 14 ],
+            "S": [ 3 ],
+            "Y": [ 225, 226, 227, 228, 229, 230, 231, 232 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102$10": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102.40-102.59"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336 ],
+            "B": [ 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224 ],
+            "S": [ 67 ],
+            "Y": [ 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:105$13": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:105.16-105.35"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150 ],
+            "B": [ 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224 ],
+            "S": [ 68 ],
+            "Y": [ 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57$2": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57.18-57.38"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 2 ],
+            "B": [ 151 ],
+            "S": [ 69 ],
+            "Y": [ 184 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:75$4": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 8
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:75.18-75.33"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 7, 8, 9, 10, 11, 12, 13, 14 ],
+            "B": [ 233, 234, 235, 236, 237, 238, 239, 240 ],
+            "S": [ 63 ],
+            "Y": [ 152, 153, 154, 155, 156, 157, 158, 159 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:76$5": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 8
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:76.18-76.33"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 15, 16, 17, 18, 19, 20, 21, 22 ],
+            "B": [ 249, 250, 251, 252, 253, 254, 255, 256 ],
+            "S": [ 64 ],
+            "Y": [ 160, 161, 162, 163, 164, 165, 166, 167 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:77$6": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:77.18-77.33"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 ],
+            "B": [ 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296 ],
+            "S": [ 65 ],
+            "Y": [ 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:85$8": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 20
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:85.23-85.79"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, "0", "0", "0", "0" ],
+            "B": [ 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 183, 183, 183, 183 ],
+            "S": [ 66 ],
+            "Y": [ 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 ]
+          }
+        }
+      },
+      "netnames": {
+        "$0\\ACC[19:0]": {
+          "hide_name": 1,
+          "bits": [ 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:92.5-100.8"
+          }
+        },
+        "$0\\A_q[7:0]": {
+          "hide_name": 1,
+          "bits": [ 225, 226, 227, 228, 229, 230, 231, 232 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:63.5-69.8"
+          }
+        },
+        "$0\\B_q[7:0]": {
+          "hide_name": 1,
+          "bits": [ 241, 242, 243, 244, 245, 246, 247, 248 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:63.5-69.8"
+          }
+        },
+        "$0\\C_q[19:0]": {
+          "hide_name": 1,
+          "bits": [ 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:63.5-69.8"
+          }
+        },
+        "$add$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102$11_Y": {
+          "hide_name": 1,
+          "bits": [ 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102.28-102.60"
+          }
+        },
+        "$add$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102$12_Y": {
+          "hide_name": 1,
+          "bits": [ 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 6 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102.28-102.69"
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57$1_Y": {
+          "hide_name": 1,
+          "bits": [ 151 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57.28-57.32"
+          }
+        },
+        "$mul$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:81$7_Y": {
+          "hide_name": 1,
+          "bits": [ 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:81.22-81.31"
+          }
+        },
+        "$procmux$14_Y": {
+          "hide_name": 1,
+          "bits": [ 297, 298, 299, 300, 301, 302, 303, 304, 305, 306, 307, 308, 309, 310, 311, 312, 313, 314, 315, 316 ],
+          "attributes": {
+          }
+        },
+        "$procmux$15_CMP": {
+          "hide_name": 1,
+          "bits": [ 3 ],
+          "attributes": {
+          }
+        },
+        "$procmux$17_Y": {
+          "hide_name": 1,
+          "bits": [ 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204 ],
+          "attributes": {
+          }
+        },
+        "$procmux$18_CMP": {
+          "hide_name": 1,
+          "bits": [ 4 ],
+          "attributes": {
+          }
+        },
+        "$procmux$19_Y": {
+          "hide_name": 1,
+          "bits": [ 257, 258, 259, 260, 261, 262, 263, 264, 265, 266, 267, 268, 269, 270, 271, 272, 273, 274, 275, 276 ],
+          "attributes": {
+          }
+        },
+        "$procmux$20_CMP": {
+          "hide_name": 1,
+          "bits": [ 3 ],
+          "attributes": {
+          }
+        },
+        "$procmux$21_Y": {
+          "hide_name": 1,
+          "bits": [ 241, 242, 243, 244, 245, 246, 247, 248 ],
+          "attributes": {
+          }
+        },
+        "$procmux$22_CMP": {
+          "hide_name": 1,
+          "bits": [ 3 ],
+          "attributes": {
+          }
+        },
+        "$procmux$23_Y": {
+          "hide_name": 1,
+          "bits": [ 225, 226, 227, 228, 229, 230, 231, 232 ],
+          "attributes": {
+          }
+        },
+        "$procmux$24_CMP": {
+          "hide_name": 1,
+          "bits": [ 3 ],
+          "attributes": {
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102$10_Y": {
+          "hide_name": 1,
+          "bits": [ 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:102.40-102.59"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:105$13_Y": {
+          "hide_name": 1,
+          "bits": [ 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:105.16-105.35"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57$2_Y": {
+          "hide_name": 1,
+          "bits": [ 184 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:57.18-57.38"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:75$4_Y": {
+          "hide_name": 1,
+          "bits": [ 152, 153, 154, 155, 156, 157, 158, 159 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:75.18-75.33"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:76$5_Y": {
+          "hide_name": 1,
+          "bits": [ 160, 161, 162, 163, 164, 165, 166, 167 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:76.18-76.33"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:77$6_Y": {
+          "hide_name": 1,
+          "bits": [ 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:77.18-77.33"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:85$8_Y": {
+          "hide_name": 1,
+          "bits": [ 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:85.23-85.79"
+          }
+        },
+        "A": {
+          "hide_name": 0,
+          "bits": [ 7, 8, 9, 10, 11, 12, 13, 14 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:35.19-35.20"
+          }
+        },
+        "ACC": {
+          "hide_name": 0,
+          "bits": [ 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:91.18-91.21"
+          }
+        },
+        "ACC_CI": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:32.12-32.18"
+          }
+        },
+        "ACC_CO": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:33.12-33.18"
+          }
+        },
+        "ACC_OUT": {
+          "hide_name": 0,
+          "bits": [ 68 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.60-45.67"
+          }
+        },
+        "ACC_RST": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:31.12-31.19"
+          }
+        },
+        "ACC_SEL": {
+          "hide_name": 0,
+          "bits": [ 67 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.51-45.58"
+          }
+        },
+        "A_REG": {
+          "hide_name": 0,
+          "bits": [ 63 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.10-45.15"
+          }
+        },
+        "A_q": {
+          "hide_name": 0,
+          "bits": [ 233, 234, 235, 236, 237, 238, 239, 240 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:60.17-60.20"
+          }
+        },
+        "B": {
+          "hide_name": 0,
+          "bits": [ 15, 16, 17, 18, 19, 20, 21, 22 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:36.19-36.20"
+          }
+        },
+        "B_REG": {
+          "hide_name": 0,
+          "bits": [ 64 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.17-45.22"
+          }
+        },
+        "B_q": {
+          "hide_name": 0,
+          "bits": [ 249, 250, 251, 252, 253, 254, 255, 256 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:60.22-60.25"
+          }
+        },
+        "C": {
+          "hide_name": 0,
+          "bits": [ 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:37.19-37.20"
+          }
+        },
+        "CLK": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:28.12-28.15"
+          }
+        },
+        "CLK_INV": {
+          "hide_name": 0,
+          "bits": [ 69 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.69-45.76"
+          }
+        },
+        "C_REG": {
+          "hide_name": 0,
+          "bits": [ 65 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.24-45.29"
+          }
+        },
+        "C_q": {
+          "hide_name": 0,
+          "bits": [ 277, 278, 279, 280, 281, 282, 283, 284, 285, 286, 287, 288, 289, 290, 291, 292, 293, 294, 295, 296 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:61.18-61.21"
+          }
+        },
+        "ConfigBits": {
+          "hide_name": 0,
+          "bits": [ 63, 64, 65, 66, 67, 68, 69 ],
+          "attributes": {
+            "FABulous": 1,
+            "GLOBAL": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:42.53-42.63"
+          }
+        },
+        "EN": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:29.12-29.14"
+          }
+        },
+        "MULTIPLY": {
+          "hide_name": 0,
+          "bits": [ 337 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.31-45.39"
+          }
+        },
+        "OPA": {
+          "hide_name": 0,
+          "bits": [ 152, 153, 154, 155, 156, 157, 158, 159 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:72.17-72.20"
+          }
+        },
+        "OPB": {
+          "hide_name": 0,
+          "bits": [ 160, 161, 162, 163, 164, 165, 166, 167 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:72.22-72.25"
+          }
+        },
+        "OPC": {
+          "hide_name": 0,
+          "bits": [ 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328, 329, 330, 331, 332, 333, 334, 335, 336 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:73.18-73.21"
+          }
+        },
+        "Q": {
+          "hide_name": 0,
+          "bits": [ 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:39.19-39.20"
+          }
+        },
+        "SIGN_EXT": {
+          "hide_name": 0,
+          "bits": [ 66 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:45.41-45.49"
+          }
+        },
+        "clk": {
+          "hide_name": 0,
+          "bits": [ 184 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:56.10-56.13"
+          }
+        },
+        "extended": {
+          "hide_name": 0,
+          "bits": [ 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:84.17-84.25"
+          }
+        },
+        "product": {
+          "hide_name": 0,
+          "bits": [ 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:80.17-80.24"
+          }
+        },
+        "sum": {
+          "hide_name": 0,
+          "bits": [ 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v:88.17-88.20"
+          }
+        }
+      }
+    }
+  }
+}

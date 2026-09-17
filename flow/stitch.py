@@ -65,8 +65,8 @@ def _masters(layout: kdb.Layout, tile_gds: dict[str, Path]) -> dict[str, kdb.Cel
 def _place(layout: kdb.Layout, plan: Plan, masters: dict[str, kdb.Cell]) -> kdb.Cell:
     """Instance every planned tile at its own die corner.
 
-    One `CellInstArray` cannot do this. The fabric has five column widths, two
-    row heights and a double-height DSP supertile, so there is no single pitch.
+    One `CellInstArray` cannot do this. The fabric has five column widths, three
+    row heights and a double-height MACC supertile, so there is no single pitch.
     """
     missing = sorted({placement.tile_type for placement in plan.placements} - masters.keys())
     if missing:

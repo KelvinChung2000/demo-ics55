@@ -1,0 +1,41 @@
+{
+  "creator": "Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)",
+  "modules": {
+    "SYS_RESET": {
+      "attributes": {
+        "top": 1,
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:15.1-26.10"
+      },
+      "ports": {
+        "RESET": {
+          "direction": "output",
+          "bits": [ 2 ]
+        },
+        "RESET_top": {
+          "direction": "input",
+          "bits": [ 2 ]
+        }
+      },
+      "cells": {
+      },
+      "netnames": {
+        "RESET": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:17.12-17.17"
+          }
+        },
+        "RESET_top": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "EXTERNAL": 1,
+            "FABulous": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:20.37-20.46"
+          }
+        }
+      }
+    }
+  }
+}

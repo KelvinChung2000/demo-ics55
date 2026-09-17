@@ -1,0 +1,338 @@
+{
+  "creator": "Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)",
+  "modules": {
+    "IOBUF": {
+      "attributes": {
+        "OUT_REG": 2,
+        "IN_REG": 1,
+        "EN_REG": 0,
+        "BelMap": 1,
+        "FABulous": 1,
+        "dynports": 1,
+        "top": 1,
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:20.1-60.10"
+      },
+      "parameter_default_values": {
+        "NoConfigBits": 3
+      },
+      "ports": {
+        "CLK": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "IN": {
+          "direction": "input",
+          "bits": [ 3 ]
+        },
+        "EN": {
+          "direction": "input",
+          "bits": [ 4 ]
+        },
+        "OUT": {
+          "direction": "output",
+          "bits": [ 5 ]
+        },
+        "IN_top": {
+          "direction": "output",
+          "bits": [ 6 ]
+        },
+        "EN_top": {
+          "direction": "output",
+          "bits": [ 7 ]
+        },
+        "OUT_top": {
+          "direction": "input",
+          "bits": [ 8 ]
+        },
+        "ConfigBits": {
+          "direction": "input",
+          "bits": [ 9, 10, 11 ]
+        }
+      },
+      "cells": {
+        "$procdff$5": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 1
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 4 ],
+            "Q": [ 12 ]
+          }
+        },
+        "$procdff$6": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 1
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 3 ],
+            "Q": [ 13 ]
+          }
+        },
+        "$procdff$7": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 1
+          },
+          "attributes": {
+            "always_ff": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 2 ],
+            "D": [ 8 ],
+            "Q": [ 14 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54$2": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54.21-54.39"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "B": [ 13 ],
+            "S": [ 10 ],
+            "Y": [ 6 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55$3": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55.21-55.39"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 4 ],
+            "B": [ 12 ],
+            "S": [ 9 ],
+            "Y": [ 7 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58$4": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58.18-58.47"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 8 ],
+            "B": [ 14 ],
+            "S": [ 11 ],
+            "Y": [ 5 ]
+          }
+        }
+      },
+      "netnames": {
+        "$0\\EN_q[0:0]": {
+          "hide_name": 1,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+          }
+        },
+        "$0\\IN_q[0:0]": {
+          "hide_name": 1,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+          }
+        },
+        "$0\\OUT_top_q[0:0]": {
+          "hide_name": 1,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54$2_Y": {
+          "hide_name": 1,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54.21-54.39"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55$3_Y": {
+          "hide_name": 1,
+          "bits": [ 7 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55.21-55.39"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58$4_Y": {
+          "hide_name": 1,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58.18-58.47"
+          }
+        },
+        "CLK": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:24.12-24.15"
+          }
+        },
+        "ConfigBits": {
+          "hide_name": 0,
+          "bits": [ 9, 10, 11 ],
+          "attributes": {
+            "FABulous": 1,
+            "GLOBAL": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:35.53-35.63"
+          }
+        },
+        "EN": {
+          "hide_name": 0,
+          "bits": [ 4 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:26.12-26.14"
+          }
+        },
+        "EN_REG": {
+          "hide_name": 0,
+          "bits": [ 9 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.10-38.16"
+          }
+        },
+        "EN_q": {
+          "hide_name": 0,
+          "bits": [ 12 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.11-45.15"
+          }
+        },
+        "EN_top": {
+          "hide_name": 0,
+          "bits": [ 7 ],
+          "attributes": {
+            "EXTERNAL": 1,
+            "FABulous": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:31.37-31.43"
+          }
+        },
+        "IN": {
+          "hide_name": 0,
+          "bits": [ 3 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:25.12-25.14"
+          }
+        },
+        "IN_REG": {
+          "hide_name": 0,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.18-38.24"
+          }
+        },
+        "IN_q": {
+          "hide_name": 0,
+          "bits": [ 13 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.17-45.21"
+          }
+        },
+        "IN_top": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "EXTERNAL": 1,
+            "FABulous": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:30.37-30.43"
+          }
+        },
+        "OUT": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:27.12-27.15"
+          }
+        },
+        "OUT_REG": {
+          "hide_name": 0,
+          "bits": [ 11 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.26-38.33"
+          }
+        },
+        "OUT_top": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "EXTERNAL": 1,
+            "FABulous": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:32.37-32.44"
+          }
+        },
+        "OUT_top_q": {
+          "hide_name": 0,
+          "bits": [ 14 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.23-45.32"
+          }
+        }
+      }
+    }
+  }
+}

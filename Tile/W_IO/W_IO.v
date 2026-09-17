@@ -5,9 +5,12 @@ module W_IO
 `endif
         parameter MaxFramesPerCol=20,
         parameter FrameBitsPerRow=32,
-        parameter NoConfigBits=114
+        parameter NoConfigBits=112
     )
     (
+ //N
+        input  [3:0] S_GBUF_FEED_END,        //TilePort({N} INPUT S_GBUF_FEED_END[3:0])
+        output  [3:0] N_GBUF_BEG,        //TilePort({N} OUTPUT N_GBUF_BEG[3:0])
  //E
         output  [3:0] E1BEG,        //TilePort({E} OUTPUT E1BEG[3:0])
         output  [7:0] E2BEG,        //TilePort({E} OUTPUT E2BEG[7:0])
@@ -19,23 +22,13 @@ module W_IO
         input  [7:0] W2END,        //TilePort({E} INPUT W2END[7:0])
         input  [15:0] WW4END,        //TilePort({E} INPUT WW4END[3:0])
         input  [11:0] W6END,        //TilePort({E} INPUT W6END[1:0])
-        input  A_O_top,
-        output  A_I_top,
-        output  A_T_top,
-        input  B_O_top,
-        output  B_I_top,
-        output  B_T_top,
-        output  A_config_C_bit0,
-        output  A_config_C_bit1,
-        output  A_config_C_bit2,
-        output  A_config_C_bit3,
-        output  B_config_C_bit0,
-        output  B_config_C_bit1,
-        output  B_config_C_bit2,
-        output  B_config_C_bit3,
+ //S
+        output  [3:0] S_GBUF_FEED_BEG,        //TilePort({S} OUTPUT S_GBUF_FEED_BEG[3:0])
+        input  [3:0] N_GBUF_END,        //TilePort({S} INPUT N_GBUF_END[3:0])
+        input  A_OUT_top,
+        output  A_IN_top,
+        output  A_EN_top,
     //Tile IO ports from BELs
-        input  UserCLK,
-        output  UserCLKo,
         input  [FrameBitsPerRow-1:0] FrameData, //CONFIG_PORT
         output  [FrameBitsPerRow-1:0] FrameData_O,
         input  [MaxFramesPerCol-1:0] FrameStrobe, //CONFIG_PORT
@@ -44,14 +37,10 @@ module W_IO
 );
  //signal declarations
  //BEL ports (e.g., slices)
-wire A_I;
-wire A_T;
-wire A_O;
-wire A_Q;
-wire B_I;
-wire B_T;
-wire B_O;
-wire B_Q;
+wire A_CLK;
+wire A_IN;
+wire A_EN;
+wire A_OUT;
  //Jump wires
  //internal configuration data signal to daisy-chain all BELs (if any and in the order they are listed in the fabric.csv)
 wire[NoConfigBits-1:0] ConfigBits;
@@ -587,11 +576,6 @@ my_buf strobe_outbuf_19 (
     .X(FrameStrobe_O[19])
 );
 
-clk_buf inst_clk_buf (
-    .A(UserCLK),
-    .X(UserCLKo)
-);
-
 
  //configuration storage latches
 W_IO_ConfigMem
@@ -610,39 +594,26 @@ W_IO_ConfigMem
 
 
  //BEL component instantiations
-IO_1_bidirectional_frame_config_pass Inst_A_IO_1_bidirectional_frame_config_pass (
-    .I(A_I),
-    .T(A_T),
-    .O(A_O),
-    .Q(A_Q),
-    .I_top(A_I_top),
-    .T_top(A_T_top),
-    .O_top(A_O_top),
-    .UserCLK(UserCLK)
-);
-
-IO_1_bidirectional_frame_config_pass Inst_B_IO_1_bidirectional_frame_config_pass (
-    .I(B_I),
-    .T(B_T),
-    .O(B_O),
-    .Q(B_Q),
-    .I_top(B_I_top),
-    .T_top(B_T_top),
-    .O_top(B_O_top),
-    .UserCLK(UserCLK)
-);
-
-Config_access Inst_A_config_Config_access (
-    .C_bit({A_config_C_bit3, A_config_C_bit2, A_config_C_bit1, A_config_C_bit0}),
-    .ConfigBits(ConfigBits[4-1:0])
-);
-
-Config_access Inst_B_config_Config_access (
-    .C_bit({B_config_C_bit3, B_config_C_bit2, B_config_C_bit1, B_config_C_bit0}),
-    .ConfigBits(ConfigBits[8-1:4])
+IOBUF Inst_A_IOBUF (
+    .CLK(A_CLK),
+    .IN(A_IN),
+    .EN(A_EN),
+    .OUT(A_OUT),
+    .IN_top(A_IN_top),
+    .EN_top(A_EN_top),
+    .OUT_top(A_OUT_top),
+    .ConfigBits(ConfigBits[3-1:0])
 );
 
 W_IO_switch_matrix Inst_W_IO_switch_matrix (
+    .S_GBUF_FEED_END0(S_GBUF_FEED_END[0]),
+    .S_GBUF_FEED_END1(S_GBUF_FEED_END[1]),
+    .S_GBUF_FEED_END2(S_GBUF_FEED_END[2]),
+    .S_GBUF_FEED_END3(S_GBUF_FEED_END[3]),
+    .N_GBUF_END0(N_GBUF_END[0]),
+    .N_GBUF_END1(N_GBUF_END[1]),
+    .N_GBUF_END2(N_GBUF_END[2]),
+    .N_GBUF_END3(N_GBUF_END[3]),
     .W1END0(W1END[0]),
     .W1END1(W1END[1]),
     .W1END2(W1END[2]),
@@ -691,10 +662,15 @@ W_IO_switch_matrix Inst_W_IO_switch_matrix (
     .W6END9(W6END[9]),
     .W6END10(W6END[10]),
     .W6END11(W6END[11]),
-    .A_O(A_O),
-    .A_Q(A_Q),
-    .B_O(B_O),
-    .B_Q(B_Q),
+    .A_OUT(A_OUT),
+    .S_GBUF_FEED_BEG0(S_GBUF_FEED_BEG[0]),
+    .S_GBUF_FEED_BEG1(S_GBUF_FEED_BEG[1]),
+    .S_GBUF_FEED_BEG2(S_GBUF_FEED_BEG[2]),
+    .S_GBUF_FEED_BEG3(S_GBUF_FEED_BEG[3]),
+    .N_GBUF_BEG0(N_GBUF_BEG[0]),
+    .N_GBUF_BEG1(N_GBUF_BEG[1]),
+    .N_GBUF_BEG2(N_GBUF_BEG[2]),
+    .N_GBUF_BEG3(N_GBUF_BEG[3]),
     .E1BEG0(E1BEG[0]),
     .E1BEG1(E1BEG[1]),
     .E1BEG2(E1BEG[2]),
@@ -743,12 +719,11 @@ W_IO_switch_matrix Inst_W_IO_switch_matrix (
     .E6BEG9(E6BEG[9]),
     .E6BEG10(E6BEG[10]),
     .E6BEG11(E6BEG[11]),
-    .A_I(A_I),
-    .A_T(A_T),
-    .B_I(B_I),
-    .B_T(B_T),
-    .ConfigBits(ConfigBits[114-1:8]),
-    .ConfigBits_N(ConfigBits_N[114-1:8])
+    .A_CLK(A_CLK),
+    .A_IN(A_IN),
+    .A_EN(A_EN),
+    .ConfigBits(ConfigBits[112-1:3]),
+    .ConfigBits_N(ConfigBits_N[112-1:3])
 );
 
 endmodule

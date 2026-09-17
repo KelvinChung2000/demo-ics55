@@ -1,0 +1,947 @@
+{
+  "creator": "Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)",
+  "modules": {
+    "RAM_32x4_2R_1W": {
+      "attributes": {
+        "C_CLK_INV": 4,
+        "B_CLK_INV": 3,
+        "A_CLK_INV": 2,
+        "BelMap": 1,
+        "FABulous": 1,
+        "dynports": 1,
+        "C_REG": 1,
+        "B_REG": 0,
+        "top": 1,
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:22.1-102.10"
+      },
+      "parameter_default_values": {
+        "DEPTH": 5,
+        "NoConfigBits": 5,
+        "WIDTH": 4
+      },
+      "ports": {
+        "A_CLK": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "A_ADDR": {
+          "direction": "input",
+          "bits": [ 3, 4, 5, 6, 7 ]
+        },
+        "A_WEN": {
+          "direction": "input",
+          "bits": [ 8 ]
+        },
+        "A_DIN": {
+          "direction": "input",
+          "bits": [ 9, 10, 11, 12 ]
+        },
+        "B_CLK": {
+          "direction": "input",
+          "bits": [ 13 ]
+        },
+        "B_ADDR": {
+          "direction": "input",
+          "bits": [ 14, 15, 16, 17, 18 ]
+        },
+        "B_REN": {
+          "direction": "input",
+          "bits": [ 19 ]
+        },
+        "B_DOUT": {
+          "direction": "output",
+          "bits": [ 20, 21, 22, 23 ]
+        },
+        "C_CLK": {
+          "direction": "input",
+          "bits": [ 24 ]
+        },
+        "C_ADDR": {
+          "direction": "input",
+          "bits": [ 25, 26, 27, 28, 29 ]
+        },
+        "C_REN": {
+          "direction": "input",
+          "bits": [ 30 ]
+        },
+        "C_DOUT": {
+          "direction": "output",
+          "bits": [ 31, 32, 33, 34 ]
+        },
+        "ConfigBits": {
+          "direction": "input",
+          "bits": [ 35, 36, 37, 38, 39 ]
+        }
+      },
+      "cells": {
+        "$auto$proc_memwr.cc:45:proc_memwr$39": {
+          "hide_name": 1,
+          "type": "$memwr_v2",
+          "parameters": {
+            "ABITS": 5,
+            "CLK_ENABLE": 1,
+            "CLK_POLARITY": 1,
+            "MEMID": "\\mem",
+            "PORTID": 0,
+            "PRIORITY_MASK": 0,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70.13-70.33"
+          },
+          "port_directions": {
+            "ADDR": "input",
+            "CLK": "input",
+            "DATA": "input",
+            "EN": "input"
+          },
+          "connections": {
+            "ADDR": [ 40, 41, 42, 43, 44 ],
+            "CLK": [ 45 ],
+            "DATA": [ 46, 47, 48, 49 ],
+            "EN": [ 50, 51, 52, 53 ]
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61$2": {
+          "hide_name": 1,
+          "type": "$logic_not",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61.32-61.38"
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 2 ],
+            "Y": [ 54 ]
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62$4": {
+          "hide_name": 1,
+          "type": "$logic_not",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62.32-62.38"
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 13 ],
+            "Y": [ 55 ]
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63$6": {
+          "hide_name": 1,
+          "type": "$logic_not",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63.32-63.38"
+          },
+          "port_directions": {
+            "A": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 24 ],
+            "Y": [ 56 ]
+          }
+        },
+        "$memrd$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:78$15": {
+          "hide_name": 1,
+          "type": "$memrd",
+          "parameters": {
+            "ABITS": 5,
+            "CLK_ENABLE": 0,
+            "CLK_POLARITY": 0,
+            "MEMID": "\\mem",
+            "TRANSPARENT": 0,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:78.26-78.29"
+          },
+          "port_directions": {
+            "ADDR": "input",
+            "CLK": "input",
+            "DATA": "output",
+            "EN": "input"
+          },
+          "connections": {
+            "ADDR": [ 14, 15, 16, 17, 18 ],
+            "CLK": [ "x" ],
+            "DATA": [ 57, 58, 59, 60 ],
+            "EN": [ "x" ]
+          }
+        },
+        "$memrd$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:92$18": {
+          "hide_name": 1,
+          "type": "$memrd",
+          "parameters": {
+            "ABITS": 5,
+            "CLK_ENABLE": 0,
+            "CLK_POLARITY": 0,
+            "MEMID": "\\mem",
+            "TRANSPARENT": 0,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:92.26-92.29"
+          },
+          "port_directions": {
+            "ADDR": "input",
+            "CLK": "input",
+            "DATA": "output",
+            "EN": "input"
+          },
+          "connections": {
+            "ADDR": [ 25, 26, 27, 28, 29 ],
+            "CLK": [ "x" ],
+            "DATA": [ 61, 62, 63, 64 ],
+            "EN": [ "x" ]
+          }
+        },
+        "$procdff$34": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:94.5-98.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 65 ],
+            "D": [ 66, 67, 68, 69 ],
+            "Q": [ 70, 71, 72, 73 ]
+          }
+        },
+        "$procdff$35": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:80.5-84.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 74 ],
+            "D": [ 75, 76, 77, 78 ],
+            "Q": [ 79, 80, 81, 82 ]
+          }
+        },
+        "$procdff$36": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 5
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 45 ],
+            "D": [ 40, 41, 42, 43, 44 ],
+            "Q": [ 83, 84, 85, 86, 87 ]
+          }
+        },
+        "$procdff$37": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 45 ],
+            "D": [ 46, 47, 48, 49 ],
+            "Q": [ 88, 89, 90, 91 ]
+          }
+        },
+        "$procdff$38": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 45 ],
+            "D": [ 50, 51, 52, 53 ],
+            "Q": [ 92, 93, 94, 95 ]
+          }
+        },
+        "$procmux$21": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:95.13-95.18|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:95.9-97.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 70, 71, 72, 73 ],
+            "B": [ 61, 62, 63, 64 ],
+            "S": [ 30 ],
+            "Y": [ 66, 67, 68, 69 ]
+          }
+        },
+        "$procmux$23": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:81.13-81.18|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:81.9-83.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 79, 80, 81, 82 ],
+            "B": [ 57, 58, 59, 60 ],
+            "S": [ 19 ],
+            "Y": [ 75, 76, 77, 78 ]
+          }
+        },
+        "$procmux$26": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 4
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:69.13-69.18|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:69.9-71.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ "0", "0", "0", "0" ],
+            "B": [ "1", "1", "1", "1" ],
+            "S": [ 8 ],
+            "Y": [ 50, 51, 52, 53 ]
+          }
+        },
+        "$procmux$29": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 4
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:69.13-69.18|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:69.9-71.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ "x", "x", "x", "x" ],
+            "B": [ 9, 10, 11, 12 ],
+            "S": [ 8 ],
+            "Y": [ 46, 47, 48, 49 ]
+          }
+        },
+        "$procmux$32": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 5
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:69.13-69.18|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:69.9-71.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ "x", "x", "x", "x", "x" ],
+            "B": [ 3, 4, 5, 6, 7 ],
+            "S": [ 8 ],
+            "Y": [ 40, 41, 42, 43, 44 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:100$20": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:100.21-100.53"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 61, 62, 63, 64 ],
+            "B": [ 70, 71, 72, 73 ],
+            "S": [ 36 ],
+            "Y": [ 31, 32, 33, 34 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61$3": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61.20-61.46"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 2 ],
+            "B": [ 54 ],
+            "S": [ 37 ],
+            "Y": [ 45 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62$5": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62.20-62.46"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 13 ],
+            "B": [ 55 ],
+            "S": [ 38 ],
+            "Y": [ 74 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63$7": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63.20-63.46"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 24 ],
+            "B": [ 56 ],
+            "S": [ 39 ],
+            "Y": [ 65 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:86$17": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 4
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:86.21-86.53"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 57, 58, 59, 60 ],
+            "B": [ 79, 80, 81, 82 ],
+            "S": [ 35 ],
+            "Y": [ 20, 21, 22, 23 ]
+          }
+        }
+      },
+      "memories": {
+        "mem": {
+          "hide_name": 0,
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:65.21-65.24"
+          },
+          "width": 4,
+          "start_offset": 0,
+          "size": 32
+        }
+      },
+      "netnames": {
+        "$0$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_ADDR[4:0]$9": {
+          "hide_name": 1,
+          "bits": [ 40, 41, 42, 43, 44 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          }
+        },
+        "$0$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_DATA[3:0]$10": {
+          "hide_name": 1,
+          "bits": [ 46, 47, 48, 49 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          }
+        },
+        "$0$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_EN[3:0]$11": {
+          "hide_name": 1,
+          "bits": [ 50, 51, 52, 53 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          }
+        },
+        "$0\\B_DOUT_reg[3:0]": {
+          "hide_name": 1,
+          "bits": [ 75, 76, 77, 78 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:80.5-84.8"
+          }
+        },
+        "$0\\C_DOUT_reg[3:0]": {
+          "hide_name": 1,
+          "bits": [ 66, 67, 68, 69 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:94.5-98.8"
+          }
+        },
+        "$1$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_ADDR[4:0]$12": {
+          "hide_name": 1,
+          "bits": [ 40, 41, 42, 43, 44 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          }
+        },
+        "$1$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_DATA[3:0]$13": {
+          "hide_name": 1,
+          "bits": [ 46, 47, 48, 49 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          }
+        },
+        "$1$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_EN[3:0]$14": {
+          "hide_name": 1,
+          "bits": [ 50, 51, 52, 53 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:68.5-72.8"
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61$2_Y": {
+          "hide_name": 1,
+          "bits": [ 54 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61.32-61.38"
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62$4_Y": {
+          "hide_name": 1,
+          "bits": [ 55 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62.32-62.38"
+          }
+        },
+        "$logic_not$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63$6_Y": {
+          "hide_name": 1,
+          "bits": [ 56 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63.32-63.38"
+          }
+        },
+        "$memrd$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:78$15_DATA": {
+          "hide_name": 1,
+          "bits": [ 57, 58, 59, 60 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:78.26-78.29"
+          }
+        },
+        "$memrd$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:92$18_DATA": {
+          "hide_name": 1,
+          "bits": [ 61, 62, 63, 64 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:92.26-92.29"
+          }
+        },
+        "$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_ADDR": {
+          "hide_name": 1,
+          "bits": [ 83, 84, 85, 86, 87 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70.13-70.33"
+          }
+        },
+        "$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_DATA": {
+          "hide_name": 1,
+          "bits": [ 88, 89, 90, 91 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70.13-70.33"
+          }
+        },
+        "$memwr$\\mem$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70$1_EN": {
+          "hide_name": 1,
+          "bits": [ 92, 93, 94, 95 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:70.13-70.33"
+          }
+        },
+        "$procmux$21_Y": {
+          "hide_name": 1,
+          "bits": [ 66, 67, 68, 69 ],
+          "attributes": {
+          }
+        },
+        "$procmux$22_CMP": {
+          "hide_name": 1,
+          "bits": [ 30 ],
+          "attributes": {
+          }
+        },
+        "$procmux$23_Y": {
+          "hide_name": 1,
+          "bits": [ 75, 76, 77, 78 ],
+          "attributes": {
+          }
+        },
+        "$procmux$24_CMP": {
+          "hide_name": 1,
+          "bits": [ 19 ],
+          "attributes": {
+          }
+        },
+        "$procmux$26_Y": {
+          "hide_name": 1,
+          "bits": [ 50, 51, 52, 53 ],
+          "attributes": {
+          }
+        },
+        "$procmux$27_CMP": {
+          "hide_name": 1,
+          "bits": [ 8 ],
+          "attributes": {
+          }
+        },
+        "$procmux$29_Y": {
+          "hide_name": 1,
+          "bits": [ 46, 47, 48, 49 ],
+          "attributes": {
+          }
+        },
+        "$procmux$30_CMP": {
+          "hide_name": 1,
+          "bits": [ 8 ],
+          "attributes": {
+          }
+        },
+        "$procmux$32_Y": {
+          "hide_name": 1,
+          "bits": [ 40, 41, 42, 43, 44 ],
+          "attributes": {
+          }
+        },
+        "$procmux$33_CMP": {
+          "hide_name": 1,
+          "bits": [ 8 ],
+          "attributes": {
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:100$20_Y": {
+          "hide_name": 1,
+          "bits": [ 31, 32, 33, 34 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:100.21-100.53"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61$3_Y": {
+          "hide_name": 1,
+          "bits": [ 45 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:61.20-61.46"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62$5_Y": {
+          "hide_name": 1,
+          "bits": [ 74 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:62.20-62.46"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63$7_Y": {
+          "hide_name": 1,
+          "bits": [ 65 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:63.20-63.46"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:86$17_Y": {
+          "hide_name": 1,
+          "bits": [ 20, 21, 22, 23 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:86.21-86.53"
+          }
+        },
+        "A_ADDR": {
+          "hide_name": 0,
+          "bits": [ 3, 4, 5, 6, 7 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:31.24-31.30"
+          }
+        },
+        "A_CLK": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:30.24-30.29"
+          }
+        },
+        "A_CLK_INV": {
+          "hide_name": 0,
+          "bits": [ 37 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:51.24-51.33"
+          }
+        },
+        "A_DIN": {
+          "hide_name": 0,
+          "bits": [ 9, 10, 11, 12 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:33.24-33.29"
+          }
+        },
+        "A_WEN": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:32.24-32.29"
+          }
+        },
+        "B_ADDR": {
+          "hide_name": 0,
+          "bits": [ 14, 15, 16, 17, 18 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:37.24-37.30"
+          }
+        },
+        "B_CLK": {
+          "hide_name": 0,
+          "bits": [ 13 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:36.24-36.29"
+          }
+        },
+        "B_CLK_INV": {
+          "hide_name": 0,
+          "bits": [ 38 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:51.35-51.44"
+          }
+        },
+        "B_DOUT": {
+          "hide_name": 0,
+          "bits": [ 20, 21, 22, 23 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:39.24-39.30"
+          }
+        },
+        "B_DOUT_comb": {
+          "hide_name": 0,
+          "bits": [ 57, 58, 59, 60 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:75.22-75.33"
+          }
+        },
+        "B_DOUT_reg": {
+          "hide_name": 0,
+          "bits": [ 79, 80, 81, 82 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:76.22-76.32"
+          }
+        },
+        "B_REG": {
+          "hide_name": 0,
+          "bits": [ 35 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:51.10-51.15"
+          }
+        },
+        "B_REN": {
+          "hide_name": 0,
+          "bits": [ 19 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:38.24-38.29"
+          }
+        },
+        "C_ADDR": {
+          "hide_name": 0,
+          "bits": [ 25, 26, 27, 28, 29 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:43.24-43.30"
+          }
+        },
+        "C_CLK": {
+          "hide_name": 0,
+          "bits": [ 24 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:42.24-42.29"
+          }
+        },
+        "C_CLK_INV": {
+          "hide_name": 0,
+          "bits": [ 39 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:51.46-51.55"
+          }
+        },
+        "C_DOUT": {
+          "hide_name": 0,
+          "bits": [ 31, 32, 33, 34 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:45.24-45.30"
+          }
+        },
+        "C_DOUT_comb": {
+          "hide_name": 0,
+          "bits": [ 61, 62, 63, 64 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:89.22-89.33"
+          }
+        },
+        "C_DOUT_reg": {
+          "hide_name": 0,
+          "bits": [ 70, 71, 72, 73 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:90.22-90.32"
+          }
+        },
+        "C_REG": {
+          "hide_name": 0,
+          "bits": [ 36 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:51.17-51.22"
+          }
+        },
+        "C_REN": {
+          "hide_name": 0,
+          "bits": [ 30 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:44.24-44.29"
+          }
+        },
+        "ConfigBits": {
+          "hide_name": 0,
+          "bits": [ 35, 36, 37, 38, 39 ],
+          "attributes": {
+            "FABulous": 1,
+            "GLOBAL": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:48.53-48.63"
+          }
+        },
+        "a_clk": {
+          "hide_name": 0,
+          "bits": [ 45 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:60.10-60.15"
+          }
+        },
+        "b_clk": {
+          "hide_name": 0,
+          "bits": [ 74 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:60.17-60.22"
+          }
+        },
+        "c_clk": {
+          "hide_name": 0,
+          "bits": [ 65 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/RegFile/../../primitives/RAM_32x4_2R_1W/fabulous/RAM_32x4_2R_1W.v:60.24-60.29"
+          }
+        }
+      }
+    }
+  }
+}

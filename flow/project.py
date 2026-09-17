@@ -181,7 +181,7 @@ def workspace_of(directory: Path) -> Path:
 def run(directory: Path, arguments: list[str], log: Path) -> StepResult:  # noqa: D401
     """Invoke ECC, appending its output to `log`, and return without raising.
 
-    A failing step is reported rather than thrown so that a batch over thirteen
+    A failing step is reported rather than thrown so that a batch over fifteen
     tile types finishes and names every tile that failed instead of the first.
     """
     import time

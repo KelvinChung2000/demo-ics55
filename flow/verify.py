@@ -1,7 +1,7 @@
 """Check a plan against the fabric it was built from, before anything is run.
 
 Four properties have to hold for an abutted fabric to be wired, and all four are
-cheap to test on the plan alone. Testing them here rather than after thirteen
+cheap to test on the plan alone. Testing them here rather than after fifteen
 hardening runs is the difference between a second and an afternoon, and three of
 the four were violated at some point while this flow was being written.
 """

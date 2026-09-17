@@ -5,10 +5,11 @@ module RegFile
 `endif
         parameter MaxFramesPerCol=20,
         parameter FrameBitsPerRow=32,
-        parameter NoConfigBits=414
+        parameter NoConfigBits=429
     )
     (
  //N
+        output  [3:0] N_GBUF_BEG,        //TilePort({N} OUTPUT N_GBUF_BEG[3:0])
         output  [3:0] N1BEG,        //TilePort({N} OUTPUT N1BEG[3:0])
         output  [7:0] N2BEG,        //TilePort({N} OUTPUT N2BEG[7:0])
         output  [7:0] N2BEGb,        //TilePort({N} OUTPUT N2BEGb[7:0])
@@ -42,6 +43,7 @@ module RegFile
         output  [15:0] WW4BEG,        //TilePort({W} OUTPUT WW4BEG[3:0])
         output  [11:0] W6BEG,        //TilePort({W} OUTPUT W6BEG[1:0])
  //S
+        input  [3:0] N_GBUF_END,        //TilePort({S} INPUT N_GBUF_END[3:0])
         input  [3:0] N1END,        //TilePort({S} INPUT N1END[3:0])
         input  [7:0] N2MID,        //TilePort({S} INPUT N2MID[7:0])
         input  [7:0] N2END,        //TilePort({S} INPUT N2END[7:0])
@@ -53,8 +55,6 @@ module RegFile
         output  [15:0] S4BEG,        //TilePort({S} OUTPUT S4BEG[3:0])
         output  [15:0] SS4BEG,        //TilePort({S} OUTPUT SS4BEG[3:0])
     //Tile IO ports from BELs
-        input  UserCLK,
-        output  UserCLKo,
         input  [FrameBitsPerRow-1:0] FrameData, //CONFIG_PORT
         output  [FrameBitsPerRow-1:0] FrameData_O,
         input  [MaxFramesPerCol-1:0] FrameStrobe, //CONFIG_PORT
@@ -63,34 +63,39 @@ module RegFile
 );
  //signal declarations
  //BEL ports (e.g., slices)
-wire D0;
-wire D1;
-wire D2;
-wire D3;
-wire W_ADR0;
-wire W_ADR1;
-wire W_ADR2;
-wire W_ADR3;
-wire W_ADR4;
-wire W_en;
-wire A_ADR0;
-wire A_ADR1;
-wire A_ADR2;
-wire A_ADR3;
-wire A_ADR4;
-wire B_ADR0;
-wire B_ADR1;
-wire B_ADR2;
-wire B_ADR3;
-wire B_ADR4;
-wire AD0;
-wire AD1;
-wire AD2;
-wire AD3;
-wire BD0;
-wire BD1;
-wire BD2;
-wire BD3;
+wire A_CLK;
+wire A_ADDR0;
+wire A_ADDR1;
+wire A_ADDR2;
+wire A_ADDR3;
+wire A_ADDR4;
+wire A_WEN;
+wire A_DIN0;
+wire A_DIN1;
+wire A_DIN2;
+wire A_DIN3;
+wire B_CLK;
+wire B_ADDR0;
+wire B_ADDR1;
+wire B_ADDR2;
+wire B_ADDR3;
+wire B_ADDR4;
+wire B_REN;
+wire C_CLK;
+wire C_ADDR0;
+wire C_ADDR1;
+wire C_ADDR2;
+wire C_ADDR3;
+wire C_ADDR4;
+wire C_REN;
+wire B_DOUT0;
+wire B_DOUT1;
+wire B_DOUT2;
+wire B_DOUT3;
+wire C_DOUT0;
+wire C_DOUT1;
+wire C_DOUT2;
+wire C_DOUT3;
  //Jump wires
 wire[4-1:0] J2MID_ABa_BEG;
 wire[4-1:0] J2MID_CDa_BEG;
@@ -1598,11 +1603,6 @@ my_buf W6BEG_outbuf_9 (
     .X(W6BEG[9])
 );
 
-clk_buf inst_clk_buf (
-    .A(UserCLK),
-    .X(UserCLKo)
-);
-
 
  //configuration storage latches
 RegFile_ConfigMem
@@ -1621,19 +1621,27 @@ RegFile_ConfigMem
 
 
  //BEL component instantiations
-RegFile_32x4 Inst_RegFile_32x4 (
-    .D({D3, D2, D1, D0}),
-    .W_ADR({W_ADR4, W_ADR3, W_ADR2, W_ADR1, W_ADR0}),
-    .W_en(W_en),
-    .AD({AD3, AD2, AD1, AD0}),
-    .A_ADR({A_ADR4, A_ADR3, A_ADR2, A_ADR1, A_ADR0}),
-    .BD({BD3, BD2, BD1, BD0}),
-    .B_ADR({B_ADR4, B_ADR3, B_ADR2, B_ADR1, B_ADR0}),
-    .UserCLK(UserCLK),
-    .ConfigBits(ConfigBits[2-1:0])
+RAM_32x4_2R_1W Inst_RAM_32x4_2R_1W (
+    .A_CLK(A_CLK),
+    .A_ADDR({A_ADDR4, A_ADDR3, A_ADDR2, A_ADDR1, A_ADDR0}),
+    .A_WEN(A_WEN),
+    .A_DIN({A_DIN3, A_DIN2, A_DIN1, A_DIN0}),
+    .B_CLK(B_CLK),
+    .B_ADDR({B_ADDR4, B_ADDR3, B_ADDR2, B_ADDR1, B_ADDR0}),
+    .B_REN(B_REN),
+    .B_DOUT({B_DOUT3, B_DOUT2, B_DOUT1, B_DOUT0}),
+    .C_CLK(C_CLK),
+    .C_ADDR({C_ADDR4, C_ADDR3, C_ADDR2, C_ADDR1, C_ADDR0}),
+    .C_REN(C_REN),
+    .C_DOUT({C_DOUT3, C_DOUT2, C_DOUT1, C_DOUT0}),
+    .ConfigBits(ConfigBits[5-1:0])
 );
 
 RegFile_switch_matrix Inst_RegFile_switch_matrix (
+    .N_GBUF_END0(N_GBUF_END[0]),
+    .N_GBUF_END1(N_GBUF_END[1]),
+    .N_GBUF_END2(N_GBUF_END[2]),
+    .N_GBUF_END3(N_GBUF_END[3]),
     .N1END0(N1END[0]),
     .N1END1(N1END[1]),
     .N1END2(N1END[2]),
@@ -1742,14 +1750,14 @@ RegFile_switch_matrix Inst_RegFile_switch_matrix (
     .WW4END3(WW4END[3]),
     .W6END0(W6END[0]),
     .W6END1(W6END[1]),
-    .AD0(AD0),
-    .AD1(AD1),
-    .AD2(AD2),
-    .AD3(AD3),
-    .BD0(BD0),
-    .BD1(BD1),
-    .BD2(BD2),
-    .BD3(BD3),
+    .B_DOUT0(B_DOUT0),
+    .B_DOUT1(B_DOUT1),
+    .B_DOUT2(B_DOUT2),
+    .B_DOUT3(B_DOUT3),
+    .C_DOUT0(C_DOUT0),
+    .C_DOUT1(C_DOUT1),
+    .C_DOUT2(C_DOUT2),
+    .C_DOUT3(C_DOUT3),
     .J2MID_ABa_END0(J2MID_ABa_BEG[0]),
     .J2MID_ABa_END1(J2MID_ABa_BEG[1]),
     .J2MID_ABa_END2(J2MID_ABa_BEG[2]),
@@ -1846,6 +1854,10 @@ RegFile_switch_matrix Inst_RegFile_switch_matrix (
     .J_l_GH_END1(J_l_GH_BEG[1]),
     .J_l_GH_END2(J_l_GH_BEG[2]),
     .J_l_GH_END3(J_l_GH_BEG[3]),
+    .N_GBUF_BEG0(N_GBUF_BEG[0]),
+    .N_GBUF_BEG1(N_GBUF_BEG[1]),
+    .N_GBUF_BEG2(N_GBUF_BEG[2]),
+    .N_GBUF_BEG3(N_GBUF_BEG[3]),
     .N1BEG0(N1BEG[0]),
     .N1BEG1(N1BEG[1]),
     .N1BEG2(N1BEG[2]),
@@ -1954,26 +1966,31 @@ RegFile_switch_matrix Inst_RegFile_switch_matrix (
     .WW4BEG3(WW4BEG[15]),
     .W6BEG0(W6BEG[10]),
     .W6BEG1(W6BEG[11]),
-    .D0(D0),
-    .D1(D1),
-    .D2(D2),
-    .D3(D3),
-    .W_ADR0(W_ADR0),
-    .W_ADR1(W_ADR1),
-    .W_ADR2(W_ADR2),
-    .W_ADR3(W_ADR3),
-    .W_ADR4(W_ADR4),
-    .W_en(W_en),
-    .A_ADR0(A_ADR0),
-    .A_ADR1(A_ADR1),
-    .A_ADR2(A_ADR2),
-    .A_ADR3(A_ADR3),
-    .A_ADR4(A_ADR4),
-    .B_ADR0(B_ADR0),
-    .B_ADR1(B_ADR1),
-    .B_ADR2(B_ADR2),
-    .B_ADR3(B_ADR3),
-    .B_ADR4(B_ADR4),
+    .A_CLK(A_CLK),
+    .A_ADDR0(A_ADDR0),
+    .A_ADDR1(A_ADDR1),
+    .A_ADDR2(A_ADDR2),
+    .A_ADDR3(A_ADDR3),
+    .A_ADDR4(A_ADDR4),
+    .A_WEN(A_WEN),
+    .A_DIN0(A_DIN0),
+    .A_DIN1(A_DIN1),
+    .A_DIN2(A_DIN2),
+    .A_DIN3(A_DIN3),
+    .B_CLK(B_CLK),
+    .B_ADDR0(B_ADDR0),
+    .B_ADDR1(B_ADDR1),
+    .B_ADDR2(B_ADDR2),
+    .B_ADDR3(B_ADDR3),
+    .B_ADDR4(B_ADDR4),
+    .B_REN(B_REN),
+    .C_CLK(C_CLK),
+    .C_ADDR0(C_ADDR0),
+    .C_ADDR1(C_ADDR1),
+    .C_ADDR2(C_ADDR2),
+    .C_ADDR3(C_ADDR3),
+    .C_ADDR4(C_ADDR4),
+    .C_REN(C_REN),
     .J2MID_ABa_BEG0(J2MID_ABa_BEG[0]),
     .J2MID_ABa_BEG1(J2MID_ABa_BEG[1]),
     .J2MID_ABa_BEG2(J2MID_ABa_BEG[2]),
@@ -2070,8 +2087,8 @@ RegFile_switch_matrix Inst_RegFile_switch_matrix (
     .J_l_GH_BEG1(J_l_GH_BEG[1]),
     .J_l_GH_BEG2(J_l_GH_BEG[2]),
     .J_l_GH_BEG3(J_l_GH_BEG[3]),
-    .ConfigBits(ConfigBits[414-1:2]),
-    .ConfigBits_N(ConfigBits_N[414-1:2])
+    .ConfigBits(ConfigBits[429-1:5]),
+    .ConfigBits_N(ConfigBits_N[429-1:5])
 );
 
 endmodule

@@ -98,6 +98,36 @@ class TileType:
     def bits(self) -> list[Bit]:
         return [bit for port in self.ports.values() for bit in port.bits(self.name)]
 
+    def clock_port(self) -> str:
+        """Return the port this tile takes its clock in on, as an SDC name.
+
+        The classic tile library has no per-tile `UserCLK`. A pad drives the
+        `SW_term` global buffers through `W_GBUF_FEED_END`, which send the clock
+        up each column on `N_GBUF_BEG` and along the bottom row on `E_GBUF_BEG`,
+        so a tile sees it on `N_GBUF_END` unless it is itself in that bottom row
+        and sees `E_GBUF_END`. Upstream's own tile configs name `N_GBUF_END[0]`
+        for every tile including the five that have no such port, which
+        constrains nothing there rather than failing.
+
+        A supertile prefixes each port with the sub-tile it belongs to, so the
+        match is on the suffix and the lowest-numbered sub-tile carrying the
+        port wins, which is the one FABulous numbers from the top down.
+        """
+        for candidate in ("N_GBUF_END", "E_GBUF_END", "W_GBUF_FEED_END"):
+            carried = sorted(
+                port.name
+                for port in self.ports.values()
+                if port.direction == "input"
+                and (port.name == candidate or port.name.endswith(f"_{candidate}"))
+            )
+            if carried:
+                return f"{carried[0]}[0]"
+        raise ValueError(
+            f"{self.name} has no global-buffer clock input, so no clock can be "
+            f"constrained on it; its inputs are "
+            f"{sorted(p.name for p in self.ports.values() if p.direction == 'input')}"
+        )
+
 
 @dataclass(frozen=True)
 class Instance:

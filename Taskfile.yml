@@ -2,15 +2,17 @@
 # https://taskfile.dev
 #
 # Harden this FABulous fabric on ICS55 with ECC, abut it and prove every seam.
-# Override any variable via CLI: task harden JOBS=6 TILE=LUT4AB
+# Override any variable via CLI: task harden JOBS=6 TILE=LUT4x8_ha
 version: "3"
 
 vars:
-  # The LUT4AB width every other tile is scaled against, from eFPGA_geometry.csv's
-  # proportions. Tiles do not close routing at 90; see FINDINGS.md.
+  # The LUT4x8_ha width every other tile is scaled against, from
+  # eFPGA_geometry.csv's proportions. 110 and the 90 that fails to route were
+  # both measured on the old LUT4AB, so neither bound is established for the
+  # tile library's LUT; see FINDINGS.md.
   ANCHOR: '{{.ANCHOR | default "110"}}'
   JOBS: '{{.JOBS | default "3"}}'
-  TILE: '{{.TILE | default "LUT4AB"}}'
+  TILE: '{{.TILE | default "LUT4x8_ha"}}'
   STEP: '{{.STEP | default "filler_ecc"}}'
   BUILD: '{{.BUILD | default "build"}}'
   ECC: '{{.ECC | default "../eccw"}}'
@@ -20,7 +22,7 @@ vars:
 tasks:
   build:
     aliases: [default]
-    desc: Plan, harden all thirteen tile types, paint, stitch and floorplan the fabric
+    desc: Plan, harden all fifteen tile types, paint, stitch and floorplan the fabric
     cmds:
       - task: plan
       - task: check
@@ -28,6 +30,11 @@ tasks:
       - task: paint
       - task: stitch
       - task: top
+
+  sync-tiles:
+    desc: Re-vendor Tile/ and primitives/ from the pinned FABulous tile library
+    cmds:
+      - "{{.FLOW}} sync-tiles"
 
   plan:
     desc: Size every tile and place every pin, writing build/fabric_plan.json

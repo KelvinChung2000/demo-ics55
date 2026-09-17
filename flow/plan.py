@@ -3,15 +3,15 @@
 Two decisions are made here and nowhere else. The first is the die of each tile
 type, which abutment forces to be one width per fabric column and one height per
 fabric row; the shape of the reference `eFPGA_geometry.csv` run is kept and only
-its scale changes, anchored on a measured ICS55 LUT4AB. The second is the offset
+its scale changes, anchored on a measured ICS55 LUT. The second is the offset
 of every scalar pin along its edge, which has to be agreed fabric-wide rather
-than per tile: `LUT4AB`'s East edge faces `LUT4AB` in column 2 and `RegFile` in
-column 3, so an offset chosen for one seam is binding on the other.
+than per tile: `LUT4x8_ha`'s East edge faces `LUT4x8_ha` in column 2 and
+`RegFile` in column 3, so an offset chosen for one seam is binding on the other.
 
 Three quantisations are not cosmetic. A row height that is an even multiple of
 the `core7` site height keeps the `VDD`/`VSS` rail order running across a
 horizontal seam. A row height that is a whole number of PDN stripe pitches makes
-the `DSP` supertile's stripes meet those of the single-height tiles beside it. A
+the `MACC` supertile's stripes meet those of the single-height tiles beside it. A
 pin offset on the routing track grid was worth 3x in router runtime and the
 difference between zero and 41 `metal_short` in the single-tile spike.
 """
@@ -314,7 +314,7 @@ def _lane_groups(members: dict[int, set[int]]) -> list[list[int]]:
 
     Two components may reuse one offset when no tile edge ever carries both. A
     terminator row and a core row share no component, so the whole offset range
-    is available to each; the core rows all share `LUT4AB`'s and must not.
+    is available to each; the core rows all share `LUT4x8_ha`'s and must not.
     """
     parent: dict[int, int] = {lane: lane for lane in members}
 
@@ -372,7 +372,7 @@ def _assign(
         `E1BEG_1_` to opposite ends of the edge and every wire from there to the
         switch matrix detours; the single-tile spike put a contiguous bus at 3x
         in router runtime. And leading on the tile type would give every type its
-        own block of the edge, so `LUT4AB` would crowd 128 pins into the quarter
+        own block of the edge, so `LUT4x8_ha` would crowd 128 pins into the quarter
         of a side it shares with nobody.
         """
         return min(

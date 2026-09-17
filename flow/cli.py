@@ -1,7 +1,7 @@
 """Drive the whole fabric build, one command per stage.
 
 The stages are separate commands rather than one because the expensive part is
-hardening thirteen tile types and the cheap part is the plan they are built to,
+hardening fifteen tile types and the cheap part is the plan they are built to,
 so the plan is worth regenerating and inspecting on its own. `pilot` exists for
 the same reason: FINDINGS.md records a pin placement silently reverting to
 iEDA's own coordinates at routing, and a single tile proves the DEF rewrite in
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import typer
 
-from flow import defedit, names, project
+from flow import defedit, names, project, tilelib
 from flow.fabric import load_fabric
 from flow.plan import CORE_MARGIN, DBU, build_plan, Plan
 
@@ -32,9 +32,17 @@ PLAN_PATH = BUILD / "fabric_plan.json"
 SHARED_SOURCES = [
     PROJECT / "Fabric",
     PROJECT / "Tile" / "include",
+    # The tile library keeps a BEL in one place and names it from every tile
+    # that instantiates it, rather than copying it into each tile directory.
+    PROJECT / "primitives",
     PROJECT / "user_design",
 ]
-CLOCK_PORT = "UserCLK"
+# The fabric has no top-level clock port. `DisableUserCLK` in fabric.csv means
+# the clock enters on an IOBUF pad and reaches the SW_term global buffers
+# through the fabric, so which net a flat or macro-level build should call its
+# clock is an open question; a tile's own clock port comes from
+# `TileType.clock_port` instead.
+FABRIC_CLOCK_PORT = "UserCLK"
 TOP_MODULE = "eFPGA"
 STRIPE_PITCH_MICRON = 16.0
 FREQUENCY_MHZ = 100.0
@@ -55,7 +63,18 @@ def _sources(tile_type: str, source: Path) -> list[Path]:
 
 
 @app.command()
-def plan(anchor_micron: float = 110.0, anchor_type: str = "LUT4AB") -> None:
+def sync_tiles(cache: Path = BUILD / "fabulous-tiles") -> None:
+    """Re-vendor Tile/ and primitives/ from the pinned FABulous tile library."""
+    result = tilelib.sync(PROJECT, cache)
+    typer.echo(
+        f"{tilelib.LIBRARY} at {tilelib.COMMIT[:12]}: {len(result.tiles)} tiles, "
+        f"{len(result.primitives)} primitives, {len(result.rewritten)} BEL paths shifted"
+    )
+    typer.echo(f"  primitives: {' '.join(result.primitives)}")
+
+
+@app.command()
+def plan(anchor_micron: float = 110.0, anchor_type: str = "LUT4x8_ha") -> None:
     """Size every tile and place every pin, then write build/fabric_plan.json."""
     fabric = load_fabric(PROJECT)
     result = build_plan(
@@ -117,7 +136,7 @@ def harden(
             top=tile_type,
             sources=_sources(tile_type, fabric.tile_types[tile_type].source),
             core_util=CORE_UTIL,
-            clock_port=CLOCK_PORT,
+            clock_port=fabric.tile_types[tile_type].clock_port(),
             frequency_mhz=FREQUENCY_MHZ,
         )
         step = project.create_workspace(directory, log)
@@ -162,7 +181,7 @@ def harden(
         return tile_type, f"{note}; {check_pins(directory, tile_type)}"
 
     def attempt(tile_type: str) -> tuple[str, str, bool]:
-        # One tile's failure must not stop the other twelve, so it is reported
+        # One tile's failure must not stop the other fourteen, so it is reported
         # with its log rather than thrown; the exit code still records it.
         try:
             name, message = build(tile_type)
@@ -214,7 +233,7 @@ def check_pins(directory: Path, tile_type: str) -> str:
 
 @app.command()
 def pilot(
-    tile: str = "LUT4AB", extend_power: bool = True, status: str = "FIXED"
+    tile: str = "LUT4x8_ha", extend_power: bool = True, status: str = "FIXED"
 ) -> None:
     """Harden one tile type and report whether its pins and PDN survived."""
     harden(tile=[tile], jobs=1, force=True, extend_power=extend_power, status=status)
@@ -225,7 +244,7 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
     """Synthesise tile types and stop, which is all the flat build needs from them.
 
     `flat --bottom-up` composes the tiles' gate netlists under a bit-blasted
-    parent, so it needs thirteen syntheses and none of the hardening that
+    parent, so it needs fifteen syntheses and none of the hardening that
     follows them.
     """
     fabric = load_fabric(PROJECT)
@@ -243,7 +262,7 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
             top=tile_type,
             sources=_sources(tile_type, fabric.tile_types[tile_type].source),
             core_util=CORE_UTIL,
-            clock_port=CLOCK_PORT,
+            clock_port=fabric.tile_types[tile_type].clock_port(),
             frequency_mhz=FREQUENCY_MHZ,
         )
         step = project.create_workspace(directory, log)
@@ -334,7 +353,7 @@ def flat(
         # because every one of a quarter of a million flattened objects is logged
         # with its full hierarchical path. Composing the tiles' own gate netlists
         # under the bit-blasted parent gives Yosys mapped cells to flatten
-        # instead, and reuses thirteen syntheses that have already run.
+        # instead, and reuses fifteen syntheses that have already run.
         from flow import topdesign
 
         rtl.mkdir(parents=True, exist_ok=True)
@@ -372,6 +391,9 @@ def flat(
         roots = (
             [PROJECT / "Fabric"]
             + sorted(path for path in (PROJECT / "Tile").rglob("*") if path.is_dir())
+            + sorted(
+                path for path in (PROJECT / "primitives").rglob("*") if path.is_dir()
+            )
             + [PROJECT / "user_design"]
         )
         sources = project.dependencies(TOP_MODULE, project.source_index(roots))
@@ -382,7 +404,7 @@ def flat(
         top=TOP_MODULE,
         sources=sources,
         core_util=core_util,
-        clock_port=CLOCK_PORT,
+        clock_port=FABRIC_CLOCK_PORT,
         frequency_mhz=FREQUENCY_MHZ,
     )
     step = project.create_workspace(directory, log)

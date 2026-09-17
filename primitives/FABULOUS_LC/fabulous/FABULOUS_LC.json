@@ -1,0 +1,995 @@
+{
+  "creator": "Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)",
+  "modules": {
+    "$paramod\\LUTK\\K=s32'00000000000000000000000000000001": {
+      "attributes": {
+        "dynports": 1,
+        "hdlname": "LUTK",
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:15.1-54.10"
+      },
+      "parameter_default_values": {
+        "K": 1,
+        "LUT_ENTRIES": 2
+      },
+      "ports": {
+        "I": {
+          "direction": "input",
+          "bits": [ 2 ]
+        },
+        "INIT": {
+          "direction": "input",
+          "bits": [ 3, 4 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 5 ]
+        }
+      },
+      "cells": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:27$13": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:27.20-27.41"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "B": [ 4 ],
+            "S": [ 2 ],
+            "Y": [ 5 ]
+          }
+        }
+      },
+      "netnames": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:27$13_Y": {
+          "hide_name": 1,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:27.20-27.41"
+          }
+        },
+        "I": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "single_bit_vector": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:19.19-19.20"
+          }
+        },
+        "INIT": {
+          "hide_name": 0,
+          "bits": [ 3, 4 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:20.29-20.33"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:21.12-21.13"
+          }
+        }
+      }
+    },
+    "$paramod\\LUTK\\K=s32'00000000000000000000000000000010": {
+      "attributes": {
+        "dynports": 1,
+        "hdlname": "LUTK",
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:15.1-54.10"
+      },
+      "parameter_default_values": {
+        "K": 2,
+        "LUT_ENTRIES": 4,
+        "split_LUT.LUT_ENTRIES_HALF": 2
+      },
+      "ports": {
+        "I": {
+          "direction": "input",
+          "bits": [ 2, 3 ]
+        },
+        "INIT": {
+          "direction": "input",
+          "bits": [ 4, 5, 6, 7 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 8 ]
+        }
+      },
+      "cells": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49$12": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49.20-49.46"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 9 ],
+            "B": [ 10 ],
+            "S": [ 3 ],
+            "Y": [ 8 ]
+          }
+        },
+        "split_LUT.LUTK_lower": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000001",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:35.11-39.10"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 2 ],
+            "INIT": [ 4, 5 ],
+            "O": [ 9 ]
+          }
+        },
+        "split_LUT.LUTK_upper": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000001",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:43.11-47.10"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 2 ],
+            "INIT": [ 6, 7 ],
+            "O": [ 10 ]
+          }
+        }
+      },
+      "netnames": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49$12_Y": {
+          "hide_name": 1,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49.20-49.46"
+          }
+        },
+        "I": {
+          "hide_name": 0,
+          "bits": [ 2, 3 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:19.19-19.20"
+          }
+        },
+        "INIT": {
+          "hide_name": 0,
+          "bits": [ 4, 5, 6, 7 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:20.29-20.33"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:21.12-21.13"
+          }
+        },
+        "split_LUT.lower_O": {
+          "hide_name": 0,
+          "bits": [ 9 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:29.14-29.21"
+          }
+        },
+        "split_LUT.upper_O": {
+          "hide_name": 0,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:29.23-29.30"
+          }
+        }
+      }
+    },
+    "$paramod\\LUTK\\K=s32'00000000000000000000000000000011": {
+      "attributes": {
+        "dynports": 1,
+        "hdlname": "LUTK",
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:15.1-54.10"
+      },
+      "parameter_default_values": {
+        "K": 3,
+        "LUT_ENTRIES": 8,
+        "split_LUT.LUT_ENTRIES_HALF": 4
+      },
+      "ports": {
+        "I": {
+          "direction": "input",
+          "bits": [ 2, 3, 4 ]
+        },
+        "INIT": {
+          "direction": "input",
+          "bits": [ 5, 6, 7, 8, 9, 10, 11, 12 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 13 ]
+        }
+      },
+      "cells": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49$10": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49.20-49.46"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 14 ],
+            "B": [ 15 ],
+            "S": [ 4 ],
+            "Y": [ 13 ]
+          }
+        },
+        "split_LUT.LUTK_lower": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000010",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:35.11-39.10"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 2, 3 ],
+            "INIT": [ 5, 6, 7, 8 ],
+            "O": [ 14 ]
+          }
+        },
+        "split_LUT.LUTK_upper": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000010",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:43.11-47.10"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 2, 3 ],
+            "INIT": [ 9, 10, 11, 12 ],
+            "O": [ 15 ]
+          }
+        }
+      },
+      "netnames": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49$10_Y": {
+          "hide_name": 1,
+          "bits": [ 13 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49.20-49.46"
+          }
+        },
+        "I": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:19.19-19.20"
+          }
+        },
+        "INIT": {
+          "hide_name": 0,
+          "bits": [ 5, 6, 7, 8, 9, 10, 11, 12 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:20.29-20.33"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 13 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:21.12-21.13"
+          }
+        },
+        "split_LUT.lower_O": {
+          "hide_name": 0,
+          "bits": [ 14 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:29.14-29.21"
+          }
+        },
+        "split_LUT.upper_O": {
+          "hide_name": 0,
+          "bits": [ 15 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:29.23-29.30"
+          }
+        }
+      }
+    },
+    "$paramod\\LUTK\\K=s32'00000000000000000000000000000100": {
+      "attributes": {
+        "dynports": 1,
+        "hdlname": "LUTK",
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:15.1-54.10"
+      },
+      "parameter_default_values": {
+        "K": 4,
+        "LUT_ENTRIES": 16,
+        "split_LUT.LUT_ENTRIES_HALF": 8
+      },
+      "ports": {
+        "I": {
+          "direction": "input",
+          "bits": [ 2, 3, 4, 5 ]
+        },
+        "INIT": {
+          "direction": "input",
+          "bits": [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 22 ]
+        }
+      },
+      "cells": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49$11": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49.20-49.46"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 23 ],
+            "B": [ 24 ],
+            "S": [ 5 ],
+            "Y": [ 22 ]
+          }
+        },
+        "split_LUT.LUTK_lower": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000011",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:35.11-39.10"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 2, 3, 4 ],
+            "INIT": [ 6, 7, 8, 9, 10, 11, 12, 13 ],
+            "O": [ 23 ]
+          }
+        },
+        "split_LUT.LUTK_upper": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000011",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:43.11-47.10"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 2, 3, 4 ],
+            "INIT": [ 14, 15, 16, 17, 18, 19, 20, 21 ],
+            "O": [ 24 ]
+          }
+        }
+      },
+      "netnames": {
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49$11_Y": {
+          "hide_name": 1,
+          "bits": [ 22 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:49.20-49.46"
+          }
+        },
+        "I": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:19.19-19.20"
+          }
+        },
+        "INIT": {
+          "hide_name": 0,
+          "bits": [ 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:20.29-20.33"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 22 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:21.12-21.13"
+          }
+        },
+        "split_LUT.lower_O": {
+          "hide_name": 0,
+          "bits": [ 23 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:29.14-29.21"
+          }
+        },
+        "split_LUT.upper_O": {
+          "hide_name": 0,
+          "bits": [ 24 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:29.23-29.30"
+          }
+        }
+      }
+    },
+    "FABULOUS_LC": {
+      "attributes": {
+        "SET_NORESET": 18,
+        "I0mux": 17,
+        "FF": 16,
+        "INIT_15": 15,
+        "INIT_14": 14,
+        "INIT_13": 13,
+        "INIT_12": 12,
+        "INIT_11": 11,
+        "INIT_10": 10,
+        "INIT_9": 9,
+        "INIT_8": 8,
+        "INIT_7": 7,
+        "INIT_6": 6,
+        "INIT_5": 5,
+        "INIT_4": 4,
+        "INIT_3": 3,
+        "INIT_2": 2,
+        "INIT_1": 1,
+        "BelMap": 1,
+        "FABulous": 1,
+        "dynports": 1,
+        "INIT": 0,
+        "top": 1,
+        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:78.1-140.10"
+      },
+      "parameter_default_values": {
+        "K": 4,
+        "LUT_ENTRIES": 16,
+        "N_CONFIG_BITS": 19
+      },
+      "ports": {
+        "I": {
+          "direction": "input",
+          "bits": [ 2, 3, 4, 5 ]
+        },
+        "O": {
+          "direction": "output",
+          "bits": [ 6 ]
+        },
+        "Ci": {
+          "direction": "input",
+          "bits": [ 7 ]
+        },
+        "Co": {
+          "direction": "output",
+          "bits": [ 8 ]
+        },
+        "SR": {
+          "direction": "input",
+          "bits": [ 9 ]
+        },
+        "EN": {
+          "direction": "input",
+          "bits": [ 10 ]
+        },
+        "CLK": {
+          "direction": "input",
+          "bits": [ 11 ]
+        },
+        "ConfigBits": {
+          "direction": "input",
+          "bits": [ 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 ]
+        }
+      },
+      "cells": {
+        "$and$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$4": {
+          "hide_name": 1,
+          "type": "$and",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.17-128.26"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 7 ],
+            "B": [ 3 ],
+            "Y": [ 31 ]
+          }
+        },
+        "$and$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$5": {
+          "hide_name": 1,
+          "type": "$and",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.31-128.40"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 7 ],
+            "B": [ 4 ],
+            "Y": [ 32 ]
+          }
+        },
+        "$and$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$7": {
+          "hide_name": 1,
+          "type": "$and",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.45-128.56"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 3 ],
+            "B": [ 4 ],
+            "Y": [ 33 ]
+          }
+        },
+        "$or$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$6": {
+          "hide_name": 1,
+          "type": "$or",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.16-128.41"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 31 ],
+            "B": [ 32 ],
+            "Y": [ 34 ]
+          }
+        },
+        "$or$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$8": {
+          "hide_name": 1,
+          "type": "$or",
+          "parameters": {
+            "A_SIGNED": 0,
+            "A_WIDTH": 1,
+            "B_SIGNED": 0,
+            "B_WIDTH": 1,
+            "Y_WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.16-128.57"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 34 ],
+            "B": [ 33 ],
+            "Y": [ 8 ]
+          }
+        },
+        "$procdff$19": {
+          "hide_name": 1,
+          "type": "$dff",
+          "parameters": {
+            "CLK_POLARITY": 1,
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:130.4-138.7"
+          },
+          "port_directions": {
+            "CLK": "input",
+            "D": "input",
+            "Q": "output"
+          },
+          "connections": {
+            "CLK": [ 11 ],
+            "D": [ 35 ],
+            "Q": [ 36 ]
+          }
+        },
+        "$procmux$14": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:134.17-134.19|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:134.13-136.16"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 36 ],
+            "B": [ 37 ],
+            "S": [ 10 ],
+            "Y": [ 38 ]
+          }
+        },
+        "$procmux$17": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "full_case": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:131.13-131.15|/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:131.9-137.12"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 38 ],
+            "B": [ 30 ],
+            "S": [ 9 ],
+            "Y": [ 35 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:112$2": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:112.24-112.41"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 2 ],
+            "B": [ 7 ],
+            "S": [ 29 ],
+            "Y": [ 39 ]
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:125$3": {
+          "hide_name": 1,
+          "type": "$mux",
+          "parameters": {
+            "WIDTH": 1
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:125.15-125.38"
+          },
+          "port_directions": {
+            "A": "input",
+            "B": "input",
+            "S": "input",
+            "Y": "output"
+          },
+          "connections": {
+            "A": [ 37 ],
+            "B": [ 36 ],
+            "S": [ 28 ],
+            "Y": [ 6 ]
+          }
+        },
+        "LUT4": {
+          "hide_name": 0,
+          "type": "$paramod\\LUTK\\K=s32'00000000000000000000000000000100",
+          "parameters": {
+          },
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:119.7-123.6"
+          },
+          "port_directions": {
+            "I": "input",
+            "INIT": "input",
+            "O": "output"
+          },
+          "connections": {
+            "I": [ 39, 3, 4, 5 ],
+            "INIT": [ 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 ],
+            "O": [ 37 ]
+          }
+        }
+      },
+      "netnames": {
+        "$0\\LUT_flop[0:0]": {
+          "hide_name": 1,
+          "bits": [ 35 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:130.4-138.7"
+          }
+        },
+        "$and$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$4_Y": {
+          "hide_name": 1,
+          "bits": [ 31 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.17-128.26"
+          }
+        },
+        "$and$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$5_Y": {
+          "hide_name": 1,
+          "bits": [ 32 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.31-128.40"
+          }
+        },
+        "$and$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$7_Y": {
+          "hide_name": 1,
+          "bits": [ 33 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.45-128.56"
+          }
+        },
+        "$or$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$6_Y": {
+          "hide_name": 1,
+          "bits": [ 34 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.16-128.41"
+          }
+        },
+        "$or$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128$8_Y": {
+          "hide_name": 1,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:128.16-128.57"
+          }
+        },
+        "$procmux$14_Y": {
+          "hide_name": 1,
+          "bits": [ 38 ],
+          "attributes": {
+          }
+        },
+        "$procmux$15_CMP": {
+          "hide_name": 1,
+          "bits": [ 10 ],
+          "attributes": {
+          }
+        },
+        "$procmux$17_Y": {
+          "hide_name": 1,
+          "bits": [ 35 ],
+          "attributes": {
+          }
+        },
+        "$procmux$18_CMP": {
+          "hide_name": 1,
+          "bits": [ 9 ],
+          "attributes": {
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:112$2_Y": {
+          "hide_name": 1,
+          "bits": [ 39 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:112.24-112.41"
+          }
+        },
+        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:125$3_Y": {
+          "hide_name": 1,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:125.15-125.38"
+          }
+        },
+        "CLK": {
+          "hide_name": 0,
+          "bits": [ 11 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:92.19-92.22"
+          }
+        },
+        "Ci": {
+          "hide_name": 0,
+          "bits": [ 7 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:88.19-88.21"
+          }
+        },
+        "Co": {
+          "hide_name": 0,
+          "bits": [ 8 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:89.19-89.21"
+          }
+        },
+        "ConfigBits": {
+          "hide_name": 0,
+          "bits": [ 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 ],
+          "attributes": {
+            "FABulous": 1,
+            "GLOBAL": 1,
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:94.54-94.64"
+          }
+        },
+        "EN": {
+          "hide_name": 0,
+          "bits": [ 10 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:91.19-91.21"
+          }
+        },
+        "FF": {
+          "hide_name": 0,
+          "bits": [ 28 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:99.9-99.11"
+          }
+        },
+        "I": {
+          "hide_name": 0,
+          "bits": [ 2, 3, 4, 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:86.19-86.20"
+          }
+        },
+        "I0mux": {
+          "hide_name": 0,
+          "bits": [ 29 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:99.13-99.18"
+          }
+        },
+        "I0mux_wire": {
+          "hide_name": 0,
+          "bits": [ 39 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:110.9-110.19"
+          }
+        },
+        "INIT": {
+          "hide_name": 0,
+          "bits": [ 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:98.29-98.33"
+          }
+        },
+        "LUT_flop": {
+          "hide_name": 0,
+          "bits": [ 36 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:109.9-109.17"
+          }
+        },
+        "LUT_index": {
+          "hide_name": 0,
+          "bits": [ 39, 3, 4, 5 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:107.19-107.28"
+          }
+        },
+        "LUT_out": {
+          "hide_name": 0,
+          "bits": [ 37 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:108.9-108.16"
+          }
+        },
+        "O": {
+          "hide_name": 0,
+          "bits": [ 6 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:87.19-87.20"
+          }
+        },
+        "SET_NORESET": {
+          "hide_name": 0,
+          "bits": [ 30 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:99.20-99.31"
+          }
+        },
+        "SR": {
+          "hide_name": 0,
+          "bits": [ 9 ],
+          "attributes": {
+            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v:90.19-90.21"
+          }
+        }
+      }
+    }
+  }
+}

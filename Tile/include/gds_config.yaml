@@ -12,7 +12,9 @@ DESIGN_REPAIR_BUFFER_OUTPUT_PORTS: False
 PL_TIMING_DRIVEN: False
 
 CLOCK_PERIOD: 20.0
-CLOCK_PORT: "UserCLK"
+# DisableUserCLK is set in fabric.csv: the clock reaches a tile through the
+# global-buffer network the classic library carries, not a per-tile UserCLK.
+CLOCK_PORT: "N_GBUF_END[0]"
 
 GRT_ANTENNA_REPAIR_ITERS: 10
 GRT_ALLOW_CONGESTION: True

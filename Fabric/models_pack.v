@@ -9,9 +9,11 @@ module config_latch (input D, E, output reg Q, QN);
     end
 endmodule
 
-module my_buf (A, X);
-    input A;
-    output X;
+(* keep *)
+module my_buf (
+    input  A,
+    output X
+);
     assign X = A;
 endmodule
 

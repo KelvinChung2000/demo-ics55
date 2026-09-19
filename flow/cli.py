@@ -13,19 +13,31 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import subprocess
+from collections.abc import Sequence
+from dataclasses import replace
+from enum import Enum
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import typer
 
 from flow import defedit, ioplace, names, project, tilelib
-from flow.fabric import load_fabric
-from flow.plan import DBU, build_plan, Plan
+from flow.config import Config, FabricSettings, Param, load_config
+from flow.fabric import Fabric, load_fabric
+from flow.plan import CORE_MARGIN, DBU, build_plan, Plan
 
 app = typer.Typer(
     add_completion=False, help="Build a FABulous fabric on ICS55 with ECC."
 )
+
+
+class Stitcher(str, Enum):
+    """Which tool assembles the hardened tiles into one fabric layout."""
+
+    KLAYOUT = "klayout"
+    ECC = "ecc"
+    BOTH = "both"
+
 
 PROJECT = Path(__file__).resolve().parent.parent
 BUILD = PROJECT / "build"
@@ -38,34 +50,56 @@ SHARED_SOURCES = [
     PROJECT / "primitives",
     PROJECT / "user_design",
 ]
-# The fabric has no top-level clock port. `DisableUserCLK` in fabric.csv means
-# the clock enters on an IOBUF pad and reaches the SW_term global buffers
-# through the fabric, so which net a flat or macro-level build should call its
-# clock is an open question; a tile's own clock port comes from
-# `TileType.clock_port` instead.
-FABRIC_CLOCK_PORT = "UserCLK"
 TOP_MODULE = "eFPGA"
-FREQUENCY_MHZ = 100.0
-CORE_UTIL = 0.8
-# `generate_IO_pin_order_config` is on a FABulous branch this project does not
-# pin for anything else, so the interpreter that can run it is named here
-# rather than assumed to be the one running the flow.
-FABULOUS_PYTHON = Path(
-    "/home/kelvin/FABulous/.worktrees-tmp/fix-direction/.venv/bin/python"
-)
 TAIL_STEP = "postFloorplan"
+# What a post-synthesis build and the netlists it writes are named with.
+NETLIST_SUFFIX = "_nl"
 # The signoff layout of the flat build: routed, DRC'd, LVS'd and filled.
-FLAT_GEOMETRY = BUILD / "flat/default/filler_ecc/output/geometry/geometry.manifest"
-FLAT_GDS = BUILD / "flat/default/filler_ecc/output/eFPGA_filler.gds"
+FLAT_GEOMETRY = BUILD / "flat/runs/default/filler_ecc/output/geometry/geometry.manifest"
+FLAT_GDS = BUILD / "flat/runs/default/filler_ecc/output/eFPGA_filler.gds"
 
 
-def _tile_directory(tile_type: str) -> Path:
-    return BUILD / "tiles" / tile_type
+def _tile_directory(tile_type: str, overrides: Sequence[project.Override] = ()) -> Path:
+    """Name a tile's build directory after the parameters it was built with.
+
+    An override is an experiment rather than a fabric input, so it gets its own
+    directory and leaves the baseline `paint`, `stitch` and `top` read alone.
+    Sorting the overrides makes one set of parameters name one directory however
+    the flags were ordered on the command line.
+    """
+    if not overrides:
+        return BUILD / "tiles" / tile_type
+    key = ",".join(sorted(str(override) for override in overrides))
+    return BUILD / "tiles" / f"{tile_type}@{key}"
+
+
+def _netlist_directory(tile_type: str) -> Path:
+    """Name the synthesis-only build of a tile type, which `flat` composes from.
+
+    `synth` and `harden` write an ECC workspace for the same top module, so one
+    directory between them would let a `flat` rebuild discard a hardened run
+    forty minutes deep. The netlist build keeps the `_nl` suffix a post-synthesis
+    netlist is named with, and the two builds never meet.
+    """
+    return BUILD / "tiles" / f"{tile_type}{NETLIST_SUFFIX}"
 
 
 def _sources(tile_type: str, source: Path) -> list[Path]:
     index = project.source_index([source.parent, *SHARED_SOURCES])
     return project.dependencies(tile_type, index)
+
+
+def _tile_settings(config: Config, fabric: Fabric, tile_type: str) -> FabricSettings:
+    """Return the fabric settings with this tile's own clock port put in.
+
+    `clock_port` is one string in `Fabric/ecc_config.toml` because it used to be
+    one port every tile shared. The classic tile library has no `UserCLK`, and a
+    tile instead meets the global-buffer network on `N_GBUF_END`, `E_GBUF_END`
+    or `W_GBUF_FEED_END` depending on where it sits, so the fabric-wide value
+    stands only for builds that are not one tile.
+    """
+    return replace(config.fabric, clock_port=fabric.tile_types[tile_type].clock_port())
+
 
 
 @app.command()
@@ -77,41 +111,20 @@ def sync_tiles(cache: Path = BUILD / "fabulous-tiles") -> None:
         f"{len(result.primitives)} primitives, {len(result.rewritten)} BEL paths shifted"
     )
     typer.echo(f"  primitives: {' '.join(result.primitives)}")
-    typer.echo(
-        "  every io_pin_order.yaml went with them; run gen-io-order before plan"
-    )
-
-
-@app.command()
-def gen_io_order(fabulous_python: Path = FABULOUS_PYTHON) -> None:
-    """Regenerate each tile's io_pin_order.yaml with FABulous's own generator.
-
-    Through a separate interpreter because `generate_IO_pin_order_config` is
-    not on the FABulous revision this project pins for `run_FABulous_fabric`.
-    """
-    if not fabulous_python.exists():
-        raise typer.BadParameter(
-            f"{fabulous_python} does not exist; pass --fabulous-python for the "
-            "FABulous checkout that carries generate_IO_pin_order_config"
-        )
-    # The script is this project's and the packages it imports are FABulous's,
-    # so the project is the working directory and the checkout goes on the path.
-    checkout = fabulous_python.parent.parent.parent
-    completed = subprocess.run(
-        [str(fabulous_python), "-m", "flow.genioyaml", str(PROJECT)],
-        cwd=PROJECT,
-        env={**os.environ, "PYTHONPATH": str(checkout)},
-    )
-    if completed.returncode:
-        raise typer.Exit(code=completed.returncode)
 
 
 @app.command()
 def plan(anchor_micron: float = 110.0, anchor_type: str = "LUT4x8_ha") -> None:
     """Size every tile and place every pin, then write build/fabric_plan.json."""
     fabric = load_fabric(PROJECT)
+    config = load_config(PROJECT, tuple(fabric.tile_types))
     result = build_plan(
-        fabric, PROJECT / "eFPGA_geometry.csv", anchor_micron, anchor_type
+        fabric,
+        PROJECT / "eFPGA_geometry.csv",
+        anchor_micron,
+        anchor_type,
+        stripe_pitch_micron=config.fabric.stripe_pitch_micron,
+        tile_die=config.tile_die,
     )
     BUILD.mkdir(exist_ok=True)
     result.write(PLAN_PATH)
@@ -138,8 +151,8 @@ def check() -> None:
         raise typer.Exit(code=1)
     typer.echo(
         f"plan holds: {len(fabric.links)} links meet at one coordinate, no edge has two pins "
-        f"at one offset, no pin sits under a power stripe, and every pin is on a track "
-        f"inside the core"
+        f"at one offset, no pin sits under a power stripe, and every pin is on a "
+        f"track inside the core"
     )
 
 
@@ -149,31 +162,60 @@ def harden(
     jobs: int = 3,
     force: bool = False,
     extend_power: bool = True,
+    overrides: list[str] = typer.Option(
+        None,
+        "--set",
+        metavar="SECTION.NAME=VALUE",
+        help="Override one ECC parameter, spelled as `ecc param list` names it. "
+        "Repeatable. A run carrying any override builds into its own directory.",
+    ),
 ) -> None:
     """Run one tile type from synthesis to filler, with the planned die and pins."""
     fabric = load_fabric(PROJECT)
+    config = load_config(PROJECT, tuple(fabric.tile_types))
     layout = Plan.read(PLAN_PATH)
     wanted = tile or sorted(layout.tile_size)
     unknown = set(wanted) - layout.tile_size.keys()
     if unknown:
         raise typer.BadParameter(f"no such tile type: {sorted(unknown)}")
+    try:
+        chosen = tuple(project.Override.parse(text) for text in overrides or [])
+    except ValueError as malformed:
+        raise typer.BadParameter(str(malformed)) from malformed
 
     def build(tile_type: str) -> tuple[str, str]:
-        directory = _tile_directory(tile_type)
+        directory = _tile_directory(tile_type, chosen)
         if force and directory.exists():
             shutil.rmtree(directory)
-        log = BUILD / "logs" / f"{tile_type}.log"
+        log = BUILD / "logs" / f"{directory.name}.log"
         width, height = layout.tile_size[tile_type]
-        project.create_project(
-            directory=directory,
-            top=tile_type,
-            sources=_sources(tile_type, fabric.tile_types[tile_type].source),
-            core_util=CORE_UTIL,
-            clock_port=fabric.tile_types[tile_type].clock_port(),
-            frequency_mhz=FREQUENCY_MHZ,
-            die_micron=(width / DBU, height / DBU),
-            stripe_pitch_micron=layout.stripe_pitch / DBU,
-        )
+        try:
+            project.create_project(
+                directory=directory,
+                top=tile_type,
+                sources=_sources(tile_type, fabric.tile_types[tile_type].source),
+                settings=_tile_settings(config, fabric, tile_type),
+                params=[
+                    *config.params_for(tile_type),
+                    # The die the plan bound to this type's columns and rows,
+                    # which `flow.verify` has already proved the fabric meets on.
+                    project.Param("floorplan.die_builder", "mode", "die_size"),
+                    project.Param(
+                        "floorplan.die_builder.die_size", "width_micron", width / DBU
+                    ),
+                    project.Param(
+                        "floorplan.die_builder.die_size", "height_micron", height / DBU
+                    ),
+                ],
+                preset="rtl2gds",
+                overrides=chosen,
+            )
+        except ValueError:
+            # An override ECC refuses leaves a project that can never run. Its
+            # directory is removed rather than left under build/tiles, where the
+            # stages that read every tile directory would fail on it later.
+            shutil.rmtree(directory, ignore_errors=True)
+            raise
         step = project.create_workspace(directory, log, to="macroPlacement")
         if not step.ok:
             return tile_type, f"synthesis through macroPlacement failed, see {log}"
@@ -189,10 +231,7 @@ def harden(
             return tile_type, f"{TAIL_STEP} failed, see {log}"
         floorplan = project.floorplan_def(directory, tile_type)
         note = f"{placed}; " + defedit.prepare(
-            floorplan,
-            floorplan,
-            (width, height),
-            extend_power=extend_power,
+            floorplan, floorplan, (width, height), extend_power=extend_power
         )
         project.drop_floorplan_database(directory, tile_type)
         opt = project.workspace_of(directory) / "postFloorplan_ecc" / "output"
@@ -225,7 +264,9 @@ def harden(
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for tile_type, message, ok in pool.map(attempt, wanted):
             failures += not ok
-            typer.echo(f"{tile_type:16s} {message}")
+            # The directory rather than the tile type, so a run carrying an
+            # override names the build it actually produced.
+            typer.echo(f"{_tile_directory(tile_type, chosen).name:16s} {message}")
     if failures:
         raise typer.Exit(code=1)
 
@@ -265,10 +306,18 @@ def check_pins(directory: Path, tile_type: str) -> str:
 
 @app.command()
 def pilot(
-    tile: str = "LUT4x8_ha", extend_power: bool = True
+    tile: str = "LUT4x8_ha",
+    extend_power: bool = True,
+    overrides: list[str] = typer.Option(None, "--set", metavar="SECTION.NAME=VALUE"),
 ) -> None:
     """Harden one tile type and report whether its pins and PDN survived."""
-    harden(tile=[tile], jobs=1, force=True, extend_power=extend_power)
+    harden(
+        tile=[tile],
+        jobs=1,
+        force=True,
+        extend_power=extend_power,
+        overrides=overrides or [],
+    )
 
 
 @app.command()
@@ -277,9 +326,12 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
 
     `flat --bottom-up` composes the tiles' gate netlists under a bit-blasted
     parent, so it needs fifteen syntheses and none of the hardening that
-    follows them.
+    follows them. Each one builds into its own `<type>_nl` directory rather than
+    the hardened tile's, so rebuilding the flat control cannot discard a
+    hardened run.
     """
     fabric = load_fabric(PROJECT)
+    config = load_config(PROJECT, tuple(fabric.tile_types))
     layout = Plan.read(PLAN_PATH)
     wanted = tile or sorted(layout.tile_size)
     unknown = set(wanted) - layout.tile_size.keys()
@@ -287,15 +339,14 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
         raise typer.BadParameter(f"no such tile type: {sorted(unknown)}")
 
     def build(tile_type: str) -> tuple[str, str]:
-        directory = _tile_directory(tile_type)
-        log = BUILD / "logs" / f"{tile_type}.log"
+        directory = _netlist_directory(tile_type)
+        log = BUILD / "logs" / f"{directory.name}.log"
         project.create_project(
             directory=directory,
             top=tile_type,
             sources=_sources(tile_type, fabric.tile_types[tile_type].source),
-            core_util=CORE_UTIL,
-            clock_port=fabric.tile_types[tile_type].clock_port(),
-            frequency_mhz=FREQUENCY_MHZ,
+            settings=_tile_settings(config, fabric, tile_type),
+            params=config.params_for(tile_type),
         )
         step = project.create_workspace(directory, log, to="synthesis")
         if not step.ok:
@@ -307,40 +358,27 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for tile_type, message in pool.map(build, wanted):
             failures += "failed" in message
-            typer.echo(f"{tile_type:16s} {message}")
+            typer.echo(f"{_netlist_directory(tile_type).name:16s} {message}")
     if failures:
         raise typer.Exit(code=1)
 
 
 @app.command()
-def paint(tile: list[str] = typer.Option(None)) -> None:
-    """Draw each hardened tile's pins and boundary power into its GDS."""
-    from flow import paint as painter
-
-    layout = Plan.read(PLAN_PATH)
-    painted = BUILD / "painted"
-    painted.mkdir(parents=True, exist_ok=True)
-    for tile_type in tile or sorted(layout.tile_size):
-        directory = _tile_directory(tile_type)
-        out = painted / f"{tile_type}.gds"
-        typer.echo(
-            f"{tile_type:16s} "
-            + painter.paint(
-                def_path=project.final_def(directory, tile_type),
-                gds_path=project.final_gds(directory, tile_type),
-                out_path=out,
-            )
-        )
-
-
-@app.command()
 def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -> None:
-    """Abut every painted tile at its planned position and prove the seams.
+    """Paint every hardened tile, abut them at their planned positions, prove the seams.
+
+    Painting and abutting are one step because a painted GDS is only valid for
+    the plan it was drawn against: `flow.paint` draws the pins and the boundary
+    power that plan placed, and `flow.stitch` abuts at the coordinates the same
+    plan derived. Painting here, against the plan being abutted, is what catches
+    a tile hardened to an older die before anything is placed, rather than
+    letting it surface as a seam that does not conduct.
 
     `columns` and `rows` take a `first:last` grid range and cut a window out of
     the fabric, which is the same layout the whole fabric has there. A window is
     what makes a geometric check tractable, since the full fabric is 151 tiles.
     """
+    from flow import paint as painter
     from flow import stitch as stitcher
 
     layout = Plan.read(PLAN_PATH)
@@ -355,11 +393,20 @@ def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -
         typer.echo(
             f"window of {len(layout.placements)} tiles, {len(layout.seams)} seams"
         )
-    sources = {name: BUILD / "painted" / f"{name}.gds" for name in layout.tile_size}
-    missing = {name for name, path in sources.items() if not path.exists()}
-    if missing:
-        raise typer.BadParameter(
-            f"these tile types are not painted yet: {sorted(missing)}"
+    painted = BUILD / "painted"
+    painted.mkdir(parents=True, exist_ok=True)
+    sources = {}
+    for tile_type in sorted(layout.tile_size):
+        directory = _tile_directory(tile_type)
+        sources[tile_type] = painted / f"{tile_type}.gds"
+        typer.echo(
+            f"{tile_type:16s} "
+            + painter.paint(
+                def_path=project.final_def(directory, tile_type),
+                gds_path=project.final_gds(directory, tile_type),
+                out_path=sources[tile_type],
+                size=layout.tile_size[tile_type],
+            )
         )
     stitcher.stitch(plan=layout, tile_gds=sources, out_gds=out)
 
@@ -380,28 +427,31 @@ def flat(
     than a tile and neither placement nor routing is expected to be quick.
     """
     rtl = directory / "rtl"
+    config = load_config(PROJECT, tuple(load_fabric(PROJECT).tile_types))
     if bottom_up:
         # Flattening the behavioural fabric in one pass wrote a 93 GB Yosys log,
         # because every one of a quarter of a million flattened objects is logged
         # with its full hierarchical path. Composing the tiles' own gate netlists
         # under the bit-blasted parent gives Yosys mapped cells to flatten
-        # instead, and reuses fifteen syntheses that have already run.
+        # instead, out of the fifteen `synth` builds rather than out of RTL.
         from flow import topdesign
 
         rtl.mkdir(parents=True, exist_ok=True)
         sources = []
         for tile_type in sorted(Plan.read(PLAN_PATH).tile_size):
             netlist = (
-                project.workspace_of(_tile_directory(tile_type))
+                project.workspace_of(_netlist_directory(tile_type))
                 / "Synthesis_yosys"
                 / "output"
                 / f"{tile_type}_Synthesis.v.gz"
             )
             if not netlist.exists():
                 raise typer.BadParameter(
-                    f"{tile_type} has not been synthesised: {netlist}"
+                    f"{tile_type} has no netlist at {netlist}. Run `task synth` first; "
+                    "a hardened tile's own synthesis is a separate build and is not "
+                    "read here."
                 )
-            target = rtl / f"{tile_type}_gate.v"
+            target = rtl / f"{tile_type}{NETLIST_SUFFIX}.v"
             text = defedit.read_def(netlist)
             if not target.exists() or target.read_text() != text:
                 target.write_text(text)
@@ -431,13 +481,18 @@ def flat(
         sources = project.dependencies(TOP_MODULE, project.source_index(roots))
 
     log = BUILD / "logs" / f"{directory.name}.log"
+    # The flat control is one design rather than fifteen, so it takes the tile
+    # defaults with its own utilisation, which is a flag here because the whole
+    # point of the build is to sweep it.
+    params = tuple(
+        param for param in config.tile_defaults if param.key != "floorplan.core_util"
+    ) + (Param(section="floorplan", name="core_util", value=core_util),)
     project.create_project(
         directory=directory,
         top=TOP_MODULE,
         sources=sources,
-        core_util=core_util,
-        clock_port=FABRIC_CLOCK_PORT,
-        frequency_mhz=FREQUENCY_MHZ,
+        settings=config.fabric,
+        params=params,
     )
     step = project.create_workspace(directory, log, to="synthesis")
     yosys = project.subflow_state(directory, "Synthesis_yosys", "run yosys")
@@ -461,6 +516,7 @@ def flat(
             "the analysis stage failed; recording synthesis on its netlist instead"
         )
         project.force_step_state(directory, "Synthesis", "Success")
+    project.widen_flow(directory)
     if not project.floorplan_measurement(directory).exists():
         # `die_side` sizes the die from a floorplan's own measurement, so a
         # workspace that has never floorplanned has to run one first. ECC sizes
@@ -474,7 +530,12 @@ def flat(
     # 0.7998. The die is therefore sized here and set outright, from the cell
     # area the last floorplan measured, and the core height is rounded to a
     # whole number of core7 rows so no row is lost to alignment.
-    side = project.die_side(directory, TOP_MODULE, core_util)
+    side = project.die_side(
+        directory,
+        TOP_MODULE,
+        core_util,
+        core_margin_micron=config.fabric.core_margin_micron,
+    )
     project.set_params(
         directory,
         {
@@ -494,18 +555,34 @@ def flat(
 
 
 @app.command()
-def top(directory: Path = BUILD / "fabric", run: bool = True) -> None:
+def top(
+    directory: Path = BUILD / "fabric", run: bool = True, assemble: bool = False
+) -> None:
     """Write the fabric-level ECC project and floorplan it with the tiles as macros.
 
-    Only the floorplan is run. The parent is 151 blackboxes and no standard cell,
-    which is the input DreamPlace aborts on, so placement and everything after it
-    has nothing to do and FINDINGS.md records both failing.
+    Without `--assemble` only the floorplan is run. The parent is 151 blackboxes
+    and no standard cell, which is the input DreamPlace aborts on, so placement
+    and everything after it has nothing to do and FINDINGS.md records both
+    failing.
+
+    `--assemble` carries that parent on to a layout: placement, CTS and
+    legalisation are seeded from the floorplan the way `harden` seeds a tile
+    whose logic Yosys collapsed away, and the flow runs from routing to filler,
+    which is the step that writes the GDS. Routing has nothing to join either,
+    since every inter-tile connection is made by abutment, but it is run rather
+    than skipped because only the router can say so.
     """
     from flow import topdesign
 
     layout = Plan.read(PLAN_PATH)
+    fabric = load_fabric(PROJECT)
+    config = load_config(PROJECT, tuple(fabric.tile_types))
     topdesign.write_project(
-        plan=layout, fabric=load_fabric(PROJECT), directory=directory
+        plan=layout,
+        fabric=fabric,
+        directory=directory,
+        settings=config.fabric,
+        params=config.fabric_params,
     )
     typer.echo(f"{directory}: fabric-level project written")
     if not run:
@@ -524,6 +601,7 @@ def top(directory: Path = BUILD / "fabric", run: bool = True) -> None:
         lefs=[lef for lef, _, _ in views.values()],
         libs=[lib for _, lib, _ in views.values()],
     )
+    project.widen_flow(directory)
     project.zero_macro_halos(directory, log)
     typer.echo(f"{len(layout.placements)} macros fixed at their planned coordinates")
     step = project.run_range(directory, "preFloorplan", "postFloorplan", log)
@@ -533,6 +611,41 @@ def top(directory: Path = BUILD / "fabric", run: bool = True) -> None:
     )
     if not step.ok:
         raise typer.Exit(code=1)
+    if not assemble:
+        return
+    # RCX, STA and Harden have no standard cell to extract or constrain here, so
+    # the assembly stops at the step that writes the layout.
+    project.bypass_placement(
+        directory, TOP_MODULE, "postFloorplan", "postFloorplan_ecc"
+    )
+    step = project.run_range(directory, "route", "filler", log)
+    typer.echo(
+        f"ECC assembly recorded as {step.state} after {step.seconds:.0f} s, see {log}"
+    )
+    if not step.ok:
+        raise typer.Exit(code=1)
+    typer.echo(f"{project.final_gds(directory, TOP_MODULE)}: assembled by ECC")
+
+
+@app.command()
+def assemble(
+    stitcher: Stitcher = Stitcher.KLAYOUT,
+    out: Path = BUILD / "eFPGA.gds",
+    directory: Path = BUILD / "fabric",
+) -> None:
+    """Assemble the hardened tiles into one fabric layout, by klayout or by ECC.
+
+    The two are not interchangeable. `flow.stitch` abuts the painted tiles and
+    then proves every seam conducts and joins the two ends of a link `eFPGA.v`
+    declares, which is the check the whole abutment rests on; it writes `out`.
+    ECC assembles the same tiles as macros in its own run, so the layout carries
+    iEDA's DEF and the fabric PDN and can be read by the rest of the ECC flow,
+    but nothing in it proves a seam. `both` runs each, which is the only way to
+    get the ECC layout and the proof from one command.
+    """
+    if stitcher is not Stitcher.ECC:
+        stitch(out=out)
+    top(directory=directory, assemble=stitcher is not Stitcher.KLAYOUT)
 
 
 @app.command()

@@ -25,7 +25,9 @@ PIN_CELL = "PINS"
 TOP_CELL = "DIEAREA"
 POWER_NETS = ("VDD", "VSS")
 
-DIE_RE = re.compile(r"DIEAREA\s*\(\s*(-?\d+)\s+(-?\d+)\s*\)\s*\(\s*(-?\d+)\s+(-?\d+)\s*\)")
+DIE_RE = re.compile(
+    r"DIEAREA\s*\(\s*(-?\d+)\s+(-?\d+)\s*\)\s*\(\s*(-?\d+)\s+(-?\d+)\s*\)"
+)
 PINS_RE = re.compile(r"^PINS \d+ ;\n(.*?)^END PINS", re.S | re.M)
 SPECIAL_RE = re.compile(r"^SPECIALNETS \d+ ;\n(.*?)^END SPECIALNETS", re.S | re.M)
 ENTRY_RE = re.compile(r"^\s*- (\S+)(.*?)^\s*;\n", re.S | re.M)
@@ -52,7 +54,9 @@ def die_area(text: str) -> kdb.Box:
     """Return the die rectangle in DBU, and refuse a DEF that declares none."""
     match = DIE_RE.search(text)
     if match is None:
-        raise ValueError("the DEF declares no DIEAREA, so no boundary can be recognised")
+        raise ValueError(
+            "the DEF declares no DIEAREA, so no boundary can be recognised"
+        )
     llx, lly, urx, ury = (int(group) for group in match.groups())
     return kdb.Box(llx, lly, urx, ury)
 
@@ -75,7 +79,9 @@ def def_pins(text: str) -> dict[str, tuple[str, str, kdb.Box]]:
         if net is None or placement is None:
             raise ValueError(f"pin {name} has no net or no placed layer rectangle")
         layer, x1, y1, x2, y2, x, y = placement.groups()
-        box = kdb.Box(int(x1) + int(x), int(y1) + int(y), int(x2) + int(x), int(y2) + int(y))
+        box = kdb.Box(
+            int(x1) + int(x), int(y1) + int(y), int(x2) + int(x), int(y2) + int(y)
+        )
         pins[name] = (net.group(1), layer, box)
     return pins
 
@@ -105,7 +111,9 @@ def _wires(body: str) -> Iterator[tuple[str, kdb.Box]]:
     for chunk in SEGMENT_RE.split(body)[1:]:
         head = WIRE_RE.match(chunk)
         if head is None:
-            raise ValueError(f"a wiring statement names no layer and width: {chunk[:60]}")
+            raise ValueError(
+                f"a wiring statement names no layer and width: {chunk[:60]}"
+            )
         layer, width = head.group(1), int(head.group(2))
         points = _points(chunk)
         for (x1, y1), (x2, y2) in zip(points, points[1:], strict=False):
@@ -114,7 +122,12 @@ def _wires(body: str) -> Iterator[tuple[str, kdb.Box]]:
             if x1 != x2 and y1 != y2:
                 raise ValueError(f"{layer} run from {x1} {y1} to {x2} {y2} is diagonal")
             box = kdb.Box(min(x1, x2), min(y1, y2), max(x1, x2), max(y1, y2))
-            yield layer, box.enlarged(0, width // 2) if y1 == y2 else box.enlarged(width // 2, 0)
+            yield (
+                layer,
+                box.enlarged(0, width // 2)
+                if y1 == y2
+                else box.enlarged(width // 2, 0),
+            )
 
 
 def def_power(text: str, die: kdb.Box) -> list[tuple[str, kdb.Box]]:
@@ -145,23 +158,35 @@ def def_power(text: str, die: kdb.Box) -> list[tuple[str, kdb.Box]]:
     return boundary
 
 
-def paint(def_path: Path, gds_path: Path, out_path: Path) -> str:
+def paint(
+    def_path: Path, gds_path: Path, out_path: Path, *, size: tuple[int, int]
+) -> str:
     """Write the GDS back out with its pin and boundary PDN geometry drawn in.
 
     Returns a one-line summary of what was drawn, for the caller to report.
-    Refuses to write when a painted pin misses the routing on its own net, which
-    is the only available evidence that the DEF and the GDS come from one run,
-    and when the GDS already carries painted geometry.
+    Refuses to write when the tile's die is not the one `size` names, when a
+    painted pin misses the routing on its own net, which is the only available
+    evidence that the DEF and the GDS come from one run, and when the GDS already
+    carries painted geometry.
     """
     text = read_def(def_path)
+    die = die_area(text)
+    if (die.width(), die.height()) != size:
+        raise ValueError(
+            f"{def_path} has a {die.width()}x{die.height()} die and the plan says "
+            f"{size[0]}x{size[1]}, so this tile was hardened to a different plan. "
+            "Re-run `task harden` for it before abutting anything."
+        )
     pins = def_pins(text)
-    power = def_power(text, die_area(text))
+    power = def_power(text, die)
 
     layout = kdb.Layout()
     layout.read(str(gds_path))
     top, pin_cell = layout.cell(TOP_CELL), layout.cell(PIN_CELL)
     if top is None or pin_cell is None:
-        raise ValueError(f"{gds_path} has no {TOP_CELL} over {PIN_CELL}, so iEDA did not write it")
+        raise ValueError(
+            f"{gds_path} has no {TOP_CELL} over {PIN_CELL}, so iEDA did not write it"
+        )
     if not pin_cell.bbox().empty():
         raise ValueError(f"{gds_path} already has painted geometry")
 
@@ -176,7 +201,9 @@ def paint(def_path: Path, gds_path: Path, out_path: Path) -> str:
             # Nothing drives this port, so the net carries no wiring at all; the
             # shape still has to exist for the tiles to abut.
             unrouted.append(name)
-        elif (kdb.Region(net_cell.begin_shapes_rec(index)) & kdb.Region(box)).is_empty():
+        elif (
+            kdb.Region(net_cell.begin_shapes_rec(index)) & kdb.Region(box)
+        ).is_empty():
             disconnected.append(name)
         pin_cell.shapes(index).insert(box)
 

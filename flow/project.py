@@ -1,13 +1,11 @@
 """Create and drive one ECC project per tile type.
 
-A tile's die is dictated by the fabric pitch rather than by its own cell area,
-and its PDN stripes have to land on the fabric row pitch or a supertile's
-stripes miss those of the single-height tiles beside it. Both are ordinary
-parameters now, so `ecc.toml` states them before the first run and no workspace
-file is patched: `floorplan.die_builder.mode` and `die_size` replace the
-utilisation ECC would otherwise derive the die from, and
-`floorplan.pdn_generator.stripe` is given whole because a list parameter has no
-per-field merge.
+Every `ecc.toml` this flow writes goes through `write_ecc_toml`, reading the
+project configuration `flow.config` loads, so the clock, the PDK and the core
+margin cannot drift between a tile run, the fabric run and the flat control.
+The die and the PDN stripe pitch reach a run the same way: both are ordinary
+registry parameters on ECC main, so nothing is patched into a workspace step
+config after the fact.
 
 The flow is broken in two places and both are forced. It stops after
 `macroPlacement` so `flow.ioplace` can hand `postFloorplan` the pin plan, and
@@ -23,12 +21,20 @@ import json
 import re
 import shutil
 import subprocess
+import tomllib
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from flow.config import FabricSettings, Param
+
 ECC = Path("/home/kelvin/side-project/ecc-spike/eccw-main")
 WORKSPACE = "default"
-PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
+# `build_harden_flow`'s step list, which the workspace only receives if the
+# project was created with that preset. It is written in after synthesis
+# instead, because a plain `ecc run` is the only call that creates a workspace
+# and it takes no step selector, so a `harden` project would run the whole flow
+# at the wrong die before the die could be set.
 # `lec` is ECC's own default skip. `TimingOpt` needs Sizer, which is not
 # installed here, and `postRouteLec` re-elaborates the routed netlist for a
 # design this flow already checks by abutment.
@@ -57,7 +63,6 @@ CHAIN: tuple[tuple[str, str], ...] = (
 STRIPE_LAYERS: tuple[str, ...] = ("MET4", "MET5")
 STRIPE_WIDTH_MICRON = 1.0
 STRIPE_OFFSET_MICRON = 0.5
-CORE_MARGIN_MICRON = 2
 SITE_HEIGHT_MICRON = 1.4  # core7
 # FABulous writes an instantiation with the module name alone on its line and a
 # `ifdef EMULATION` parameter block between it and the instance name, so the two
@@ -82,6 +87,69 @@ class StepResult:
         `Ongoing`, so the exit code alone reports a success that did not happen.
         """
         return self.returncode == 0 and self.state in ("", "Success")
+
+
+@dataclass(frozen=True)
+class Override:
+    """One entry of ECC's parameter registry, set for a single project.
+
+    `ecc param list` in a project directory names every parameter that can be
+    overridden this way; anything outside that list has to be edited in the
+    workspace's own step config, as the die size and the PDN pitch are.
+    """
+
+    section: str
+    name: str
+    value: str
+
+    @classmethod
+    def parse(cls, text: str) -> Override:
+        key, separator, value = text.partition("=")
+        if not separator or not value:
+            raise ValueError(f"an override reads section.name=value, not {text!r}")
+        section, dot, name = key.partition(".")
+        if not dot or not name:
+            raise ValueError(f"an override key reads section.name, not {key!r}")
+        return cls(section=section, name=name, value=value)
+
+    @property
+    def key(self) -> str:
+        return f"{self.section}.{self.name}"
+
+    def __str__(self) -> str:
+        return f"{self.key}={self.value}"
+
+
+def apply_overrides(directory: Path, overrides: Sequence[Override]) -> None:
+    """Set each override in the project's `ecc.toml` through `ecc param set`.
+
+    ECC coerces the value to the parameter's own type and rewrites a key the
+    project already carries in place, neither of which hand-written TOML would
+    do. It reports an unknown parameter or a mistyped value and then exits 0
+    without writing the key, so the write is confirmed by reading the file back.
+    """
+    if not overrides:
+        return
+    reports: dict[Override, str] = {}
+    for override in overrides:
+        completed = subprocess.run(
+            [str(ECC), "param", "set", override.key, override.value],
+            cwd=directory,
+            capture_output=True,
+            text=True,
+        )
+        # ECC writes its `[error]` block to stdout and only Fontconfig noise to
+        # stderr, so stdout alone carries the reason a key was refused.
+        reports[override] = completed.stdout.strip()
+    params = tomllib.loads((directory / "ecc.toml").read_text()).get("params", {})
+    refused = [
+        override
+        for override in overrides
+        if override.name not in params.get(override.section, {})
+    ]
+    if refused:
+        detail = "; ".join(f"{override}: {reports[override]}" for override in refused)
+        raise ValueError(f"ECC refused an override: {detail}")
 
 
 def _mask_comments(text: str) -> str:
@@ -144,11 +212,7 @@ def dependencies(top: str, index: dict[str, Path]) -> list[Path]:
 
 
 def stripe_tables(pitch_micron: float) -> str:
-    """Render the PDN stripes for `ecc.toml`, whole.
-
-    `floorplan.pdn_generator.stripe` is a list parameter, so it is replaced
-    rather than merged and every field of every stripe has to be restated.
-    """
+    """Render the PDN stripes, whole, at the pitch the fabric rows dictate."""
     return "".join(
         f"\n[[params.floorplan.pdn_generator.stripe]]\n"
         f'routing_layer_name = "{layer}"\n'
@@ -159,27 +223,77 @@ def stripe_tables(pitch_micron: float) -> str:
     )
 
 
+def write_ecc_toml(
+    directory: Path,
+    *,
+    top: str,
+    settings: FabricSettings,
+    params: Sequence[Param] = (),
+    preset: str,
+    sdc: str | None = None,
+    note: str = "",
+    stripe_pitch_micron: float | None = None,
+) -> None:
+    """Render one project's `ecc.toml` from the project configuration.
+
+    Every project this flow writes goes through here, so that the clock, the PDK
+    and the core margin cannot drift between a tile run, the fabric run and the
+    flat control. `params` is already validated against ECC's registry by
+    `flow.config`; anything outside that registry has no `ecc.toml` spelling and
+    reaches a run through the workspace step configs instead.
+
+    `stripe_pitch_micron` is rendered here rather than passed as a `Param`
+    because `floorplan.pdn_generator.stripe` is a list of tables: ECC replaces
+    the list wholesale rather than merging it, so every field of every stripe
+    has to be restated and `Param` renders one scalar.
+    """
+    # A whole-micron margin is written as an integer, because that is what ECC
+    # prints it back as and a diff against `ecc param list` should be empty.
+    micron = settings.core_margin_micron
+    margin: float | int = int(micron) if micron.is_integer() else micron
+    sections = [
+        f'[design]\nname = "{top}"\ntop = "{top}"\nrtl = ["filelist.f"]\n'
+        f'clock_port = "{settings.clock_port}"\n'
+        f"frequency_mhz = {settings.frequency_mhz}\n",
+        f'[pdk]\nname = "{settings.pdk_name}"\nroot = "{settings.pdk_root}"\n',
+    ]
+    if sdc is not None:
+        sections.append(
+            f"# Without this ECC writes its own SDC from clock_port and ignores {sdc}.\n"
+            f'[pdk.overrides]\nsdc = "{sdc}"\n'
+        )
+    # ECC main rejects `[flow].run`, and records the skip policy when the
+    # workspace is first created, so both belong here rather than in a later
+    # edit that the ledger would not see.
+    sections.append(
+        f'[flow]\npreset = "{preset}"\n'
+        f"skip_steps = {json.dumps(list(SKIP_STEPS))}\n"
+    )
+    if stripe_pitch_micron is not None:
+        sections.append(stripe_tables(stripe_pitch_micron).lstrip("\n"))
+    # The margin is the one registry entry the config files cannot carry, so it
+    # is rendered here and the floorplan section always exists to hold it. A note
+    # leads the section, since what it explains is the margin.
+    grouped: dict[str, list[str]] = {"floorplan": [f"core_margin = [{margin}, {margin}]"]}
+    for param in params:
+        grouped.setdefault(param.section, []).append(param.render())
+    for section, entries in grouped.items():
+        lead = note.rstrip("\n") + "\n" if note and section == "floorplan" else ""
+        sections.append(lead + f"[params.{section}]\n" + "\n".join(entries) + "\n")
+    (directory / "ecc.toml").write_text("\n".join(sections))
+
+
 def create_project(
     *,
     directory: Path,
     top: str,
     sources: list[Path],
-    core_util: float,
-    clock_port: str,
-    frequency_mhz: float,
-    die_micron: tuple[float, float] | None = None,
-    stripe_pitch_micron: float | None = None,
+    settings: FabricSettings,
+    params: Sequence[Param] = (),
+    preset: str = "syn_sta",
+    overrides: Sequence[Override] = (),
 ) -> None:
-    """Lay out an ECC project for one tile, copying its Verilog into `rtl/`.
-
-    A tile whose die the fabric pitch dictates states `die_micron` and the
-    stripe pitch that goes with it; one that is only being synthesised, or one
-    whose die is sized later from its own floorplan measurement, states
-    neither. Half of the pair is a mistake rather than a default, because a
-    fixed die with ECC's 16 um stripes puts a stripe where a pin has to go.
-    """
-    if (die_micron is None) != (stripe_pitch_micron is None):
-        raise ValueError("a fixed die needs its own stripe pitch, and vice versa")
+    """Lay out an ECC project for one tile, copying its Verilog into `rtl/`."""
     rtl = directory / "rtl"
     rtl.mkdir(parents=True, exist_ok=True)
     names = []
@@ -194,34 +308,24 @@ def create_project(
             shutil.copy2(source, target)
         names.append(f"rtl/{source.name}")
     (directory / "filelist.f").write_text("\n".join(names) + "\n")
-    die = ""
-    if die_micron is not None:
-        width_micron, height_micron = die_micron
-        die = (
-            f'\n[params.floorplan.die_builder]\nmode = "die_size"\n\n'
-            f"[params.floorplan.die_builder.die_size]\n"
-            f"width_micron = {width_micron}\nheight_micron = {height_micron}\n"
-            + stripe_tables(stripe_pitch_micron)
-        )
-    (directory / "ecc.toml").write_text(
-        f'[design]\nname = "{top}"\ntop = "{top}"\nrtl = ["filelist.f"]\n'
-        f'clock_port = "{clock_port}"\nfrequency_mhz = {frequency_mhz}\n\n'
-        f'[pdk]\nname = "ics55"\nroot = "{PDK_ROOT}"\n\n'
-        f'[flow]\npreset = "rtl2gds"\n'
-        f"skip_steps = {json.dumps(list(SKIP_STEPS))}\n\n"
-        f"[params.floorplan]\ncore_util = {core_util}\n"
-        f"core_margin = [{CORE_MARGIN_MICRON}, {CORE_MARGIN_MICRON}]\n"
-        f"{die}"
+    write_ecc_toml(
+        directory,
+        top=top,
+        settings=settings,
+        params=params,
+        preset=preset,
+        stripe_pitch_micron=settings.stripe_pitch_micron,
     )
+    apply_overrides(directory, overrides)
 
 
 def workspace_of(directory: Path) -> Path:
-    """Return a run's workspace directory, which ECC names after the workspace.
+    """Return a run's workspace as an absolute path.
 
-    ECC is always given the workspace by name rather than by path. It rejects an
-    absolute path whose parent does not already exist, and a relative one is
-    resolved against the project directory rather than the caller's, so
-    `build/flat_0.5` once came back as `build/flat_0.5/build/flat_0.5`.
+    `run` invokes ECC with `cwd=directory`, so a relative `--workspace` is
+    resolved against the project directory rather than against the caller's:
+    `build/flat_0.5` came back as `build/flat_0.5/build/flat_0.5/runs/default`
+    and ECC rejected it as invalid.
     """
     return directory.resolve() / WORKSPACE
 
@@ -262,9 +366,10 @@ def step_state(directory: Path, step: str) -> str:
 
 
 def run_step(directory: Path, step: str, log: Path) -> StepResult:
+    workspace = workspace_of(directory)
     result = run(
         directory,
-        ["run", "--workspace", WORKSPACE, "--only", step, "--force"],
+        ["run", "--workspace", str(workspace), "--only", step, "--force"],
         log,
     )
     return StepResult(
@@ -273,8 +378,13 @@ def run_step(directory: Path, step: str, log: Path) -> StepResult:
 
 
 def run_from(directory: Path, step: str, log: Path) -> StepResult:
-    """Run `step` and every step after it in one invocation."""
-    result = run(directory, ["run", "--workspace", WORKSPACE, "--from", step], log)
+    """Run `step` and every step after it in one invocation.
+
+    `--force` is rejected alongside `--from`, so the steps have to be Unstart,
+    which `install_harden_flow` arranges.
+    """
+    workspace = workspace_of(directory)
+    result = run(directory, ["run", "--workspace", str(workspace), "--from", step], log)
     return StepResult(
         step, result.returncode, result.seconds, step_state(directory, step)
     )
@@ -351,16 +461,7 @@ def run_range(directory: Path, first: str, last: str, log: Path) -> StepResult:
     """Run `first` through `last` inclusive in one invocation."""
     result = run(
         directory,
-        [
-            "run",
-            "--workspace",
-            WORKSPACE,
-            "--from",
-            first,
-            "--to",
-            last,
-            "--plain",
-        ],
+        ["run", "--workspace", WORKSPACE, "--from", first, "--to", last, "--plain"],
         log,
     )
     return StepResult(
@@ -376,18 +477,9 @@ def set_params(directory: Path, assignments: dict[str, object], log: Path) -> No
     has to be set here instead.
     """
     for key, value in assignments.items():
-        rendered = json.dumps(value) if not isinstance(value, str) else value
+        rendered = value if isinstance(value, str) else json.dumps(value)
         result = run(
-            directory,
-            [
-                "param",
-                "set",
-                key,
-                rendered,
-                "--workspace",
-                WORKSPACE,
-            ],
-            log,
+            directory, ["param", "set", key, rendered, "--workspace", WORKSPACE], log
         )
         if result.returncode:
             raise ValueError(f"ecc param set {key} {rendered} failed, see {log}")
@@ -467,7 +559,7 @@ def zero_macro_halos(directory: Path, log: Path) -> None:
     """Remove the 3 um placement and routing halos, which abutted macros cannot have.
 
     Through the parameters rather than the config file, because both halos are
-    registered and `apply_config_overrides` rewrites them before every step.
+    registry entries and the refresh rewrites them before every step.
     """
     set_params(
         directory,
@@ -628,7 +720,9 @@ def floorplan_measurement(directory: Path) -> Path:
     return workspace_of(directory) / "postFloorplan_ecc" / "feature" / "postFloorplan.db.json"
 
 
-def die_side(directory: Path, top: str, utilisation: float) -> float:
+def die_side(
+    directory: Path, top: str, utilisation: float, *, core_margin_micron: float
+) -> float:
     """Return the square die, in microns, that fills to `utilisation` with logic.
 
     The cell area comes from the last floorplan's own measurement rather than
@@ -641,4 +735,4 @@ def die_side(directory: Path, top: str, utilisation: float) -> float:
     cell_area = layout["core_area"] * layout["core_usage"]
     core = (cell_area / utilisation) ** 0.5
     rows = -(-core // (SITE_HEIGHT_MICRON))
-    return round(rows * SITE_HEIGHT_MICRON + 2 * CORE_MARGIN_MICRON, 3)
+    return round(rows * SITE_HEIGHT_MICRON + 2 * core_margin_micron, 3)

@@ -2,7 +2,7 @@
 
 The parent run never sees a tile source. It sees the abstract LEF and the
 extracted `.lib` of each hardened macro, and both of those bit-blast a bus into
-scalars such as `N1BEG_0`, so a parent netlist saying `.N1BEG(...)` fails Yosys
+scalars such as `N1BEG_0_`, so a parent netlist saying `.N1BEG(...)` fails Yosys
 with "does not have a port named". Everything here is therefore emitted flat: a
 scalar-port blackbox stub per tile type, and an `eFPGA` netlist whose every
 connection is one scalar. The shape of each scalar comes from `flow.fabric`'s
@@ -14,8 +14,9 @@ that the model already holds.
 Two things the model cannot supply, both reported rather than guessed. It
 carries no `assign`, so `eFPGA.v`'s per-row and per-column slices of `FrameData`
 and `FrameStrobe` reach the top level under their own net names, one scalar for
-one scalar and no bit lost. And the die computed here is stated outright in
-`ecc.toml`, because the fabric pitch fixes it rather than the cell area.
+one scalar and no bit lost. And the die computed here is an ordinary parameter
+on ECC main, so it is stated in `ecc.toml` rather than recorded there as a
+comment for someone to carry across by hand.
 """
 
 from __future__ import annotations
@@ -26,18 +27,13 @@ from typing import Annotated
 
 import typer
 
+from flow import project as ecc_project
+from flow.config import FabricSettings, Param, load_config
 from flow.fabric import Fabric, Port, TileType, load_fabric
 from flow.plan import CORE_MARGIN, DBU, SITE_HEIGHT, SITE_WIDTH, Plan
 
 ORIENT = "R0"  # a tile is hardened once, so abutment never mirrors or rotates it
-CLOCK_PORT = "UserCLK"
-CLOCK_MHZ = 100.0
 TOP_MODULE = "eFPGA"
-PDK_NAME = "ics55"
-PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
-STRIPE_LAYERS: tuple[str, ...] = ("MET4", "MET5")
-STRIPE_WIDTH_MICRON = 1.0
-STRIPE_OFFSET_MICRON = 0.5
 
 
 @dataclass(frozen=True)
@@ -79,11 +75,11 @@ def _scalars(stem: str, port: Port) -> list[str]:
     """Bit-blast `stem` into the names iEDA writes, shaped by the port it reaches.
 
     Same rule as `Port.bits`, applied to a net rather than to the port's own
-    name, so a net on a `[0:0]` port gains the `_0` its macro pin carries.
+    name, so a net on a `[0:0]` port gains the `_0_` its macro pin carries.
     """
     if not port.vectored:
         return [stem]
-    return [f"{stem}_{index}" for index in range(port.width)]
+    return [f"{stem}_{index}_" for index in range(port.width)]
 
 
 def build_netlist(fabric: Fabric) -> Netlist:
@@ -219,24 +215,25 @@ def _macro_placements(plan: Plan) -> str:
     from this parameter before every step, so writing it directly is undone.
     Macro coordinates are core-relative, hence the margin.
     """
-    placements = ",\n".join(
+    rows = ",\n".join(
         f'    {{ instance = "{placement.name}", '
         f"x = {_micron(placement.x + CORE_MARGIN)}, "
         f"y = {_micron(placement.y + CORE_MARGIN)}, "
         f'orientation = "{ORIENT}" }}'
         for placement in plan.placements
     )
-    return f"\n[params.macro]\nplacements = [\n{placements},\n]\n"
+    return f"\n[params.macro]\nplacements = [\n{rows},\n]\n"
 
 
-def _sdc() -> str:
+def _sdc(settings: FabricSettings) -> str:
     """Render the one clock constraint the fabric takes."""
+    port = settings.clock_port
     return (
-        "# One clock for the whole fabric. The tile lib carries arcs from UserCLK to\n"
+        f"# One clock for the whole fabric. The tile lib carries arcs from {port} to\n"
         "# the tile outputs, so a second create_clock on any other tile clock port\n"
         "# makes iSTA abort with overlapping clock trees at the first seam.\n"
-        f"create_clock -name {CLOCK_PORT} -period {1000.0 / CLOCK_MHZ:.1f} "
-        f"[get_ports {CLOCK_PORT}]\n"
+        f"create_clock -name {port} -period {1000.0 / settings.frequency_mhz:.1f} "
+        f"[get_ports {port}]\n"
     )
 
 
@@ -247,62 +244,32 @@ def _filelist(fabric: Fabric) -> str:
     )
 
 
-def _stripe_tables(pitch_micron: float) -> str:
-    """Render the PDN stripes, whole, since a list parameter has no per-field merge.
-
-    The pitch is the fabric's rather than ECC's default, or a supertile's
-    stripes miss those of the single-height tiles beside it.
-    """
-    return "".join(
-        f"\n[[params.floorplan.pdn_generator.stripe]]\n"
-        f'routing_layer_name = "{layer}"\n'
-        f"width_micron = {STRIPE_WIDTH_MICRON}\n"
-        f"pitch_micron = {pitch_micron}\n"
-        f"offset_micron = {STRIPE_OFFSET_MICRON}\n"
-        for layer in STRIPE_LAYERS
-    )
+def _die_params(die: Die) -> list[Param]:
+    """Return the die as the registry entries ECC main takes it at."""
+    return [
+        Param("floorplan.die_builder", "mode", "die_size"),
+        Param(
+            "floorplan.die_builder.die_size", "width_micron", die.width / DBU
+        ),
+        Param(
+            "floorplan.die_builder.die_size", "height_micron", die.height / DBU
+        ),
+    ]
 
 
-def _ecc_toml(die: Die, stripe_pitch_micron: float) -> str:
-    """Render `ecc.toml`, die and all."""
-    margin = CORE_MARGIN // DBU
-    return f"""[design]
-name = "{TOP_MODULE}"
-top = "{TOP_MODULE}"
-rtl = ["filelist.f"]
-clock_port = "{CLOCK_PORT}"
-frequency_mhz = {CLOCK_MHZ}
-
-[pdk]
-name = "{PDK_NAME}"
-root = "{PDK_ROOT}"
-
-# Without this ECC writes its own SDC from clock_port and ignores fabric.sdc.
-[pdk.overrides]
-sdc = "fabric.sdc"
-
-[flow]
-preset = "rtl2gds"
-
-# The margin below is what makes the core {die.core_rows} core7 rows.
-[params.floorplan]
-core_margin = [{margin}, {margin}]
-
-[params.floorplan.die_builder]
-mode = "die_size"
-
-[params.floorplan.die_builder.die_size]
-width_micron = {_micron(die.width)}
-height_micron = {_micron(die.height)}
-{_stripe_tables(stripe_pitch_micron)}"""
-
-
-def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
+def write_project(
+    plan: Plan,
+    fabric: Fabric,
+    directory: Path,
+    settings: FabricSettings,
+    params: tuple[Param, ...] = (),
+) -> Netlist:
     """Write the whole parent project into `directory` and return its netlist.
 
     Fails when the plan and the fabric describe different tile types or
     different instances, which means one of the two was regenerated alone.
     """
+    clock_port = settings.clock_port
     if set(plan.tile_size) != set(fabric.tile_types):
         raise ValueError(
             "the plan and the fabric disagree on tile types: "
@@ -317,9 +284,9 @@ def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
         )
 
     netlist = build_netlist(fabric)
-    if CLOCK_PORT not in netlist.inputs:
+    if clock_port not in netlist.inputs:
         raise ValueError(
-            f"{CLOCK_PORT} is not a top-level input of the flattened fabric, so the SDC "
+            f"{clock_port} is not a top-level input of the flattened fabric, so the SDC "
             "would constrain nothing; check which net eFPGA.v drives the bottom row with"
         )
 
@@ -328,11 +295,19 @@ def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
     for name, tile in sorted(fabric.tile_types.items()):
         (rtl / f"{name}_stub.v").write_text(_stub(tile))
     (rtl / f"{TOP_MODULE}_flat.v").write_text(_netlist_text(netlist))
-    (directory / "fabric.sdc").write_text(_sdc())
+    (directory / "fabric.sdc").write_text(_sdc(settings))
     (directory / "filelist.f").write_text(_filelist(fabric))
-    (directory / "ecc.toml").write_text(
-        _ecc_toml(plan_die(plan), plan.stripe_pitch / DBU) + _macro_placements(plan)
+    ecc_project.write_ecc_toml(
+        directory,
+        top=TOP_MODULE,
+        settings=settings,
+        params=[*params, *_die_params(plan_die(plan))],
+        preset="rtl2gds",
+        sdc="fabric.sdc",
+        stripe_pitch_micron=settings.stripe_pitch_micron,
     )
+    with (directory / "ecc.toml").open("a") as handle:
+        handle.write(_macro_placements(plan))
     return netlist
 
 
@@ -350,7 +325,14 @@ def main(
     """Build the parent project from a FABulous project and its plan."""
     fabric = load_fabric(project)
     plan = Plan.read(plan_file)
-    netlist = write_project(plan=plan, fabric=fabric, directory=directory)
+    config = load_config(project, tuple(fabric.tile_types))
+    netlist = write_project(
+        plan=plan,
+        fabric=fabric,
+        directory=directory,
+        settings=config.fabric,
+        params=config.fabric_params,
+    )
     die = plan_die(plan)
     typer.echo(
         f"{len(netlist.instances)} macros of {len(fabric.tile_types)} types, "

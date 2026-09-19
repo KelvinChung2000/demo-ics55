@@ -1,0 +1,16 @@
+# What this tile type takes instead of the shared defaults in
+# Tile/include/ecc_config.toml. Every key has to be one `ecc param list` prints;
+# flow.config refuses anything else before a run starts.
+#
+# The two targets are not the same thing and only one of them bites. ECC reads
+# die_util.utilization to size a die, and an abutted tile runs
+# die_builder.mode = die_size because its die is the fabric pitch, so core_util
+# is recorded and not reached; a die a tile is really built to goes in a [die]
+# table here. target_density is DreamPlace's own, read on every run, and it is
+# the bin density the placer spreads cells towards.
+
+[params.floorplan]
+core_util = 0.95
+
+[params.place]
+target_density = 0.95

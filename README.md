@@ -66,11 +66,13 @@ later modifies: one die size per tile type, one offset per scalar pin, and the
 seam list. The order of pins along an edge is not this flow's to choose: it
 comes from each tile's `io_pin_order.yaml`, which FABulous writes, and facing
 sides list the same buses at the same positions, so an order chosen per tile
-still meets across a seam and `plan` only decides which tracks it lands on. Its one free parameter is `ANCHOR`, the width of a `LUT4x8_ha` in
-microns, from which every other tile is scaled using `eFPGA_geometry.csv`'s
-proportions. The 110 that routes and the 90 that oscillates without converging
-were both measured on the old `LUT4AB`, so neither bound has been re-established
-for the library's LUT.
+still meets across a seam and `plan` only decides which tracks it lands on.
+
+Its one free parameter is `ANCHOR`, the width of a `LUT4x8_ha` in microns, from
+which every other tile is scaled using `eFPGA_geometry.csv`'s proportions. 110
+routes `LUT4x8_ha` itself, filling 0.507 of its core and reporting no DRC. The
+90 that oscillates without converging was measured on the old `LUT4AB` and has
+never been retried against this library, so the lower bound is unknown.
 
 `harden` leaves one ECC workspace per tile type under `build/tiles`, each with
 an abstract LEF, an extracted timing model and a GDS. `stitch` writes

@@ -242,19 +242,29 @@ def _quantise(value: float, quantum: int) -> int:
     return -(-int(round(value)) // quantum) * quantum
 
 
-def stripe_keepout(extent: int, pitch: int) -> list[tuple[int, int]]:
+def stripe_keepout(
+    extent: int,
+    pitch: int,
+    *,
+    width: int = STRIPE_WIDTH,
+    offset: int = STRIPE_OFFSET,
+) -> list[tuple[int, int]]:
     """Return the offsets a MET4 pin may not take, because a power stripe is there.
 
     The N and S pins share MET4 with the vertical PDN stripes, and extending
     those stripes to the die edge for abutment runs them straight through the
     pin row. A stripe centre is the core's low edge plus the generator's offset
     plus half the stripe width, so the pattern is the same in every tile
-    whatever its width. The step is half the configured pitch, because
+    whatever its width. The step is half the given pitch, because
     `pdn_generator` states the pitch of one power net and iEDA interleaves `VDD`
     and `VSS`, so a tile configured at 16 um carries a stripe every 8 um.
+
+    `width` and `offset` default to what `pdn_generator` ships, and
+    `flow.ioplace` passes what the workspace is really configured with, so a
+    stripe that moves cannot go unnoticed the way a changed pitch once did.
     """
-    first = CORE_MARGIN + STRIPE_OFFSET + STRIPE_WIDTH // 2
-    guard = STRIPE_WIDTH // 2 + STRIPE_KEEPOUT
+    first = CORE_MARGIN + offset + width // 2
+    guard = width // 2 + STRIPE_KEEPOUT
     return [
         (centre - guard, centre + guard)
         for centre in range(first, extent - CORE_MARGIN, pitch // 2)

@@ -304,7 +304,9 @@ def write_project(
         params=[*params, *_die_params(plan_die(plan))],
         preset="rtl2gds",
         sdc="fabric.sdc",
-        stripe_pitch_micron=settings.stripe_pitch_micron,
+        # The parent abuts the same macros, so it takes the pitch the plan
+        # settled on rather than the one the fabric configuration asked for.
+        stripe_pitch_micron=plan.stripe_pitch / DBU,
     )
     with (directory / "ecc.toml").open("a") as handle:
         handle.write(_macro_placements(plan))

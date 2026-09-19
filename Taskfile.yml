@@ -6,11 +6,12 @@
 version: "3"
 
 vars:
-  # The LUT4x8_ha width every other tile is scaled against, from
-  # eFPGA_geometry.csv's proportions. 110 and the 90 that fails to route were
-  # both measured on the old LUT4AB, so neither bound is established for the
-  # tile library's LUT; see FINDINGS.md.
-  ANCHOR: '{{.ANCHOR | default "110"}}'
+  # Left empty, `plan` takes the anchor from the compiled LUT4x8_ha's own die,
+  # so hardening the anchor tile is what moves the fabric. Set it to override
+  # that, which is how the anchor tile is first built and how it is swept: 110
+  # routes at 0.507 core usage and no DRC, while the 90 that oscillates without
+  # converging was measured on the old LUT4AB and has never been retried here.
+  ANCHOR: '{{.ANCHOR | default ""}}'
   JOBS: '{{.JOBS | default "3"}}'
   TILE: '{{.TILE | default "LUT4x8_ha"}}'
   STEP: '{{.STEP | default "filler_ecc"}}'
@@ -30,37 +31,50 @@ tasks:
       assembled layout. About forty minutes. STITCHER=klayout (default), ecc or
       both picks which tool assembles the tiles.
     cmds:
+      - cmd: 'echo "==> efpga: {{if .ANCHOR}}anchor {{.ANCHOR}} um{{else}}anchor from the compiled anchor tile{{end}}, {{.JOBS}} jobs, assembled by {{.STITCHER}}"'
+        silent: true
       - task: plan
       - task: check
       - task: harden
       - task: assemble
-
+      - cmd: 'echo "==> efpga: done"'
+        silent: true
   assemble:
     desc: >-
       Assemble the hardened tiles into one layout. STITCHER=klayout paints them,
       abuts them and proves every seam, ecc hardens the macro-placed parent to
       filler, both runs each.
     cmds:
+      - cmd: 'echo "==> assemble: {{.STITCHER}}"'
+        silent: true
       - "{{.FLOW}} assemble --stitcher {{.STITCHER}}"
 
   sync-tiles:
     desc: Re-vendor Tile/ and primitives/ from the pinned FABulous tile library
     cmds:
+      - cmd: 'echo "==> sync-tiles: re-vendoring Tile/ and primitives/"'
+        silent: true
       - "{{.FLOW}} sync-tiles"
 
   gen-io-order:
     desc: Regenerate each tile's io_pin_order.yaml with FABulous's own generator
     cmds:
+      - cmd: 'echo "==> gen-io-order: regenerating every io_pin_order.yaml"'
+        silent: true
       - "{{.FLOW}} gen-io-order"
 
   plan:
     desc: Size every tile and place every pin, writing build/fabric_plan.json
     cmds:
-      - "{{.FLOW}} plan --anchor-micron {{.ANCHOR}}"
+      - cmd: 'echo "==> plan: {{if .ANCHOR}}anchor {{.ANCHOR}} um, overridden{{else}}anchor from the compiled anchor tile{{end}}"'
+        silent: true
+      - "{{.FLOW}} plan {{if .ANCHOR}}--anchor-micron {{.ANCHOR}}{{end}}"
 
   check:
     desc: Test the plan's wiring properties without running any EDA tool
     cmds:
+      - cmd: 'echo "==> check: testing the plan, no EDA tool involved"'
+        silent: true
       - "{{.FLOW}} check"
 
   harden:
@@ -68,6 +82,10 @@ tasks:
       Run every tile type from synthesis to macro. Takes about forty minutes.
       Pass ECC parameter overrides after --, as `-- --set place.target_density=0.55`
     cmds:
+      # A tile reports only once it finishes, so the log is the only progress
+      # there is for the first several minutes.
+      - cmd: 'echo "==> harden: 15 tiles, {{.JOBS}} at a time, anchor from the plan. About forty minutes; follow {{.BUILD}}/logs/"'
+        silent: true
       - "{{.FLOW}} harden --jobs {{.JOBS}} {{.CLI_ARGS}}"
 
   harden-one:
@@ -76,6 +94,8 @@ tasks:
       parameter overrides after --, as `-- --set place.target_density=0.55`;
       an overridden run builds into build/tiles/<TILE>@<overrides> of its own.
     cmds:
+      - cmd: 'echo "==> harden-one: {{.TILE}}, discarding any existing run. Follow {{.BUILD}}/logs/{{.TILE}}.log"'
+        silent: true
       - "{{.FLOW}} harden --force --jobs 1 --tile {{.TILE}} {{.CLI_ARGS}}"
 
   stitch:
@@ -83,11 +103,15 @@ tasks:
       Paint every hardened tile, abut the fabric and prove every seam conducts and
       pairs correctly. Refuses a tile whose die is not the one the plan says.
     cmds:
+      - cmd: 'echo "==> stitch: painting every tile, abutting the fabric and proving every seam"'
+        silent: true
       - "{{.FLOW}} stitch"
 
   top:
     desc: Write the fabric-level ECC project and floorplan it with the tiles as macros
     cmds:
+      - cmd: 'echo "==> top: fabric-level project, tiles as macros"'
+        silent: true
       - "{{.FLOW}} top"
 
   synth:
@@ -95,12 +119,16 @@ tasks:
       Synthesise every tile type into build/tiles/<TYPE>_nl and stop, which is all
       the flat control reads from them. Rerunning is cheap once the workspaces exist.
     cmds:
+      - cmd: 'echo "==> synth: every tile type, {{.JOBS}} at a time"'
+        silent: true
       - "{{.FLOW}} synth --jobs {{.JOBS}}"
 
   flat:
     desc: Harden the whole eFPGA as one design, composed from the tiles' gate netlists
     cmds:
       - task: synth
+      - cmd: 'echo "==> flat: the whole eFPGA as one design. Hours, not minutes; follow {{.BUILD}}/logs/"'
+        silent: true
       - "{{.FLOW}} flat"
 
   find:

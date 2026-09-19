@@ -292,8 +292,16 @@ def create_project(
     params: Sequence[Param] = (),
     preset: str = "syn_sta",
     overrides: Sequence[Override] = (),
+    stripe_pitch_micron: float,
 ) -> None:
-    """Lay out an ECC project for one tile, copying its Verilog into `rtl/`."""
+    """Lay out an ECC project for one tile, copying its Verilog into `rtl/`.
+
+    `stripe_pitch_micron` is the pitch the plan settled on, not the one the
+    fabric configuration asked for. `flow.plan` pulls the asked-for pitch onto
+    a whole division of the row height, and its pin offsets dodge stripes at
+    the pitch it settled on, so giving ECC the other one puts every N/S pin a
+    few hundred nanometres from a stripe it was placed to avoid.
+    """
     rtl = directory / "rtl"
     rtl.mkdir(parents=True, exist_ok=True)
     names = []
@@ -314,7 +322,7 @@ def create_project(
         settings=settings,
         params=params,
         preset=preset,
-        stripe_pitch_micron=settings.stripe_pitch_micron,
+        stripe_pitch_micron=stripe_pitch_micron,
     )
     apply_overrides(directory, overrides)
 
@@ -718,6 +726,30 @@ def set_core_util(directory: Path, utilisation: float) -> None:
 def floorplan_measurement(directory: Path) -> Path:
     """Return the feature file recording what the last floorplan actually built."""
     return workspace_of(directory) / "postFloorplan_ecc" / "feature" / "postFloorplan.db.json"
+
+
+def compiled_die(directory: Path, top: str) -> tuple[float, float]:
+    """Return the die, in microns, that the last floorplan of `top` actually built.
+
+    Read from the floorplan's own measurement rather than from the plan that
+    asked for it, so that a tile hardened with an override or its own `[die]`
+    table reports what it really is.
+    """
+    measurement = floorplan_measurement(directory)
+    if not measurement.exists():
+        raise FileNotFoundError(
+            f"{top} has never been floorplanned, so there is no compiled die to "
+            f"read: {measurement} does not exist. Run "
+            f"`task harden-one TILE={top} ANCHOR=<microns>` once to build it."
+        )
+    layout = json.loads(measurement.read_text())["Design Layout"]
+    return layout["die_bounding_width"], layout["die_bounding_height"]
+
+
+def compiled_usage(directory: Path) -> float:
+    """Return how much of the core the last floorplan of this tile filled."""
+    measurement = json.loads(floorplan_measurement(directory).read_text())
+    return measurement["Design Layout"]["core_usage"]
 
 
 def die_side(

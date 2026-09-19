@@ -24,7 +24,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from flow.plan import DBU, PinPlacement, Side
+from flow.plan import DBU, PinPlacement, Side, stripe_keepout
 
 LOCATION_FILE = "io_location.txt"
 EDGE: dict[Side, str] = {"N": "top", "S": "bottom", "E": "right", "W": "left"}
@@ -43,7 +43,43 @@ def location_file(pins: list[PinPlacement]) -> str:
     return "\n".join(lines) + "\n"
 
 
-def install(workspace: Path, pins: list[PinPlacement]) -> str:
+def _stripe_clashes(
+    config: dict, pins: list[PinPlacement], size: tuple[int, int]
+) -> list[str]:
+    """Return the pins the configured PDN would run a stripe straight through.
+
+    `flow.plan` places pins clear of the stripes, but from its own reading of
+    the pitch, and the two drifted once already: the plan pulls the configured
+    pitch onto a whole division of the row height while `pdn_generator` was
+    told the pitch before that, so every N/S pin sat a few hundred nanometres
+    from a stripe it had been placed to avoid. This reads the generator's own
+    entry, which is what `postFloorplan` is about to build from.
+    """
+    by_layer: dict[str, tuple[int, int, int]] = {}
+    for stripe in config["pdn_generator"]["stripe"]:
+        by_layer[stripe["routing_layer_name"]] = (
+            round(stripe["pitch_micron"] * DBU),
+            round(stripe["width_micron"] * DBU),
+            round(stripe["offset_micron"] * DBU),
+        )
+
+    clashes = []
+    for pin in pins:
+        stripe = by_layer.get(pin.layer)
+        # A stripe only reaches a pin sharing its layer; the E and W pins are on
+        # MET3, which `pdn_generator` never occupies.
+        if stripe is None or pin.side in ("E", "W"):
+            continue
+        pitch, width, offset = stripe
+        bands = stripe_keepout(size[0], pitch, width=width, offset=offset)
+        if any(low <= pin.offset <= high for low, high in bands):
+            clashes.append(f"{pin.name} at {pin.offset / DBU}")
+    return clashes
+
+
+def install(
+    workspace: Path, pins: list[PinPlacement], size: tuple[int, int]
+) -> str:
     """Write the placement file and point the floorplan config at it.
 
     `_refresh_floorplan_config` rewrites the floorplan config before every step,
@@ -66,7 +102,15 @@ def install(workspace: Path, pins: list[PinPlacement]) -> str:
             f"the plan places pins on {sorted(missing)}, which "
             f"io_layer_list does not carry: {placer['io_layer_list']}"
         )
+    clashes = _stripe_clashes(data, pins, size)
+    if clashes:
+        raise ValueError(
+            f"{len(clashes)} pins sit where this workspace's pdn_generator will "
+            f"put a power stripe, so the run would short them: {clashes[:4]}. "
+            "The plan and the generator disagree about the stripe geometry; "
+            "check that harden passes the plan's own stripe pitch."
+        )
     placer["mode"] = "file"
     placer["file_path"] = LOCATION_FILE
     config.write_text(json.dumps(data, indent=4))
-    return f"{len(pins)} pins written to config/{LOCATION_FILE}"
+    return f"{len(pins)} pins written to config/{LOCATION_FILE}, clear of the PDN"

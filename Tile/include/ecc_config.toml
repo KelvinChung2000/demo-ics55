@@ -23,3 +23,9 @@
 
 [params.floorplan]
 core_util = 0.8
+
+# DreamPlace's own bin density, which it reads on every run, unlike
+# core_util above. ECC's template ships 0.2, far below anything these
+# cores are filled to.
+[params.place]
+target_density = 0.8

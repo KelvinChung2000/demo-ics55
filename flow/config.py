@@ -58,11 +58,21 @@ PARAM_REGISTRY: dict[str, type] = {
     "sta.max_paths": int,
 }
 
-# Registry entries this project sets from `[design]` and `[fabric]` instead, so
-# that one value cannot be given twice in one file. `core_margin` decides where
-# two abutted cores meet and `frequency_mhz` constrains the clock every tile
-# shares, so both are fabric-wide.
-RESERVED_PARAMS = frozenset({"design.frequency_mhz", "floorplan.core_margin"})
+# Registry entries this project derives instead of reading, each with where the
+# value does come from, so that one value cannot be given twice or reach a run
+# unchecked. `floorplan.die_builder` is named at the depth a file can reach: a
+# `[params]` table is read one level deep, so
+# `[params.floorplan.die_builder.die_size]` arrives as the section `floorplan`
+# holding `die_builder`, and naming the leaves would never match.
+RESERVED_PARAMS: dict[str, str] = {
+    "design.frequency_mhz": "[design] frequency_mhz, which every tile shares",
+    "floorplan.core_margin": "[fabric] core_margin_micron, which decides where "
+    "two abutted cores meet",
+    "floorplan.die_builder": "the anchor, or a [die] table in this tile's own "
+    "file; a die set here would reach the run without flow.plan binding it to "
+    "the columns and rows the type occupies, or flow.verify proving the fabric "
+    "still meets on it",
+}
 
 
 @dataclass(frozen=True)
@@ -148,8 +158,8 @@ def _params(table: object, source: Path) -> tuple[Param, ...]:
             key = f"{section}.{name}"
             if key in RESERVED_PARAMS:
                 raise ValueError(
-                    f"{source}: {key} is set in [design] or [fabric] for the whole "
-                    "fabric and cannot be given as a parameter"
+                    f"{source}: {key} cannot be given as a parameter. It comes "
+                    f"from {RESERVED_PARAMS[key]}"
                 )
             if key not in PARAM_REGISTRY:
                 raise ValueError(

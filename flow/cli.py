@@ -51,6 +51,10 @@ SHARED_SOURCES = [
     PROJECT / "user_design",
 ]
 TOP_MODULE = "eFPGA"
+# Every tile is scaled from this one, and `plan` takes the anchor from its
+# compiled die. The fabric's proportions come from `eFPGA_geometry.csv`, so the
+# anchor type only has to be a tile that is always built.
+ANCHOR_TYPE = "LUT4x8_ha"
 TAIL_STEP = "postFloorplan"
 # What a post-synthesis build and the netlists it writes are named with.
 NETLIST_SUFFIX = "_nl"
@@ -114,10 +118,32 @@ def sync_tiles(cache: Path = BUILD / "fabulous-tiles") -> None:
 
 
 @app.command()
-def plan(anchor_micron: float = 110.0, anchor_type: str = "LUT4x8_ha") -> None:
-    """Size every tile and place every pin, then write build/fabric_plan.json."""
+def plan(
+    anchor_micron: float = typer.Option(
+        None,
+        help="Override the anchor width instead of reading the compiled anchor "
+        "tile. Needed once to build that tile, and for sweeping the anchor.",
+    ),
+    anchor_type: str = ANCHOR_TYPE,
+) -> None:
+    """Size every tile and place every pin, then write build/fabric_plan.json.
+
+    Every tile is scaled from one anchor type, and the anchor is that type's
+    own compiled die rather than a number carried beside the fabric: harden the
+    anchor tile and the rest of the fabric follows what it actually built.
+    """
     fabric = load_fabric(PROJECT)
     config = load_config(PROJECT, tuple(fabric.tile_types))
+    if anchor_micron is None:
+        anchor_micron, anchor_height = project.compiled_die(
+            _tile_directory(anchor_type, ()), anchor_type
+        )
+        typer.echo(
+            f"anchor {anchor_micron} um, read from the {anchor_type} compiled at "
+            f"{anchor_micron} x {anchor_height} um"
+        )
+    else:
+        typer.echo(f"anchor {anchor_micron} um, given on the command line")
     result = build_plan(
         fabric,
         PROJECT / "eFPGA_geometry.csv",
@@ -209,6 +235,7 @@ def harden(
                 ],
                 preset="rtl2gds",
                 overrides=chosen,
+                stripe_pitch_micron=layout.stripe_pitch / DBU,
             )
         except ValueError:
             # An override ECC refuses leaves a project that can never run. Its
@@ -221,7 +248,7 @@ def harden(
             return tile_type, f"synthesis through macroPlacement failed, see {log}"
         project.widen_flow(directory)
         placed = ioplace.install(
-            project.workspace_of(directory), layout.pins[tile_type]
+            project.workspace_of(directory), layout.pins[tile_type], (width, height)
         )
         # From `preFloorplan` rather than from `postFloorplan` alone, so that a
         # rerun over an existing workspace has the die and the macro placement
@@ -249,7 +276,11 @@ def harden(
             step = project.run_range(directory, "place", "Harden", log)
         if not step.ok:
             return tile_type, f"{note}; the flow failed, see {log}"
-        return tile_type, f"{note}; {check_pins(directory, tile_type)}"
+        usage = project.compiled_usage(directory)
+        return (
+            tile_type,
+            f"{note}; {check_pins(directory, tile_type)}; core {usage:.3f} filled",
+        )
 
     def attempt(tile_type: str) -> tuple[str, str, bool]:
         # One tile's failure must not stop the other fourteen, so it is reported
@@ -260,14 +291,31 @@ def harden(
             return tile_type, f"{type(failure).__name__}: {failure}", False
         return name, message, "failed" not in message and "moved" not in message
 
-    failures = 0
+    failures, usages = 0, {}
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for tile_type, message, ok in pool.map(attempt, wanted):
             failures += not ok
+            if ok:
+                usages[tile_type] = project.compiled_usage(
+                    _tile_directory(tile_type, chosen)
+                )
             # The directory rather than the tile type, so a run carrying an
             # override names the build it actually produced.
             typer.echo(f"{_tile_directory(tile_type, chosen).name:16s} {message}")
+
+    built = len(wanted) - failures
+    typer.echo(f"\n{built} of {len(wanted)} tile types hardened")
+    if usages:
+        worst = min(usages, key=usages.get)
+        best = max(usages, key=usages.get)
+        # The fabric is sized by whichever type fills its die least, so the
+        # spread matters more than the mean.
+        typer.echo(
+            f"core utilisation {usages[worst]:.3f} ({worst}) to "
+            f"{usages[best]:.3f} ({best})"
+        )
     if failures:
+        typer.echo(f"{failures} failed; see {BUILD}/logs")
         raise typer.Exit(code=1)
 
 
@@ -347,6 +395,8 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
             sources=_sources(tile_type, fabric.tile_types[tile_type].source),
             settings=_tile_settings(config, fabric, tile_type),
             params=config.params_for(tile_type),
+            # Synthesis only, so no floorplan reads this.
+            stripe_pitch_micron=config.fabric.stripe_pitch_micron,
         )
         step = project.create_workspace(directory, log, to="synthesis")
         if not step.ok:
@@ -493,6 +543,9 @@ def flat(
         sources=sources,
         settings=config.fabric,
         params=params,
+        # One design rather than an abutted fabric, so its rows are its own and
+        # the pitch the fabric settled on does not apply.
+        stripe_pitch_micron=config.fabric.stripe_pitch_micron,
     )
     step = project.create_workspace(directory, log, to="synthesis")
     yosys = project.subflow_state(directory, "Synthesis_yosys", "run yosys")

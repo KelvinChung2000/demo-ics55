@@ -1,0 +1,131 @@
+X0Y0:
+  EAST:
+  - max_distance: null
+    min_distance: null
+    pins:
+    - E_GBUF_BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - W_GBUF_FEED_END\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - FrameData_O\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  NORTH:
+  - max_distance: null
+    min_distance: null
+    pins:
+    - N_GBUF_BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - N1BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - N2BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - N2BEGb\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - N4BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - NN4BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - S1END\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - S2MID\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - S2END\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - S4END\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - SS4END\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - UserCLKo
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - FrameStrobe_O\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  SOUTH:
+  - max_distance: null
+    min_distance: null
+    pins:
+    - UserCLK
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - FrameStrobe\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  WEST:
+  - max_distance: null
+    min_distance: null
+    pins:
+    - E_GBUF_END\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - W_GBUF_FEED_BEG\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - FrameData\[\d+\]
+    reverse_result: false
+    sort_mode: bus_major

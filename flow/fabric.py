@@ -54,9 +54,9 @@ SUB_ROW_RE = re.compile(r"^Tile_X0Y(\d+)_(.+)$")
 class Bit:
     """One scalar pin of one tile type, named as iEDA writes it into the DEF.
 
-    `place_pins_paired.py` learned that iEDA bit-blasts `E1BEG[0]` to `E1BEG_0_`
-    and collapses a `[0:0]` port to a bare scalar, so the name here is the DEF
-    name and not the Verilog one.
+    iEDA bit-blasts `E1BEG[0]` to `E1BEG_0`, so the name here is the DEF name
+    and not the Verilog one. The trailing underscore the older ECC wrote is
+    gone: `E1BEG_0_` is what the placer rejects now.
     """
 
     tile_type: str
@@ -78,12 +78,12 @@ class Port:
         """Return the port's scalar DEF pins, low bit first.
 
         Width alone does not decide the name. iEDA keeps the index on a port
-        declared `[0:0]`, so `Ci` reaches the DEF as `Ci_0_` while the genuinely
+        declared `[0:0]`, so `Ci` reaches the DEF as `Ci_0` while the genuinely
         scalar `UserCLK` does not.
         """
         if not self.vectored:
             return [Bit(tile_type, self.name)]
-        return [Bit(tile_type, f"{self.name}_{index}_") for index in range(self.width)]
+        return [Bit(tile_type, f"{self.name}_{index}") for index in range(self.width)]
 
 
 @dataclass(frozen=True)
@@ -109,6 +109,11 @@ class TileType:
         for every tile including the five that have no such port, which
         constrains nothing there rather than failing.
 
+        The bit is named flat. ECC writes its SDC as Tcl and interpolates the
+        clock port unquoted, so a bracketed `N_GBUF_END[0]` is read as a command
+        substitution, `all_inputs_wo_clk` is never set and iSTA stops on the
+        constraint file it wrote itself.
+
         A supertile prefixes each port with the sub-tile it belongs to, so the
         match is on the suffix and the lowest-numbered sub-tile carrying the
         port wins, which is the one FABulous numbers from the top down.
@@ -121,7 +126,7 @@ class TileType:
                 and (port.name == candidate or port.name.endswith(f"_{candidate}"))
             )
             if carried:
-                return f"{carried[0]}[0]"
+                return f"{carried[0]}_0"
         raise ValueError(
             f"{self.name} has no global-buffer clock input, so no clock can be "
             f"constrained on it; its inputs are "
@@ -199,7 +204,7 @@ class Fabric:
         tile = self.tile_types[bit.tile_type]
         if bit.name in tile.ports:
             return bit.name
-        stem = re.match(r"^(.*)_\d+_$", bit.name)
+        stem = re.match(r"^(.*)_\d+$", bit.name)
         if stem is None or stem.group(1) not in tile.ports:
             raise KeyError(f"{bit.name} is not a port of {bit.tile_type}")
         return stem.group(1)

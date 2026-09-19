@@ -1,17 +1,15 @@
-"""Rewrite a tile's floorplan DEF so the tile can abut its neighbours.
+"""Stretch a tile's PDN to its die edge so the tile can abut its neighbours.
 
-Two things iEDA writes are wrong for abutment and neither is reachable through
-configuration. `ifp::IOPlacer` is fully automatic: it cuts the pin list into four
-index-quarters and hands them to the four edges in turn, so a bus is torn across
-three edges and a driver never faces the receiver it feeds. And the PDN stops at
-the core box, 2 um inside the die on every side, so two tiles placed at the die
-pitch have a 4 um strip between them carrying no power metal at all.
+The PDN stops at the core box, 2 um inside the die on every side, so two tiles
+placed at the die pitch have a 4 um strip between them carrying no power metal
+at all. `pdn_generator` has no setting for this, so the rails and stripes are
+stretched in the DEF that `postFloorplan` writes: `create_db_engine` falls back
+to `read_def` when the previous step's binary database is missing, and every
+later step then reads what is written here.
 
-Both are fixed in the DEF rather than in iEDA, because `create_db_engine` falls
-back to `read_def` when the previous step's binary database is missing, and every
-later step then reads what is written here. The pins are written `+ FIXED`, which
-is the status that survived to the routed DEF in the one spike workspace that
-kept its placement.
+Pin placement used to be fixed the same way, and is not any more. ECC's IO
+placer takes a placement file, so `flow.ioplace` hands it the plan before
+`postFloorplan` runs and iEDA places the pins itself.
 """
 
 from __future__ import annotations
@@ -21,15 +19,10 @@ import re
 from dataclasses import dataclass
 from pathlib import Path
 
-from flow.plan import PIN_DEPTH, PIN_WIDTH, PinPlacement, Side
-
 DIEAREA_RE = re.compile(
     r"DIEAREA\s*\(\s*(-?\d+)\s+(-?\d+)\s*\)\s*\(\s*(-?\d+)\s+(-?\d+)\s*\)"
 )
 PINS_RE = re.compile(r"^PINS \d+ ;\n(.*?)^END PINS", re.S | re.M)
-PIN_ENTRY_RE = re.compile(
-    r"^\s*- (\S+) \+ NET (\S+) \+ DIRECTION (\S+)\s*\+ USE (\S+)", re.M
-)
 SPECIALNETS_RE = re.compile(r"^SPECIALNETS \d+ ;\n(.*?)^END SPECIALNETS", re.S | re.M)
 SEGMENT_RE = re.compile(
     r"((?:ROUTED|NEW) (\w+) (\d+) \+ SHAPE \w+ )"
@@ -79,56 +72,6 @@ def die_of(text: str) -> Die:
     return Die(*(int(value) for value in match.groups()))
 
 
-def _geometry(side: Side, offset: int, die: Die) -> tuple[str, int, int]:
-    """Return the pin's rectangle relative to its anchor, and the anchor itself."""
-    half = PIN_WIDTH // 2
-    match side:
-        case "N":
-            return f"( -{half} -{PIN_DEPTH} ) ( {half} 0 )", die.llx + offset, die.ury
-        case "S":
-            return f"( -{half} 0 ) ( {half} {PIN_DEPTH} )", die.llx + offset, die.lly
-        case "E":
-            return f"( -{PIN_DEPTH} -{half} ) ( 0 {half} )", die.urx, die.lly + offset
-        case "W":
-            return f"( 0 -{half} ) ( {PIN_DEPTH} {half} )", die.llx, die.lly + offset
-    raise ValueError(f"{side} is not an edge")
-
-
-def rewrite_pins(
-    text: str, placements: dict[str, PinPlacement], die: Die, status: str = "FIXED"
-) -> str:
-    """Replace the PINS section with the fabric-wide plan's offsets.
-
-    Raises if the DEF and the plan disagree about which pins exist, which is the
-    symptom of a tile whose elaborated bus widths differ from its Verilog.
-    """
-    block = PINS_RE.search(text)
-    if block is None:
-        raise ValueError("the DEF has no PINS section")
-    entries = PIN_ENTRY_RE.findall(block.group(1))
-    declared = int(re.search(r"^PINS (\d+) ;", text, re.M).group(1))
-    if len(entries) != declared:
-        raise ValueError(f"the PINS section declares {declared} pins and lists {len(entries)}")
-    names = {name for name, *_ in entries}
-    if names != placements.keys():
-        missing = sorted(names - placements.keys())[:5]
-        extra = sorted(placements.keys() - names)[:5]
-        raise ValueError(
-            f"the DEF and the plan disagree on {len(names ^ placements.keys())} pins. "
-            f"In the DEF only: {missing}. In the plan only: {extra}."
-        )
-
-    lines = [f"PINS {len(entries)} ;"]
-    for name, net, direction, use in entries:
-        placement = placements[name]
-        rectangle, x, y = _geometry(placement.side, placement.offset, die)
-        lines.append(f" - {name} + NET {net} + DIRECTION {direction}  + USE {use}")
-        lines.append(f" + LAYER {placement.layer} {rectangle} + {status} ( {x} {y} ) N")
-        lines.append(" ;")
-    lines.append("END PINS")
-    return text[: block.start()] + "\n".join(lines) + "\n" + text[block.end() :]
-
-
 def extend_pdn(text: str, die: Die) -> tuple[str, int]:
     """Stretch the full-length power rails and stripes out to the die boundary.
 
@@ -151,7 +94,7 @@ def extend_pdn(text: str, die: Die) -> tuple[str, int]:
     if not horizontal or not vertical:
         raise ValueError(
             "the PDN has no full-length rail or stripe, so nothing can be extended. "
-            "Check that Floorplan ran its PDN subflow."
+            "Check that postFloorplan ran its PDN subflow."
         )
 
     extended = 0
@@ -175,33 +118,28 @@ def extend_pdn(text: str, die: Die) -> tuple[str, int]:
 def prepare(
     def_path: Path,
     out_path: Path,
-    pins: list[PinPlacement],
     size: tuple[int, int],
     *,
     extend_power: bool = True,
-    status: str = "FIXED",
 ) -> str:
-    """Rewrite one tile's floorplan DEF in place of iEDA's own pins and PDN extent.
+    """Stretch one tile's PDN to its die edge, having checked the die is the planned one.
 
-    `extend_power` and `status` are controls rather than preferences. Extending
-    the PDN is what makes an abutted fabric powered, but it also puts wide metal
-    along all four die edges where the router previously had clear space. And
-    FINDINGS.md leaves open whether `+ FIXED` is what kept a pin placement from
-    reverting at routing, or whether the single uninterrupted invocation did it;
-    `PLACED` is what `ifp::IOPlacer` writes itself.
+    `extend_power` is a control rather than a preference. Extending the PDN is
+    what makes an abutted fabric powered, but it also puts wide metal along all
+    four die edges where the router previously had clear space, so leaving it
+    off attributes a routing failure to one or the other.
     """
     text = read_def(def_path)
     die = die_of(text)
     if (die.width, die.height) != size:
         raise ValueError(
             f"{def_path} has a {die.width}x{die.height} die, the plan says {size[0]}x{size[1]}. "
-            "Patch fp_default_config.json before running Floorplan."
+            "Set floorplan.die_builder.die_size before running preFloorplan."
         )
-    text = rewrite_pins(text, {pin.name: pin for pin in pins}, die, status)
     extended = 0
     if extend_power:
         text, extended = extend_pdn(text, die)
     with def_path.open("rb") as handle:
         gzipped = handle.read(2) == b"\x1f\x8b"
     write_def(out_path, text, gzipped=gzipped)
-    return f"{len(pins)} pins fixed, {extended} power segments extended to the die edge"
+    return f"{extended} power segments extended to the die edge"

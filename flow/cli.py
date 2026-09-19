@@ -13,14 +13,15 @@ from __future__ import annotations
 import json
 import os
 import shutil
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import typer
 
-from flow import defedit, names, project, tilelib
+from flow import defedit, ioplace, names, project, tilelib
 from flow.fabric import load_fabric
-from flow.plan import CORE_MARGIN, DBU, build_plan, Plan
+from flow.plan import DBU, build_plan, Plan
 
 app = typer.Typer(
     add_completion=False, help="Build a FABulous fabric on ICS55 with ECC."
@@ -44,13 +45,18 @@ SHARED_SOURCES = [
 # `TileType.clock_port` instead.
 FABRIC_CLOCK_PORT = "UserCLK"
 TOP_MODULE = "eFPGA"
-STRIPE_PITCH_MICRON = 16.0
 FREQUENCY_MHZ = 100.0
 CORE_UTIL = 0.8
-TAIL_STEP = "fixFanout"
+# `generate_IO_pin_order_config` is on a FABulous branch this project does not
+# pin for anything else, so the interpreter that can run it is named here
+# rather than assumed to be the one running the flow.
+FABULOUS_PYTHON = Path(
+    "/home/kelvin/FABulous/.worktrees-tmp/fix-direction/.venv/bin/python"
+)
+TAIL_STEP = "postFloorplan"
 # The signoff layout of the flat build: routed, DRC'd, LVS'd and filled.
-FLAT_GEOMETRY = BUILD / "flat/runs/default/filler_ecc/output/geometry/geometry.manifest"
-FLAT_GDS = BUILD / "flat/runs/default/filler_ecc/output/eFPGA_filler.gds"
+FLAT_GEOMETRY = BUILD / "flat/default/filler_ecc/output/geometry/geometry.manifest"
+FLAT_GDS = BUILD / "flat/default/filler_ecc/output/eFPGA_filler.gds"
 
 
 def _tile_directory(tile_type: str) -> Path:
@@ -71,6 +77,33 @@ def sync_tiles(cache: Path = BUILD / "fabulous-tiles") -> None:
         f"{len(result.primitives)} primitives, {len(result.rewritten)} BEL paths shifted"
     )
     typer.echo(f"  primitives: {' '.join(result.primitives)}")
+    typer.echo(
+        "  every io_pin_order.yaml went with them; run gen-io-order before plan"
+    )
+
+
+@app.command()
+def gen_io_order(fabulous_python: Path = FABULOUS_PYTHON) -> None:
+    """Regenerate each tile's io_pin_order.yaml with FABulous's own generator.
+
+    Through a separate interpreter because `generate_IO_pin_order_config` is
+    not on the FABulous revision this project pins for `run_FABulous_fabric`.
+    """
+    if not fabulous_python.exists():
+        raise typer.BadParameter(
+            f"{fabulous_python} does not exist; pass --fabulous-python for the "
+            "FABulous checkout that carries generate_IO_pin_order_config"
+        )
+    # The script is this project's and the packages it imports are FABulous's,
+    # so the project is the working directory and the checkout goes on the path.
+    checkout = fabulous_python.parent.parent.parent
+    completed = subprocess.run(
+        [str(fabulous_python), "-m", "flow.genioyaml", str(PROJECT)],
+        cwd=PROJECT,
+        env={**os.environ, "PYTHONPATH": str(checkout)},
+    )
+    if completed.returncode:
+        raise typer.Exit(code=completed.returncode)
 
 
 @app.command()
@@ -105,7 +138,8 @@ def check() -> None:
         raise typer.Exit(code=1)
     typer.echo(
         f"plan holds: {len(fabric.links)} links meet at one coordinate, no edge has two pins "
-        f"at one offset, no pin sits under a power stripe or past its edge"
+        f"at one offset, no pin sits under a power stripe, and every pin is on a track "
+        f"inside the core"
     )
 
 
@@ -115,7 +149,6 @@ def harden(
     jobs: int = 3,
     force: bool = False,
     extend_power: bool = True,
-    status: str = "FIXED",
 ) -> None:
     """Run one tile type from synthesis to filler, with the planned die and pins."""
     fabric = load_fabric(PROJECT)
@@ -138,44 +171,43 @@ def harden(
             core_util=CORE_UTIL,
             clock_port=fabric.tile_types[tile_type].clock_port(),
             frequency_mhz=FREQUENCY_MHZ,
-        )
-        step = project.create_workspace(directory, log)
-        if not step.ok:
-            return tile_type, f"Synthesis failed, see {log}"
-        project.install_harden_flow(directory)
-        project.patch_floorplan(
-            directory,
-            width_micron=width / DBU,
-            height_micron=height / DBU,
+            die_micron=(width / DBU, height / DBU),
             stripe_pitch_micron=layout.stripe_pitch / DBU,
         )
-        step = project.run_step(directory, "Floorplan", log)
+        step = project.create_workspace(directory, log, to="macroPlacement")
         if not step.ok:
-            return tile_type, f"Floorplan failed, see {log}"
+            return tile_type, f"synthesis through macroPlacement failed, see {log}"
+        project.widen_flow(directory)
+        placed = ioplace.install(
+            project.workspace_of(directory), layout.pins[tile_type]
+        )
+        # From `preFloorplan` rather than from `postFloorplan` alone, so that a
+        # rerun over an existing workspace has the die and the macro placement
+        # its database initialisation reads.
+        step = project.run_range(directory, "preFloorplan", TAIL_STEP, log)
+        if not step.ok:
+            return tile_type, f"{TAIL_STEP} failed, see {log}"
         floorplan = project.floorplan_def(directory, tile_type)
-        note = defedit.prepare(
+        note = f"{placed}; " + defedit.prepare(
             floorplan,
             floorplan,
-            layout.pins[tile_type],
             (width, height),
             extend_power=extend_power,
-            status=status,
         )
         project.drop_floorplan_database(directory, tile_type)
-        step = project.run_step(directory, TAIL_STEP, log)
-        if not step.ok:
-            return tile_type, f"{note}; {TAIL_STEP} failed, see {log}"
-        opt = project.workspace_of(directory) / "fixFanout_ecc" / "output"
+        opt = project.workspace_of(directory) / "postFloorplan_ecc" / "output"
         if not project.needs_placement(
             directory, opt / f"{tile_type}_{TAIL_STEP}.def.gz"
         ):
             note += (
                 "; no logic to place, so placement, CTS and legalisation are skipped"
             )
-            project.bypass_placement(directory, tile_type, TAIL_STEP, "fixFanout_ecc")
-            step = project.run_from(directory, "route", log)
+            project.bypass_placement(
+                directory, tile_type, TAIL_STEP, "postFloorplan_ecc"
+            )
+            step = project.run_range(directory, "route", "Harden", log)
         else:
-            step = project.run_from(directory, "place", log)
+            step = project.run_range(directory, "place", "Harden", log)
         if not step.ok:
             return tile_type, f"{note}; the flow failed, see {log}"
         return tile_type, f"{note}; {check_pins(directory, tile_type)}"
@@ -233,10 +265,10 @@ def check_pins(directory: Path, tile_type: str) -> str:
 
 @app.command()
 def pilot(
-    tile: str = "LUT4x8_ha", extend_power: bool = True, status: str = "FIXED"
+    tile: str = "LUT4x8_ha", extend_power: bool = True
 ) -> None:
     """Harden one tile type and report whether its pins and PDN survived."""
-    harden(tile=[tile], jobs=1, force=True, extend_power=extend_power, status=status)
+    harden(tile=[tile], jobs=1, force=True, extend_power=extend_power)
 
 
 @app.command()
@@ -265,7 +297,7 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
             clock_port=fabric.tile_types[tile_type].clock_port(),
             frequency_mhz=FREQUENCY_MHZ,
         )
-        step = project.create_workspace(directory, log)
+        step = project.create_workspace(directory, log, to="synthesis")
         if not step.ok:
             return tile_type, f"failed after {step.seconds:.0f} s, see {log}"
         netlist = project.synthesis_netlist(directory, tile_type)
@@ -407,7 +439,7 @@ def flat(
         clock_port=FABRIC_CLOCK_PORT,
         frequency_mhz=FREQUENCY_MHZ,
     )
-    step = project.create_workspace(directory, log)
+    step = project.create_workspace(directory, log, to="synthesis")
     yosys = project.subflow_state(directory, "Synthesis_yosys", "run yosys")
     netlist = project.synthesis_netlist(directory, TOP_MODULE)
     current = project.netlist_is_current(directory, TOP_MODULE)
@@ -429,12 +461,11 @@ def flat(
             "the analysis stage failed; recording synthesis on its netlist instead"
         )
         project.force_step_state(directory, "Synthesis", "Success")
-    project.install_harden_flow(directory, last=last)
     if not project.floorplan_measurement(directory).exists():
         # `die_side` sizes the die from a floorplan's own measurement, so a
         # workspace that has never floorplanned has to run one first. ECC sizes
         # that one from `core_util` itself, which is close but not exact.
-        first = project.run_step(directory, "Floorplan", log)
+        first = project.run_range(directory, "preFloorplan", "postFloorplan", log)
         if not first.ok:
             typer.echo(f"the sizing floorplan failed, see {log}")
             raise typer.Exit(code=1)
@@ -444,15 +475,17 @@ def flat(
     # area the last floorplan measured, and the core height is rounded to a
     # whole number of core7 rows so no row is lost to alignment.
     side = project.die_side(directory, TOP_MODULE, core_util)
-    project.patch_floorplan(
+    project.set_params(
         directory,
-        width_micron=side,
-        height_micron=side,
-        stripe_pitch_micron=STRIPE_PITCH_MICRON,
+        {
+            "floorplan.die_builder.mode": "die_size",
+            "floorplan.die_builder.die_size.width_micron": side,
+            "floorplan.die_builder.die_size.height_micron": side,
+        },
+        log,
     )
-    project.reset_from(directory, "Floorplan")
     typer.echo(f"floorplanning a {side} um square die, {core_util} of it filled")
-    step = project.run_from(directory, "Floorplan", log)
+    step = project.run_range(directory, "preFloorplan", last, log)
     typer.echo(
         f"flat flow recorded as {step.state} after {step.seconds:.0f} s, see {log}"
     )
@@ -483,7 +516,7 @@ def top(directory: Path = BUILD / "fabric", run: bool = True) -> None:
         for name in layout.tile_size
     }
     log = BUILD / "logs" / "fabric.log"
-    step = project.create_workspace(directory, log)
+    step = project.create_workspace(directory, log, to="synthesis")
     if not step.ok:
         raise typer.Exit(code=1)
     project.add_macro_views(
@@ -491,19 +524,9 @@ def top(directory: Path = BUILD / "fabric", run: bool = True) -> None:
         lefs=[lef for lef, _, _ in views.values()],
         libs=[lib for _, lib, _ in views.values()],
     )
-    project.install_harden_flow(directory)
-    project.patch_floorplan(
-        directory,
-        width_micron=(layout.width + 2 * CORE_MARGIN) / DBU,
-        height_micron=(layout.height + 2 * CORE_MARGIN) / DBU,
-        stripe_pitch_micron=layout.stripe_pitch / DBU,
-    )
-    project.zero_macro_halos(directory)
-    placed = project.install_macro_locations(
-        directory, directory / "macro_locations.txt"
-    )
-    typer.echo(f"{placed} macros fixed at their planned coordinates")
-    step = project.run_step(directory, "Floorplan", log)
+    project.zero_macro_halos(directory, log)
+    typer.echo(f"{len(layout.placements)} macros fixed at their planned coordinates")
+    step = project.run_range(directory, "preFloorplan", "postFloorplan", log)
     typer.echo(
         f"fabric floorplan {'succeeded' if step.ok else 'failed'} in {step.seconds:.0f} s, "
         f"recorded as {step.state}, see {log}"

@@ -24,6 +24,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from flow.fabric import Bit, Fabric, Side
+from flow import ioyaml
+from flow.ioyaml import Rank
 
 DBU = 1000  # DEF database units per micron, from the ICS55 tech LEF
 SITE_WIDTH = 200  # DBU, core7
@@ -31,9 +33,7 @@ SITE_HEIGHT = 1400  # DBU, core7
 TRACK_OFFSET = 100  # DBU, tech LEF OFFSET
 TRACK_STEP = 200  # DBU, tech LEF PITCH
 CORE_MARGIN = 2000  # DBU per side, ECC's Core.Margin default
-CORNER_GUARD = 6  # tracks left clear at each end of an edge
 PIN_WIDTH = 100  # DBU across the wire, the MET3/MET4 minimum width
-PIN_DEPTH = 800  # DBU into the die; 0.1 x 0.8 clears the 0.052 um2 AREA rule
 STRIPE_WIDTH = 1000  # DBU, from ECC's pdn_generator defaults
 STRIPE_OFFSET = 500  # DBU, from ECC's pdn_generator defaults
 STRIPE_KEEPOUT = 200  # DBU either side of a stripe, the MET4 minimum spacing
@@ -238,14 +238,33 @@ def stripe_keepout(extent: int, pitch: int) -> list[tuple[int, int]]:
     ]
 
 
-def _tracks(low: int, high: int, count: int, blocked: list[tuple[int, int]]) -> list[int]:
-    """Return `count` track-snapped offsets spread between `low` and `high`.
+def core_edge(extent: int, site: int) -> tuple[int, int]:
+    """Return the core's two bounds along an edge of a die `extent` DBU long.
+
+    The core is the die inset by `CORE_MARGIN`, but its far side is then pulled
+    back to a whole number of sites, because iEDA lays the standard-cell rows
+    from the near margin and stops at the last one that fits: a 112 um tile has
+    77 core7 rows and a core that ends at 109.8 rather than at 110.
+    """
+    return CORE_MARGIN, CORE_MARGIN + (extent - 2 * CORE_MARGIN) // site * site
+
+
+def _tracks(
+    low: int, high: int, count: int, blocked: list[tuple[int, int]], site: int
+) -> list[int]:
+    """Return `count` track-snapped offsets spread between the die edges `low` and `high`.
 
     Snapping to the routing grid is not cosmetic: in the single-tile spike it cut
     routing from 81 s to 27 s and took DRC from 41 `metal_short` to zero.
+
+    ECC's IO placer rejects an offset that is not exactly on a track of the pin's
+    own layer, and rejects a pin shape that leaves the core, so the usable range
+    is `core_edge`'s pulled in by the pin's half-width.
     """
-    first = -(-(low - TRACK_OFFSET) // TRACK_STEP) + CORNER_GUARD
-    last = (high - TRACK_OFFSET) // TRACK_STEP - CORNER_GUARD
+    half = PIN_WIDTH // 2
+    core_low, core_high = core_edge(high - low, site)
+    first = -(-(low + core_low + half - TRACK_OFFSET) // TRACK_STEP)
+    last = (low + core_high - (PIN_WIDTH - half) - TRACK_OFFSET) // TRACK_STEP
     grid = (TRACK_OFFSET + TRACK_STEP * index for index in range(first, last + 1))
     candidates = [
         offset for offset in grid if not any(lo <= offset <= hi for lo, hi in blocked)
@@ -257,23 +276,19 @@ def _tracks(low: int, high: int, count: int, blocked: list[tuple[int, int]]) -> 
         )
     if count == 1:
         return [candidates[len(candidates) // 2]]
-    # Spread across the whole edge rather than stepping by a whole number of
-    # tracks. An integer step packs the pins into one contiguous block whenever
-    # the edge holds fewer than twice as many tracks as pins, which is the case
-    # here, and leaves most of the edge empty.
-    span = len(candidates) - 1
-    return [candidates[round(index * span / (count - 1))] for index in range(count)]
-
-
-def _bare_port(port: str) -> str:
-    """Strip a supertile's sub-row prefix, so its ports sort with everyone else's."""
-    return re.sub(r"^Tile_X\d+Y\d+_", "", port)
-
-
-def _bit_index(name: str) -> int:
-    """Return a scalar pin's bit position, or zero for a pin that has none."""
-    match = re.match(r"^.*_(\d+)_$", name)
-    return int(match.group(1)) if match else 0
+    # A pin can only land on a track, so the choice is which track indices to
+    # take, not which coordinates. The stride is the widest that still fits
+    # every pin, which keeps neighbouring pins as far apart as the edge allows,
+    # and the block it spans is then centred: the corners route worst and the
+    # core-edge rule has already made them unusable on both sides.
+    stride = (len(candidates) - 1) // (count - 1)
+    span = (count - 1) * stride
+    middle = (low + high) // 2
+    start = min(
+        range(len(candidates) - span),
+        key=lambda first: abs(candidates[first] + candidates[first + span] - 2 * middle),
+    )
+    return [candidates[start + index * stride] for index in range(count)]
 
 
 class _Union:
@@ -346,6 +361,7 @@ def _assign(
     extent: dict[int, int],
     lanes_of: dict[Bit, set[int]],
     stripe_pitch: int,
+    ranks: dict[Bit, "Rank"],
 ) -> dict[Bit, int]:
     """Give every pin on one seam class an offset, shared across its component."""
     # Only a pin that meets another tile needs an offset agreed fabric-wide. A
@@ -364,21 +380,26 @@ def _assign(
         if not mixed <= ({"E", "W"} if vertical else {"N", "S"}):
             raise ValueError(f"component of {root} spans edges {sorted(mixed)}")
 
-    def order(members: list[Bit]) -> tuple[str, int, str]:
-        """Sort key placing a bus's bits next to each other along the edge, in bit order.
+    def order(members: list[Bit]) -> tuple[int, int]:
+        """Sort key placing a component where FABulous's edge order puts it.
 
-        Two things are being avoided. A union-find root is whichever pin the
-        merge happened to reach first, so ordering by it scatters `E1BEG_0_` and
-        `E1BEG_1_` to opposite ends of the edge and every wire from there to the
-        switch matrix detours; the single-tile spike put a contiguous bus at 3x
-        in router runtime. And leading on the tile type would give every type its
-        own block of the edge, so `LUT4x8_ha` would crowd 128 pins into the quarter
-        of a side it shares with nobody.
+        A union-find root is whichever pin the merge happened to reach first,
+        so ordering by it scatters `E1BEG_0` and `E1BEG_1` to opposite ends of
+        the edge and every wire from there to the switch matrix detours; the
+        single-tile spike put a contiguous bus at 3x in router runtime. The
+        rank comes from `io_pin_order.yaml` rather than from the port name, so
+        the order is FABulous's rather than this flow's guess at it.
+
+        Every member agrees on the rank, because facing sides list the same
+        buses at the same positions; `min` picks one rather than arbitrating.
         """
-        return min(
-            (_bare_port(fabric.port_of(bit)), _bit_index(bit.name), bit.tile_type)
-            for bit in members
-        )
+        keys = {ranks[bit].key for bit in members}
+        if len(keys) > 1:
+            raise ValueError(
+                f"the pins of one component disagree on their edge order: "
+                f"{sorted((bit.tile_type, bit.name, ranks[bit].key) for bit in members)[:4]}"
+            )
+        return keys.pop()
 
     index_of = {
         root: index
@@ -390,6 +411,9 @@ def _assign(
             for lane in lanes_of[bit]:
                 lane_members[lane].add(index_of[root])
 
+    # A vertical seam runs along the die's y, where the core ends on a row
+    # boundary; a horizontal one along x, where it ends on a site boundary.
+    site = SITE_HEIGHT if vertical else SITE_WIDTH
     offsets: dict[Bit, int] = {}
     for lanes in _lane_groups(lane_members):
         components = sorted({index for lane in lanes for index in lane_members[lane]})
@@ -397,7 +421,7 @@ def _assign(
         # Only the N and S pins share a layer with the PDN stripes; the E and W
         # pins are on MET3, which the stripes never occupy.
         blocked = [] if vertical else stripe_keepout(bound, stripe_pitch)
-        slots = _tracks(0, bound, len(components), blocked)
+        slots = _tracks(0, bound, len(components), blocked, site)
         by_index = {index_of[root]: members for root, members in wanted.items()}
         for slot, index in zip(slots, components, strict=True):
             for bit in by_index[index]:
@@ -413,6 +437,7 @@ def _boundary_offsets(
     width: int,
     height: int,
     stripe_pitch: int,
+    ranks: dict[Bit, "Rank"],
 ) -> dict[Bit, int]:
     """Place a tile's boundary pins in the space its shared pins leave free.
 
@@ -436,12 +461,14 @@ def _boundary_offsets(
             if fabric.bit_side(bit).side == side and bit in shared
         }
         extent = height if vertical else width
+        site = SITE_HEIGHT if vertical else SITE_WIDTH
         blocked = [(offset, offset) for offset in taken]
         if not vertical:
             blocked += stripe_keepout(extent, stripe_pitch)
-        # Bit order along the edge, for the same reason the shared pins keep it.
-        outside.sort(key=lambda bit: (fabric.port_of(bit), _bit_index(bit.name)))
-        for bit, offset in zip(outside, _tracks(0, extent, len(outside), blocked), strict=True):
+        # The same order the shared pins take, for the same reason.
+        outside.sort(key=lambda bit: ranks[bit].key)
+        tracks = _tracks(0, extent, len(outside), blocked, site)
+        for bit, offset in zip(outside, tracks, strict=True):
             placed[bit] = offset
     return placed
 
@@ -521,6 +548,11 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
     ]
 
     groups = _components(fabric)
+    ranks = {
+        bit: rank
+        for name in fabric.tile_types
+        for bit, rank in ioyaml.read(fabric, name, geometry.parent).items()
+    }
     # A pin's offset is bounded by the narrowest column, or shortest row, any
     # tile carrying it ever sits in.
     row_lanes: dict[Bit, set[int]] = {}
@@ -543,6 +575,7 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
         {row: row_height[row] for row in range(fabric.rows)},
         row_lanes,
         stripe_pitch,
+        ranks,
     )
     horizontal = _assign(
         fabric,
@@ -551,6 +584,7 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
         {column: column_width[column] for column in range(fabric.columns)},
         column_lanes,
         stripe_pitch,
+        ranks,
     )
     offsets = vertical | horizontal
 
@@ -563,6 +597,7 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
             width=tile_size[name][0],
             height=tile_size[name][1],
             stripe_pitch=stripe_pitch,
+            ranks=ranks,
         )
         placed = []
         for bit in tile.bits():

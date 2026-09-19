@@ -18,7 +18,7 @@ from pathlib import Path
 
 import klayout.db as kdb
 
-# Read off a routed net: N1BEG_0_ runs MET3 -> VIA3 -> MET4 -> VIA3 -> MET3 ->
+# Read off a routed net: N1BEG_0 runs MET3 -> VIA3 -> MET4 -> VIA3 -> MET3 ->
 # VIA2 -> MET2, and its GDS shapes land on 11, 12, 13, 12, 11, 10, 9.
 GDS_LAYER = {"MET1": 7, "MET2": 9, "MET3": 11, "MET4": 13, "MET5": 15}
 PIN_CELL = "PINS"
@@ -61,7 +61,7 @@ def def_pins(text: str) -> dict[str, tuple[str, str, kdb.Box]]:
     """Return each pin's net, layer and absolute box, in DBU.
 
     The net matters because Yosys merges a FABulous feedthrough into one net, so
-    `N4BEG_0_` sits on `N4END_4_` and its routing is filed under that name.
+    `N4BEG_0` sits on `N4END_4` and its routing is filed under that name.
     Raises when a pin carries no placed layer rectangle to paint.
     """
     block = PINS_RE.search(text)

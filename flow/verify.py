@@ -9,7 +9,16 @@ the four were violated at some point while this flow was being written.
 from __future__ import annotations
 
 from flow.fabric import Fabric
-from flow.plan import Plan, stripe_keepout
+from flow.plan import (
+    PIN_WIDTH,
+    SITE_HEIGHT,
+    SITE_WIDTH,
+    TRACK_OFFSET,
+    TRACK_STEP,
+    Plan,
+    core_edge,
+    stripe_keepout,
+)
 
 
 def _origins(fabric: Fabric, plan: Plan) -> dict[tuple[int, int], object]:
@@ -61,13 +70,35 @@ def check_plan(fabric: Fabric, plan: Plan) -> list[str]:
     if under:
         failures.append(f"{under} north or south pins sit under a MET4 power stripe")
 
+    # ECC's IO placer rejects the whole placement file on the first pin that
+    # breaks either rule, so a tile that would fail hardening forty minutes in
+    # fails here instead.
+    half = PIN_WIDTH // 2
     off = [
         f"{name}.{pin.name}"
         for name, pins in plan.pins.items()
         for pin in pins
-        if pin.offset >= plan.tile_size[name][1 if pin.side in "EW" else 0]
+        for vertical in [pin.side in "EW"]
+        for bounds in [
+            core_edge(
+                plan.tile_size[name][1 if vertical else 0],
+                SITE_HEIGHT if vertical else SITE_WIDTH,
+            )
+        ]
+        if pin.offset - half < bounds[0] or pin.offset + (PIN_WIDTH - half) > bounds[1]
     ]
     if off:
-        failures.append(f"{len(off)} pins sit past the end of their edge: {off[:3]}")
+        failures.append(
+            f"{len(off)} pins leave the core, which ECC's IO placer rejects: {off[:3]}"
+        )
+
+    astride = [
+        f"{name}.{pin.name}"
+        for name, pins in plan.pins.items()
+        for pin in pins
+        if (pin.offset - TRACK_OFFSET) % TRACK_STEP
+    ]
+    if astride:
+        failures.append(f"{len(astride)} pins are not on a routing track: {astride[:3]}")
 
     return failures

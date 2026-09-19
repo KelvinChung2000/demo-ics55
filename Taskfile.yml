@@ -15,7 +15,7 @@ vars:
   TILE: '{{.TILE | default "LUT4x8_ha"}}'
   STEP: '{{.STEP | default "filler_ecc"}}'
   BUILD: '{{.BUILD | default "build"}}'
-  ECC: '{{.ECC | default "../eccw"}}'
+  ECC: '{{.ECC | default "/home/kelvin/side-project/ecc-spike/eccw-main"}}'
   VIEWER: '{{.VIEWER | default "/home/kelvin/side-project/ecos-studio/ecos/chip-viewer/target/release/chip-viewer-native"}}'
   FLOW: python3 -m flow.cli
 
@@ -35,6 +35,11 @@ tasks:
     desc: Re-vendor Tile/ and primitives/ from the pinned FABulous tile library
     cmds:
       - "{{.FLOW}} sync-tiles"
+
+  gen-io-order:
+    desc: Regenerate each tile's io_pin_order.yaml with FABulous's own generator
+    cmds:
+      - "{{.FLOW}} gen-io-order"
 
   plan:
     desc: Size every tile and place every pin, writing build/fabric_plan.json
@@ -86,15 +91,15 @@ tasks:
   view-fabric:
     desc: Open the macro-placed fabric in the ECOS layout viewer
     cmds:
-      - "{{.VIEWER}} --manifest {{.BUILD}}/fabric/runs/default/Floorplan_ecc/output/geometry/geometry.manifest"
+      - "{{.VIEWER}} --manifest {{.BUILD}}/fabric/default/postFloorplan_ecc/output/geometry/geometry.manifest"
 
   view-tile:
     desc: Open one tile in the ECOS layout viewer, with its DRC overlay. Set TILE and STEP.
     cmds:
       - >-
         {{.VIEWER}}
-        --manifest {{.BUILD}}/tiles/{{.TILE}}/runs/default/{{.STEP}}/output/geometry/geometry.manifest
-        --drc-statis {{.BUILD}}/tiles/{{.TILE}}/runs/default/drc_ecc/analysis/drc_statis.csv
+        --manifest {{.BUILD}}/tiles/{{.TILE}}/default/{{.STEP}}/output/geometry/geometry.manifest
+        --drc-statis {{.BUILD}}/tiles/{{.TILE}}/default/drc_ecc/analysis/drc_statis.csv
 
   image:
     desc: Render the stitched fabric to a PNG
@@ -106,7 +111,7 @@ tasks:
     cmds:
       - >-
         python3 -c 'import json, pathlib;
-        [print(f"{d.name:16s}", next((m["value"] for m in json.loads((d / "runs/default/drc_ecc/analysis/qor_metrics.json").read_text())["metrics"] if m["id"] == "drc_count"), "-"))
+        [print(f"{d.name:16s}", next((m["value"] for m in json.loads((d / "default/drc_ecc/analysis/qor_metrics.json").read_text())["metrics"] if m["id"] == "drc_count"), "-"))
         for d in sorted(pathlib.Path("{{.BUILD}}/tiles").iterdir()) if d.is_dir()]'
 
   clean:

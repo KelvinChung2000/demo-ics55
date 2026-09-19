@@ -1,19 +1,20 @@
 """Create and drive one ECC project per tile type.
 
-ECC has no fixed-die parameter. Its `PARAM_REGISTRY` exposes utilisation, margin
-and aspect ratio only, so a tile whose die is dictated by the fabric pitch has to
-be set through `die_builder.mode` and `die_builder.die_size` in the workspace's
-own `fp_default_config.json`. That edit survives a re-run, because
-`_refresh_floorplan_config` merges those two keys with `setdefault` and never
-touches `pdn_generator` at all, which is also how the PDN stripe pitch is brought
-onto the row pitch. A workspace only exists once a step has run, so synthesis
-comes first and the patch sits between synthesis and floorplan.
+A tile's die is dictated by the fabric pitch rather than by its own cell area,
+and its PDN stripes have to land on the fabric row pitch or a supertile's
+stripes miss those of the single-height tiles beside it. Both are ordinary
+parameters now, so `ecc.toml` states them before the first run and no workspace
+file is patched: `floorplan.die_builder.mode` and `die_size` replace the
+utilisation ECC would otherwise derive the die from, and
+`floorplan.pdn_generator.stripe` is given whole because a list parameter has no
+per-field merge.
 
-The step order is not a preference. FINDINGS.md records a tile whose pin
-placement survived floorplan, placement, CTS and legalisation and then reverted
-to iEDA's own coordinates at routing, in a workspace that had been resumed
-piecemeal; the one that held ran from `fixFanout` to the end in a single
-invocation. That is why the tail of the flow is one call.
+The flow is broken in two places and both are forced. It stops after
+`macroPlacement` so `flow.ioplace` can hand `postFloorplan` the pin plan, and
+again after `postFloorplan` so `flow.defedit` can stretch the PDN to the die
+edge. FINDINGS.md records a tile whose pins reverted to iEDA's own coordinates
+at routing in a workspace resumed piecemeal, so everything after the second
+break is one invocation and `flow.cli`'s `check_pins` tests that they held.
 """
 
 from __future__ import annotations
@@ -25,28 +26,37 @@ import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
-ECC = Path("/home/kelvin/side-project/ecc-spike/eccw")
-# `build_harden_flow`'s step list, which the workspace only receives if the
-# project was created with that preset. It is written in after synthesis
-# instead, because a plain `ecc run` is the only call that creates a workspace
-# and it takes no step selector, so a `harden` project would run the whole flow
-# at the wrong die before the die could be set.
-HARDEN_STEPS: tuple[tuple[str, str], ...] = (
+ECC = Path("/home/kelvin/side-project/ecc-spike/eccw-main")
+WORKSPACE = "default"
+PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
+# `lec` is ECC's own default skip. `TimingOpt` needs Sizer, which is not
+# installed here, and `postRouteLec` re-elaborates the routed netlist for a
+# design this flow already checks by abutment.
+SKIP_STEPS: tuple[str, ...] = ("lec", "TimingOpt", "postRouteLec")
+# `build_rtl2gds_flow`'s chain, which a bounded workspace only holds as far as
+# the step it was created with; `widen_flow` writes the rest back in.
+CHAIN: tuple[tuple[str, str], ...] = (
     ("Synthesis", "yosys"),
-    ("Floorplan", "ecc"),
-    ("fixFanout", "ecc"),
+    ("lec", "yosys_lec"),
+    ("preFloorplan", "ecc"),
+    ("macroPlacement", "dreamplace"),
+    ("postFloorplan", "ecc"),
     ("place", "dreamplace"),
     ("CTS", "ecc"),
     ("legalization", "dreamplace"),
+    ("TimingOpt", "sizer"),
     ("route", "ecc"),
-    ("drc", "ecc"),
-    ("lvs", "ecc"),
     ("filler", "ecc"),
     ("RCX", "ecc"),
     ("sta", "ecc"),
+    ("lvs", "ecc"),
+    ("postRouteLec", "yosys_lec"),
+    ("drc", "ecc"),
     ("Harden", "ecc"),
 )
-PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
+STRIPE_LAYERS: tuple[str, ...] = ("MET4", "MET5")
+STRIPE_WIDTH_MICRON = 1.0
+STRIPE_OFFSET_MICRON = 0.5
 CORE_MARGIN_MICRON = 2
 SITE_HEIGHT_MICRON = 1.4  # core7
 # FABulous writes an instantiation with the module name alone on its line and a
@@ -133,6 +143,22 @@ def dependencies(top: str, index: dict[str, Path]) -> list[Path]:
     return ordered
 
 
+def stripe_tables(pitch_micron: float) -> str:
+    """Render the PDN stripes for `ecc.toml`, whole.
+
+    `floorplan.pdn_generator.stripe` is a list parameter, so it is replaced
+    rather than merged and every field of every stripe has to be restated.
+    """
+    return "".join(
+        f"\n[[params.floorplan.pdn_generator.stripe]]\n"
+        f'routing_layer_name = "{layer}"\n'
+        f"width_micron = {STRIPE_WIDTH_MICRON}\n"
+        f"pitch_micron = {pitch_micron}\n"
+        f"offset_micron = {STRIPE_OFFSET_MICRON}\n"
+        for layer in STRIPE_LAYERS
+    )
+
+
 def create_project(
     *,
     directory: Path,
@@ -141,8 +167,19 @@ def create_project(
     core_util: float,
     clock_port: str,
     frequency_mhz: float,
+    die_micron: tuple[float, float] | None = None,
+    stripe_pitch_micron: float | None = None,
 ) -> None:
-    """Lay out an ECC project for one tile, copying its Verilog into `rtl/`."""
+    """Lay out an ECC project for one tile, copying its Verilog into `rtl/`.
+
+    A tile whose die the fabric pitch dictates states `die_micron` and the
+    stripe pitch that goes with it; one that is only being synthesised, or one
+    whose die is sized later from its own floorplan measurement, states
+    neither. Half of the pair is a mistake rather than a default, because a
+    fixed die with ECC's 16 um stripes puts a stripe where a pin has to go.
+    """
+    if (die_micron is None) != (stripe_pitch_micron is None):
+        raise ValueError("a fixed die needs its own stripe pitch, and vice versa")
     rtl = directory / "rtl"
     rtl.mkdir(parents=True, exist_ok=True)
     names = []
@@ -157,25 +194,36 @@ def create_project(
             shutil.copy2(source, target)
         names.append(f"rtl/{source.name}")
     (directory / "filelist.f").write_text("\n".join(names) + "\n")
+    die = ""
+    if die_micron is not None:
+        width_micron, height_micron = die_micron
+        die = (
+            f'\n[params.floorplan.die_builder]\nmode = "die_size"\n\n'
+            f"[params.floorplan.die_builder.die_size]\n"
+            f"width_micron = {width_micron}\nheight_micron = {height_micron}\n"
+            + stripe_tables(stripe_pitch_micron)
+        )
     (directory / "ecc.toml").write_text(
         f'[design]\nname = "{top}"\ntop = "{top}"\nrtl = ["filelist.f"]\n'
         f'clock_port = "{clock_port}"\nfrequency_mhz = {frequency_mhz}\n\n'
         f'[pdk]\nname = "ics55"\nroot = "{PDK_ROOT}"\n\n'
-        f'[flow]\npreset = "syn_sta"\nrun = "default"\n\n'
+        f'[flow]\npreset = "rtl2gds"\n'
+        f"skip_steps = {json.dumps(list(SKIP_STEPS))}\n\n"
         f"[params.floorplan]\ncore_util = {core_util}\n"
         f"core_margin = [{CORE_MARGIN_MICRON}, {CORE_MARGIN_MICRON}]\n"
+        f"{die}"
     )
 
 
 def workspace_of(directory: Path) -> Path:
-    """Return a run's workspace as an absolute path.
+    """Return a run's workspace directory, which ECC names after the workspace.
 
-    `run` invokes ECC with `cwd=directory`, so a relative `--workspace` is
-    resolved against the project directory rather than against the caller's:
-    `build/flat_0.5` came back as `build/flat_0.5/build/flat_0.5/runs/default`
-    and ECC rejected it as invalid.
+    ECC is always given the workspace by name rather than by path. It rejects an
+    absolute path whose parent does not already exist, and a relative one is
+    resolved against the project directory rather than the caller's, so
+    `build/flat_0.5` once came back as `build/flat_0.5/build/flat_0.5`.
     """
-    return directory.resolve() / "runs" / "default"
+    return directory.resolve() / WORKSPACE
 
 
 def run(directory: Path, arguments: list[str], log: Path) -> StepResult:  # noqa: D401
@@ -214,10 +262,9 @@ def step_state(directory: Path, step: str) -> str:
 
 
 def run_step(directory: Path, step: str, log: Path) -> StepResult:
-    workspace = workspace_of(directory)
     result = run(
         directory,
-        ["run", "--workspace", str(workspace), "--only", step, "--force"],
+        ["run", "--workspace", WORKSPACE, "--only", step, "--force"],
         log,
     )
     return StepResult(
@@ -226,52 +273,16 @@ def run_step(directory: Path, step: str, log: Path) -> StepResult:
 
 
 def run_from(directory: Path, step: str, log: Path) -> StepResult:
-    """Run `step` and every step after it in one invocation.
-
-    `--force` is rejected alongside `--from`, so the steps have to be Unstart,
-    which `install_harden_flow` arranges.
-    """
-    workspace = workspace_of(directory)
-    result = run(directory, ["run", "--workspace", str(workspace), "--from", step], log)
+    """Run `step` and every step after it in one invocation."""
+    result = run(directory, ["run", "--workspace", WORKSPACE, "--from", step], log)
     return StepResult(
         step, result.returncode, result.seconds, step_state(directory, step)
     )
 
 
-def patch_floorplan(
-    directory: Path,
-    *,
-    width_micron: float,
-    height_micron: float,
-    stripe_pitch_micron: float,
-) -> None:
-    """Pin the tile's die and bring the PDN stripes onto the fabric row pitch.
-
-    The die has to be exact rather than derived from utilisation, because the
-    column width and row height are the fabric's and not this tile's. The stripe
-    pitch has to divide the row height, or the supertile's stripes miss those of
-    the single-height tiles beside it.
-    """
-    config = workspace_of(directory) / "config" / "fp_default_config.json"
-    if not config.exists():
-        raise FileNotFoundError(
-            f"{config} does not exist. Run one step first so ECC creates the workspace."
-        )
-    data = json.loads(config.read_text())
-    die_builder = data["die_builder"]
-    die_builder["mode"] = "die_size"
-    die_builder["die_size"] = {
-        "width_micron": width_micron,
-        "height_micron": height_micron,
-    }
-    for stripe in data["pdn_generator"]["stripe"]:
-        stripe["pitch_micron"] = stripe_pitch_micron
-    config.write_text(json.dumps(data, indent=4))
-
-
 def floorplan_def(directory: Path, top: str) -> Path:
     return (
-        workspace_of(directory) / "Floorplan_ecc" / "output" / f"{top}_Floorplan.def.gz"
+        workspace_of(directory) / "postFloorplan_ecc" / "output" / f"{top}_postFloorplan.def.gz"
     )
 
 
@@ -285,7 +296,7 @@ def drop_floorplan_database(directory: Path, top: str) -> None:
     import shutil
 
     database = (
-        workspace_of(directory) / "Floorplan_ecc" / "output" / f"{top}_Floorplan_db"
+        workspace_of(directory) / "postFloorplan_ecc" / "output" / f"{top}_postFloorplan_db"
     )
     if database.exists():
         shutil.rmtree(database)
@@ -306,52 +317,120 @@ def final_gds(directory: Path, top: str) -> Path:
     return candidates[0]
 
 
-def create_workspace(directory: Path, log: Path) -> StepResult:
-    """Run the project once so ECC materialises `runs/default`.
+def create_workspace(directory: Path, log: Path, *, to: str) -> StepResult:
+    """Run the project up to `to`, materialising the workspace on the way.
 
-    Only a plain `ecc run` creates a workspace and it rejects every step
-    selector, so the project is written with the `syn_sta` preset and this call
-    costs one synthesis rather than a whole flow at the wrong die.
+    The bound is what leaves a clean point to intervene before the next step:
+    ECC records its step ledger when the workspace is first created, and a
+    workspace already holding a ledger is resumed rather than recreated.
     """
     if (workspace_of(directory) / "home" / "flow.json").exists():
         # `ecc run --project` refuses a workspace that already exists, and a
         # rerun of one tile in a batch must not be that error.
         return StepResult(step="workspace", returncode=0, seconds=0.0)
-    return run(directory, ["run", "--project", str(directory.resolve())], log)
+    result = run(
+        directory,
+        [
+            "run",
+            "--project",
+            str(directory.resolve()),
+            "--workspace",
+            WORKSPACE,
+            "--from",
+            "synthesis",
+            "--to",
+            to,
+            "--plain",
+        ],
+        log,
+    )
+    return StepResult(to, result.returncode, result.seconds, step_state(directory, to))
 
 
-def install_harden_flow(directory: Path, *, last: str | None = None) -> None:
-    """Extend the synthesis-only flow to the harden list, keeping synthesis done.
+def run_range(directory: Path, first: str, last: str, log: Path) -> StepResult:
+    """Run `first` through `last` inclusive in one invocation."""
+    result = run(
+        directory,
+        [
+            "run",
+            "--workspace",
+            WORKSPACE,
+            "--from",
+            first,
+            "--to",
+            last,
+            "--plain",
+        ],
+        log,
+    )
+    return StepResult(
+        first, result.returncode, result.seconds, step_state(directory, last)
+    )
 
-    `last` truncates the list after a step. A run whose deliverable is a routed
-    and filled layout stops at `filler`, since `sta` on a design this size has
-    never returned and costs about an hour before it is killed.
+
+def set_params(directory: Path, assignments: dict[str, object], log: Path) -> None:
+    """Set workspace-scope parameters, which the next step refreshes its config from.
+
+    A project-scope `ecc.toml` value is read when the workspace is created and
+    not afterwards, so a die sized from a measurement the first floorplan made
+    has to be set here instead.
+    """
+    for key, value in assignments.items():
+        rendered = json.dumps(value) if not isinstance(value, str) else value
+        result = run(
+            directory,
+            [
+                "param",
+                "set",
+                key,
+                rendered,
+                "--workspace",
+                WORKSPACE,
+            ],
+            log,
+        )
+        if result.returncode:
+            raise ValueError(f"ecc param set {key} {rendered} failed, see {log}")
+
+
+def widen_flow(directory: Path) -> None:
+    """Extend a bounded workspace's step ledger to the whole preset.
+
+    A workspace remembers the range it was created with, in `home/flow.json`
+    and again in the project manifest, and `ecc run` validates a step selector
+    against that ledger rather than against the preset. `ecc workspace refresh`
+    would widen it but resets every step to Unstart and deletes the outputs
+    with them, so the ledger is widened here instead and what has already run
+    stays run.
     """
     path = workspace_of(directory) / "home" / "flow.json"
     data = json.loads(path.read_text())
-    done = {step["name"] for step in data["steps"] if step["state"] == "Success"}
+    done = {step["name"]: step for step in data["steps"]}
     if "Synthesis" not in done:
-        raise ValueError(
-            f"{path} does not record a successful Synthesis, so there is nothing to extend"
-        )
-    steps = HARDEN_STEPS
-    if last is not None:
-        ordered = [name for name, _ in HARDEN_STEPS]
-        if last not in ordered:
-            raise KeyError(f"{last} is not one of the harden steps: {ordered}")
-        steps = HARDEN_STEPS[: ordered.index(last) + 1]
+        raise ValueError(f"{path} records no Synthesis, so there is nothing to extend")
     data["steps"] = [
-        {
-            "name": name,
-            "tool": tool,
-            "state": "Success" if name in done else "Unstart",
-            "runtime": "",
-            "peak memory (mb)": 0,
-            "info": {},
-        }
-        for name, tool in steps
+        done.get(
+            name,
+            {
+                "name": name,
+                "tool": tool,
+                "state": "Unstart",
+                "runtime": "",
+                "peak memory (mb)": 0,
+                "info": {},
+            },
+        )
+        for name, tool in CHAIN
+        if name not in SKIP_STEPS
     ]
     path.write_text(json.dumps(data, indent=4))
+
+    manifest = directory / "project.json"
+    record = json.loads(manifest.read_text())
+    for workspace in record["workspaces"]:
+        if workspace["workspace_id"] == WORKSPACE:
+            workspace["end_step"] = CHAIN[-1][0]
+    manifest.write_text(json.dumps(record, indent=1))
 
 
 def harden_views(directory: Path, top: str) -> tuple[Path, Path, Path]:
@@ -367,12 +446,12 @@ def harden_views(directory: Path, top: str) -> tuple[Path, Path, Path]:
 def add_macro_views(directory: Path, *, lefs: list[Path], libs: list[Path]) -> None:
     """Bring the hardened tiles into a parent run as library cells.
 
-    `chipcompiler.data.workspace` reads `db_default_config.json` back into
+    `chipcompiler.data.workspace` reads `db_ecc.json` back into
     `pdk.lefs` and `pdk.libs` on load and writes it out again, so appending here
     is the supported route. `[pdk.overrides]` is whole-field replacement and
     would drop the standard-cell library.
     """
-    config = workspace_of(directory) / "config" / "db_default_config.json"
+    config = workspace_of(directory) / "config" / "db_ecc.json"
     if not config.exists():
         raise FileNotFoundError(f"{config} does not exist. Run one step first.")
     data = json.loads(config.read_text())
@@ -384,13 +463,20 @@ def add_macro_views(directory: Path, *, lefs: list[Path], libs: list[Path]) -> N
     config.write_text(json.dumps(data, indent=4))
 
 
-def zero_macro_halos(directory: Path) -> None:
-    """Remove the 3 um placement and routing halos, which abutted macros cannot have."""
-    config = workspace_of(directory) / "config" / "fp_default_config.json"
-    data = json.loads(config.read_text())
-    data["macro_placer"]["macro_placement_halo"] = 0.0
-    data["macro_placer"]["macro_routing_halo"] = 0.0
-    config.write_text(json.dumps(data, indent=4))
+def zero_macro_halos(directory: Path, log: Path) -> None:
+    """Remove the 3 um placement and routing halos, which abutted macros cannot have.
+
+    Through the parameters rather than the config file, because both halos are
+    registered and `apply_config_overrides` rewrites them before every step.
+    """
+    set_params(
+        directory,
+        {
+            "floorplan.macro_placer.macro_placement_halo": 0.0,
+            "floorplan.macro_placer.macro_routing_halo": 0.0,
+        },
+        log,
+    )
 
 
 def _floorplan_cells(directory: Path) -> set[str]:
@@ -400,7 +486,7 @@ def _floorplan_cells(directory: Path) -> set[str]:
     different tap and endcap cells needs no change.
     """
     data = json.loads(
-        (workspace_of(directory) / "config" / "fp_default_config.json").read_text()
+        (workspace_of(directory) / "config" / "floorplan_ecc.json").read_text()
     )
     placer = data["phy_placer"]
     names = {placer["well_tap"]["cell_name"]}
@@ -477,23 +563,6 @@ def bypass_placement(
     path.write_text(json.dumps(data, indent=4))
 
 
-def install_macro_locations(directory: Path, source: Path) -> int:
-    """Put the planned macro coordinates where `MacroPlacer` reads them.
-
-    `macro_placer.macro_location_path` is relative to the workspace config
-    directory and ECC creates the file empty when it is absent, so a
-    `macro_locations.txt` beside the project is never opened and every macro
-    arrives at `checkMacroPlacement` unplaced.
-    """
-    import shutil
-
-    config = workspace_of(directory) / "config"
-    data = json.loads((config / "fp_default_config.json").read_text())
-    target = config / data["macro_placer"]["macro_location_path"]
-    shutil.copy(source, target)
-    return len(target.read_text().splitlines())
-
-
 def synthesis_netlist(directory: Path, top: str) -> Path:
     """Return a run's gate netlist, and refuse when Yosys did not write one."""
     path = (
@@ -554,23 +623,9 @@ def set_core_util(directory: Path, utilisation: float) -> None:
     path.write_text(json.dumps(data, indent=4))
 
 
-def reset_from(directory: Path, step: str) -> None:
-    """Mark `step` and every step after it unstarted, so `--from` will run them."""
-    path = workspace_of(directory) / "home" / "flow.json"
-    data = json.loads(path.read_text())
-    reached = False
-    for entry in data["steps"]:
-        reached = reached or entry["name"] == step
-        if reached:
-            entry["state"] = "Unstart"
-    if not reached:
-        raise KeyError(f"{path} records no step named {step}")
-    path.write_text(json.dumps(data, indent=4))
-
-
 def floorplan_measurement(directory: Path) -> Path:
     """Return the feature file recording what the last floorplan actually built."""
-    return workspace_of(directory) / "Floorplan_ecc" / "feature" / "Floorplan.db.json"
+    return workspace_of(directory) / "postFloorplan_ecc" / "feature" / "postFloorplan.db.json"
 
 
 def die_side(directory: Path, top: str, utilisation: float) -> float:

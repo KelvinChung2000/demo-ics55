@@ -2,7 +2,7 @@
 
 The parent run never sees a tile source. It sees the abstract LEF and the
 extracted `.lib` of each hardened macro, and both of those bit-blast a bus into
-scalars such as `N1BEG_0_`, so a parent netlist saying `.N1BEG(...)` fails Yosys
+scalars such as `N1BEG_0`, so a parent netlist saying `.N1BEG(...)` fails Yosys
 with "does not have a port named". Everything here is therefore emitted flat: a
 scalar-port blackbox stub per tile type, and an `eFPGA` netlist whose every
 connection is one scalar. The shape of each scalar comes from `flow.fabric`'s
@@ -14,9 +14,8 @@ that the model already holds.
 Two things the model cannot supply, both reported rather than guessed. It
 carries no `assign`, so `eFPGA.v`'s per-row and per-column slices of `FrameData`
 and `FrameStrobe` reach the top level under their own net names, one scalar for
-one scalar and no bit lost. And ECC's parameter registry has no die size, so the
-die computed here goes into `ecc.toml` as a comment and has to be carried into
-`fp_default_config.json` by hand.
+one scalar and no bit lost. And the die computed here is stated outright in
+`ecc.toml`, because the fabric pitch fixes it rather than the cell area.
 """
 
 from __future__ import annotations
@@ -30,12 +29,15 @@ import typer
 from flow.fabric import Fabric, Port, TileType, load_fabric
 from flow.plan import CORE_MARGIN, DBU, SITE_HEIGHT, SITE_WIDTH, Plan
 
-ORIENT = "N"  # a tile is hardened once, so abutment never mirrors or rotates it
+ORIENT = "R0"  # a tile is hardened once, so abutment never mirrors or rotates it
 CLOCK_PORT = "UserCLK"
 CLOCK_MHZ = 100.0
 TOP_MODULE = "eFPGA"
 PDK_NAME = "ics55"
 PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
+STRIPE_LAYERS: tuple[str, ...] = ("MET4", "MET5")
+STRIPE_WIDTH_MICRON = 1.0
+STRIPE_OFFSET_MICRON = 0.5
 
 
 @dataclass(frozen=True)
@@ -77,11 +79,11 @@ def _scalars(stem: str, port: Port) -> list[str]:
     """Bit-blast `stem` into the names iEDA writes, shaped by the port it reaches.
 
     Same rule as `Port.bits`, applied to a net rather than to the port's own
-    name, so a net on a `[0:0]` port gains the `_0_` its macro pin carries.
+    name, so a net on a `[0:0]` port gains the `_0` its macro pin carries.
     """
     if not port.vectored:
         return [stem]
-    return [f"{stem}_{index}_" for index in range(port.width)]
+    return [f"{stem}_{index}" for index in range(port.width)]
 
 
 def build_netlist(fabric: Fabric) -> Netlist:
@@ -210,13 +212,21 @@ def _netlist_text(netlist: Netlist) -> str:
     )
 
 
-def _macro_locations(plan: Plan) -> str:
-    """Render `macro_locations.txt`, the fixed placement `iFP` reads."""
-    return "".join(
-        f"{placement.name} {_micron(placement.x + CORE_MARGIN)} "
-        f"{_micron(placement.y + CORE_MARGIN)} {ORIENT}\n"
+def _macro_placements(plan: Plan) -> str:
+    """Render `[params.macro]`, which ECC turns into its `placeInstance` handoff.
+
+    The file iFP actually reads, `config/macro_location.tcl`, is regenerated
+    from this parameter before every step, so writing it directly is undone.
+    Macro coordinates are core-relative, hence the margin.
+    """
+    placements = ",\n".join(
+        f'    {{ instance = "{placement.name}", '
+        f"x = {_micron(placement.x + CORE_MARGIN)}, "
+        f"y = {_micron(placement.y + CORE_MARGIN)}, "
+        f'orientation = "{ORIENT}" }}'
         for placement in plan.placements
     )
+    return f"\n[params.macro]\nplacements = [\n{placements},\n]\n"
 
 
 def _sdc() -> str:
@@ -237,8 +247,24 @@ def _filelist(fabric: Fabric) -> str:
     )
 
 
-def _ecc_toml(die: Die) -> str:
-    """Render `ecc.toml`, with the die it cannot express recorded as a comment."""
+def _stripe_tables(pitch_micron: float) -> str:
+    """Render the PDN stripes, whole, since a list parameter has no per-field merge.
+
+    The pitch is the fabric's rather than ECC's default, or a supertile's
+    stripes miss those of the single-height tiles beside it.
+    """
+    return "".join(
+        f"\n[[params.floorplan.pdn_generator.stripe]]\n"
+        f'routing_layer_name = "{layer}"\n'
+        f"width_micron = {STRIPE_WIDTH_MICRON}\n"
+        f"pitch_micron = {pitch_micron}\n"
+        f"offset_micron = {STRIPE_OFFSET_MICRON}\n"
+        for layer in STRIPE_LAYERS
+    )
+
+
+def _ecc_toml(die: Die, stripe_pitch_micron: float) -> str:
+    """Render `ecc.toml`, die and all."""
     margin = CORE_MARGIN // DBU
     return f"""[design]
 name = "{TOP_MODULE}"
@@ -257,17 +283,18 @@ sdc = "fabric.sdc"
 
 [flow]
 preset = "rtl2gds"
-run = "default"
 
-# ECC's parameter registry has no die size, so the {_micron(die.width)} x \
-{_micron(die.height)} um die
-# these files are built for reaches the run only through
-# runs/default/config/fp_default_config.json, as die_builder.mode "die_size" and
-# die_builder.die_size. The margin below is what makes that core \
-{die.core_rows} core7 rows.
+# The margin below is what makes the core {die.core_rows} core7 rows.
 [params.floorplan]
 core_margin = [{margin}, {margin}]
-"""
+
+[params.floorplan.die_builder]
+mode = "die_size"
+
+[params.floorplan.die_builder.die_size]
+width_micron = {_micron(die.width)}
+height_micron = {_micron(die.height)}
+{_stripe_tables(stripe_pitch_micron)}"""
 
 
 def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
@@ -301,10 +328,11 @@ def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
     for name, tile in sorted(fabric.tile_types.items()):
         (rtl / f"{name}_stub.v").write_text(_stub(tile))
     (rtl / f"{TOP_MODULE}_flat.v").write_text(_netlist_text(netlist))
-    (directory / "macro_locations.txt").write_text(_macro_locations(plan))
     (directory / "fabric.sdc").write_text(_sdc())
     (directory / "filelist.f").write_text(_filelist(fabric))
-    (directory / "ecc.toml").write_text(_ecc_toml(plan_die(plan)))
+    (directory / "ecc.toml").write_text(
+        _ecc_toml(plan_die(plan), plan.stripe_pitch / DBU) + _macro_placements(plan)
+    )
     return netlist
 
 

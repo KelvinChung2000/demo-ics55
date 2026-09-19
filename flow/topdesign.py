@@ -27,15 +27,13 @@ from typing import Annotated
 
 import typer
 
+from flow import project as ecc_project
+from flow.config import FabricSettings, Param, load_config
 from flow.fabric import Fabric, Port, TileType, load_fabric
 from flow.plan import CORE_MARGIN, DBU, SITE_HEIGHT, SITE_WIDTH, Plan
 
 ORIENT = "N"  # a tile is hardened once, so abutment never mirrors or rotates it
-CLOCK_PORT = "UserCLK"
-CLOCK_MHZ = 100.0
 TOP_MODULE = "eFPGA"
-PDK_NAME = "ics55"
-PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
 
 
 @dataclass(frozen=True)
@@ -219,14 +217,15 @@ def _macro_locations(plan: Plan) -> str:
     )
 
 
-def _sdc() -> str:
+def _sdc(settings: FabricSettings) -> str:
     """Render the one clock constraint the fabric takes."""
+    port = settings.clock_port
     return (
-        "# One clock for the whole fabric. The tile lib carries arcs from UserCLK to\n"
+        f"# One clock for the whole fabric. The tile lib carries arcs from {port} to\n"
         "# the tile outputs, so a second create_clock on any other tile clock port\n"
         "# makes iSTA abort with overlapping clock trees at the first seam.\n"
-        f"create_clock -name {CLOCK_PORT} -period {1000.0 / CLOCK_MHZ:.1f} "
-        f"[get_ports {CLOCK_PORT}]\n"
+        f"create_clock -name {port} -period {1000.0 / settings.frequency_mhz:.1f} "
+        f"[get_ports {port}]\n"
     )
 
 
@@ -237,45 +236,31 @@ def _filelist(fabric: Fabric) -> str:
     )
 
 
-def _ecc_toml(die: Die) -> str:
-    """Render `ecc.toml`, with the die it cannot express recorded as a comment."""
-    margin = CORE_MARGIN // DBU
-    return f"""[design]
-name = "{TOP_MODULE}"
-top = "{TOP_MODULE}"
-rtl = ["filelist.f"]
-clock_port = "{CLOCK_PORT}"
-frequency_mhz = {CLOCK_MHZ}
-
-[pdk]
-name = "{PDK_NAME}"
-root = "{PDK_ROOT}"
-
-# Without this ECC writes its own SDC from clock_port and ignores fabric.sdc.
-[pdk.overrides]
-sdc = "fabric.sdc"
-
-[flow]
-preset = "rtl2gds"
-run = "default"
-
-# ECC's parameter registry has no die size, so the {_micron(die.width)} x \
-{_micron(die.height)} um die
-# these files are built for reaches the run only through
-# runs/default/config/fp_default_config.json, as die_builder.mode "die_size" and
-# die_builder.die_size. The margin below is what makes that core \
-{die.core_rows} core7 rows.
-[params.floorplan]
-core_margin = [{margin}, {margin}]
-"""
+def _die_note(die: Die) -> str:
+    """Record the die in `ecc.toml` as a comment, since no parameter can hold it."""
+    return (
+        f"# ECC's parameter registry has no die size, so the {_micron(die.width)} x "
+        f"{_micron(die.height)} um die\n"
+        "# these files are built for reaches the run only through\n"
+        "# runs/default/config/fp_default_config.json, as die_builder.mode \"die_size\" and\n"
+        "# die_builder.die_size. The core margin below is what makes that core "
+        f"{die.core_rows} core7 rows.\n"
+    )
 
 
-def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
+def write_project(
+    plan: Plan,
+    fabric: Fabric,
+    directory: Path,
+    settings: FabricSettings,
+    params: tuple[Param, ...] = (),
+) -> Netlist:
     """Write the whole parent project into `directory` and return its netlist.
 
     Fails when the plan and the fabric describe different tile types or
     different instances, which means one of the two was regenerated alone.
     """
+    clock_port = settings.clock_port
     if set(plan.tile_size) != set(fabric.tile_types):
         raise ValueError(
             "the plan and the fabric disagree on tile types: "
@@ -290,9 +275,9 @@ def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
         )
 
     netlist = build_netlist(fabric)
-    if CLOCK_PORT not in netlist.inputs:
+    if clock_port not in netlist.inputs:
         raise ValueError(
-            f"{CLOCK_PORT} is not a top-level input of the flattened fabric, so the SDC "
+            f"{clock_port} is not a top-level input of the flattened fabric, so the SDC "
             "would constrain nothing; check which net eFPGA.v drives the bottom row with"
         )
 
@@ -302,9 +287,17 @@ def write_project(plan: Plan, fabric: Fabric, directory: Path) -> Netlist:
         (rtl / f"{name}_stub.v").write_text(_stub(tile))
     (rtl / f"{TOP_MODULE}_flat.v").write_text(_netlist_text(netlist))
     (directory / "macro_locations.txt").write_text(_macro_locations(plan))
-    (directory / "fabric.sdc").write_text(_sdc())
+    (directory / "fabric.sdc").write_text(_sdc(settings))
     (directory / "filelist.f").write_text(_filelist(fabric))
-    (directory / "ecc.toml").write_text(_ecc_toml(plan_die(plan)))
+    ecc_project.write_ecc_toml(
+        directory,
+        top=TOP_MODULE,
+        settings=settings,
+        params=params,
+        preset="rtl2gds",
+        sdc="fabric.sdc",
+        note=_die_note(plan_die(plan)),
+    )
     return netlist
 
 
@@ -322,7 +315,14 @@ def main(
     """Build the parent project from a FABulous project and its plan."""
     fabric = load_fabric(project)
     plan = Plan.read(plan_file)
-    netlist = write_project(plan=plan, fabric=fabric, directory=directory)
+    config = load_config(project, tuple(fabric.tile_types))
+    netlist = write_project(
+        plan=plan,
+        fabric=fabric,
+        directory=directory,
+        settings=config.fabric,
+        params=config.fabric_params,
+    )
     die = plan_die(plan)
     typer.echo(
         f"{len(netlist.instances)} macros of {len(fabric.tile_types)} types, "

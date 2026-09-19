@@ -1,9 +1,13 @@
 """Create and drive one ECC project per tile type.
 
-ECC has no fixed-die parameter. Its `PARAM_REGISTRY` exposes utilisation, margin
-and aspect ratio only, so a tile whose die is dictated by the fabric pitch has to
-be set through `die_builder.mode` and `die_builder.die_size` in the workspace's
-own `fp_default_config.json`. That edit survives a re-run, because
+ECC has no fixed-die parameter. Its registry holds the thirteen entries
+`flow.config.PARAM_REGISTRY` lists and no die among them, so a tile whose die is
+dictated by the fabric pitch has to be set through `die_builder.mode` and
+`die_builder.die_size` in the workspace's own `fp_default_config.json`. Every
+`ecc.toml` this flow writes comes from `write_ecc_toml`, reading the project
+configuration `flow.config` validated, so the tile runs, the fabric run and the
+flat control cannot disagree on the clock, the PDK or the core margin. That edit
+survives a re-run, because
 `_refresh_floorplan_config` merges those two keys with `setdefault` and never
 touches `pdn_generator` at all, which is also how the PDN stripe pitch is brought
 onto the row pitch. A workspace only exists once a step has run, so synthesis
@@ -22,8 +26,12 @@ import json
 import re
 import shutil
 import subprocess
+import tomllib
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
+
+from flow.config import FabricSettings, Param
 
 ECC = Path("/home/kelvin/side-project/ecc-spike/eccw")
 # `build_harden_flow`'s step list, which the workspace only receives if the
@@ -46,8 +54,6 @@ HARDEN_STEPS: tuple[tuple[str, str], ...] = (
     ("sta", "ecc"),
     ("Harden", "ecc"),
 )
-PDK_ROOT = Path("/home/kelvin/side-project/ecc-spike/pdk")
-CORE_MARGIN_MICRON = 2
 SITE_HEIGHT_MICRON = 1.4  # core7
 # FABulous writes an instantiation with the module name alone on its line and a
 # `ifdef EMULATION` parameter block between it and the instance name, so the two
@@ -72,6 +78,69 @@ class StepResult:
         `Ongoing`, so the exit code alone reports a success that did not happen.
         """
         return self.returncode == 0 and self.state in ("", "Success")
+
+
+@dataclass(frozen=True)
+class Override:
+    """One entry of ECC's parameter registry, set for a single project.
+
+    `ecc param list` in a project directory names every parameter that can be
+    overridden this way; anything outside that list has to be edited in the
+    workspace's own step config, as the die size and the PDN pitch are.
+    """
+
+    section: str
+    name: str
+    value: str
+
+    @classmethod
+    def parse(cls, text: str) -> Override:
+        key, separator, value = text.partition("=")
+        if not separator or not value:
+            raise ValueError(f"an override reads section.name=value, not {text!r}")
+        section, dot, name = key.partition(".")
+        if not dot or not name:
+            raise ValueError(f"an override key reads section.name, not {key!r}")
+        return cls(section=section, name=name, value=value)
+
+    @property
+    def key(self) -> str:
+        return f"{self.section}.{self.name}"
+
+    def __str__(self) -> str:
+        return f"{self.key}={self.value}"
+
+
+def apply_overrides(directory: Path, overrides: Sequence[Override]) -> None:
+    """Set each override in the project's `ecc.toml` through `ecc param set`.
+
+    ECC coerces the value to the parameter's own type and rewrites a key the
+    project already carries in place, neither of which hand-written TOML would
+    do. It reports an unknown parameter or a mistyped value and then exits 0
+    without writing the key, so the write is confirmed by reading the file back.
+    """
+    if not overrides:
+        return
+    reports: dict[Override, str] = {}
+    for override in overrides:
+        completed = subprocess.run(
+            [str(ECC), "param", "set", override.key, override.value],
+            cwd=directory,
+            capture_output=True,
+            text=True,
+        )
+        # ECC writes its `[error]` block to stdout and only Fontconfig noise to
+        # stderr, so stdout alone carries the reason a key was refused.
+        reports[override] = completed.stdout.strip()
+    params = tomllib.loads((directory / "ecc.toml").read_text()).get("params", {})
+    refused = [
+        override
+        for override in overrides
+        if override.name not in params.get(override.section, {})
+    ]
+    if refused:
+        detail = "; ".join(f"{override}: {reports[override]}" for override in refused)
+        raise ValueError(f"ECC refused an override: {detail}")
 
 
 def _mask_comments(text: str) -> str:
@@ -133,14 +202,61 @@ def dependencies(top: str, index: dict[str, Path]) -> list[Path]:
     return ordered
 
 
+def write_ecc_toml(
+    directory: Path,
+    *,
+    top: str,
+    settings: FabricSettings,
+    params: Sequence[Param] = (),
+    preset: str,
+    sdc: str | None = None,
+    note: str = "",
+) -> None:
+    """Render one project's `ecc.toml` from the project configuration.
+
+    Every project this flow writes goes through here, so that the clock, the PDK
+    and the core margin cannot drift between a tile run, the fabric run and the
+    flat control. `params` is already validated against ECC's registry by
+    `flow.config`; anything outside that registry has no `ecc.toml` spelling and
+    reaches a run through the workspace step configs instead.
+    """
+    # A whole-micron margin is written as an integer, because that is what ECC
+    # prints it back as and a diff against `ecc param list` should be empty.
+    micron = settings.core_margin_micron
+    margin: float | int = int(micron) if micron.is_integer() else micron
+    sections = [
+        f'[design]\nname = "{top}"\ntop = "{top}"\nrtl = ["filelist.f"]\n'
+        f'clock_port = "{settings.clock_port}"\n'
+        f"frequency_mhz = {settings.frequency_mhz}\n",
+        f'[pdk]\nname = "{settings.pdk_name}"\nroot = "{settings.pdk_root}"\n',
+    ]
+    if sdc is not None:
+        sections.append(
+            f"# Without this ECC writes its own SDC from clock_port and ignores {sdc}.\n"
+            f'[pdk.overrides]\nsdc = "{sdc}"\n'
+        )
+    sections.append(f'[flow]\npreset = "{preset}"\nrun = "default"\n')
+    # The margin is the one registry entry the config files cannot carry, so it
+    # is rendered here and the floorplan section always exists to hold it. A note
+    # leads the section, since what it explains is the margin.
+    grouped: dict[str, list[str]] = {"floorplan": [f"core_margin = [{margin}, {margin}]"]}
+    for param in params:
+        grouped.setdefault(param.section, []).append(param.render())
+    for section, entries in grouped.items():
+        lead = note.rstrip("\n") + "\n" if note and section == "floorplan" else ""
+        sections.append(lead + f"[params.{section}]\n" + "\n".join(entries) + "\n")
+    (directory / "ecc.toml").write_text("\n".join(sections))
+
+
 def create_project(
     *,
     directory: Path,
     top: str,
     sources: list[Path],
-    core_util: float,
-    clock_port: str,
-    frequency_mhz: float,
+    settings: FabricSettings,
+    params: Sequence[Param] = (),
+    preset: str = "syn_sta",
+    overrides: Sequence[Override] = (),
 ) -> None:
     """Lay out an ECC project for one tile, copying its Verilog into `rtl/`."""
     rtl = directory / "rtl"
@@ -157,14 +273,10 @@ def create_project(
             shutil.copy2(source, target)
         names.append(f"rtl/{source.name}")
     (directory / "filelist.f").write_text("\n".join(names) + "\n")
-    (directory / "ecc.toml").write_text(
-        f'[design]\nname = "{top}"\ntop = "{top}"\nrtl = ["filelist.f"]\n'
-        f'clock_port = "{clock_port}"\nfrequency_mhz = {frequency_mhz}\n\n'
-        f'[pdk]\nname = "ics55"\nroot = "{PDK_ROOT}"\n\n'
-        f'[flow]\npreset = "syn_sta"\nrun = "default"\n\n'
-        f"[params.floorplan]\ncore_util = {core_util}\n"
-        f"core_margin = [{CORE_MARGIN_MICRON}, {CORE_MARGIN_MICRON}]\n"
+    write_ecc_toml(
+        directory, top=top, settings=settings, params=params, preset=preset
     )
+    apply_overrides(directory, overrides)
 
 
 def workspace_of(directory: Path) -> Path:
@@ -573,7 +685,9 @@ def floorplan_measurement(directory: Path) -> Path:
     return workspace_of(directory) / "Floorplan_ecc" / "feature" / "Floorplan.db.json"
 
 
-def die_side(directory: Path, top: str, utilisation: float) -> float:
+def die_side(
+    directory: Path, top: str, utilisation: float, *, core_margin_micron: float
+) -> float:
     """Return the square die, in microns, that fills to `utilisation` with logic.
 
     The cell area comes from the last floorplan's own measurement rather than
@@ -586,4 +700,4 @@ def die_side(directory: Path, top: str, utilisation: float) -> float:
     cell_area = layout["core_area"] * layout["core_usage"]
     core = (cell_area / utilisation) ** 0.5
     rows = -(-core // (SITE_HEIGHT_MICRON))
-    return round(rows * SITE_HEIGHT_MICRON + 2 * CORE_MARGIN_MICRON, 3)
+    return round(rows * SITE_HEIGHT_MICRON + 2 * core_margin_micron, 3)

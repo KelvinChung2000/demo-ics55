@@ -22,8 +22,14 @@ import json
 import re
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from flow.fabric import Bit, Fabric, Side
+
+if TYPE_CHECKING:
+    from collections.abc import Mapping
+
+    from flow.config import TileDie
 
 DBU = 1000  # DEF database units per micron, from the ICS55 tech LEF
 SITE_WIDTH = 200  # DBU, core7
@@ -109,7 +115,9 @@ class Plan:
         """
         kept, cut = [], []
         for placement in self.placements:
-            covered = range(placement.row, placement.row + self.rows_of(placement.tile_type))
+            covered = range(
+                placement.row, placement.row + self.rows_of(placement.tile_type)
+            )
             if placement.column not in columns:
                 continue
             if all(row in rows for row in covered):
@@ -117,7 +125,9 @@ class Plan:
             elif any(row in rows for row in covered):
                 cut.append(placement.name)
         if cut:
-            raise ValueError(f"the window cuts {len(cut)} supertiles in half: {cut[:3]}")
+            raise ValueError(
+                f"the window cuts {len(cut)} supertiles in half: {cut[:3]}"
+            )
         if not kept:
             raise ValueError(f"no tile sits in columns {columns} and rows {rows}")
 
@@ -125,13 +135,16 @@ class Plan:
         right = max(p.x + self.tile_size[p.tile_type][0] for p in kept)
         bottom = min(p.y for p in kept)
         top = max(p.y + self.tile_size[p.tile_type][1] for p in kept)
+
         # An interior seam has a tile on both sides; one on the window's own edge
         # does not, so it is dropped rather than checked against nothing. A
         # vertical seam's `at` is an x and its band a y range, and a horizontal
         # seam's the other way round.
         def inside(seam: Seam) -> bool:
             if seam.orientation == "vertical":
-                return left < seam.at < right and bottom <= seam.low and seam.high <= top
+                return (
+                    left < seam.at < right and bottom <= seam.low and seam.high <= top
+                )
             return bottom < seam.at < top and left <= seam.low and seam.high <= right
 
         seams = [seam for seam in self.seams if inside(seam)]
@@ -140,7 +153,9 @@ class Plan:
             row_height=self.row_height,
             column_x=self.column_x,
             row_y=self.row_y,
-            tile_size={name: self.tile_size[name] for name in {p.tile_type for p in kept}},
+            tile_size={
+                name: self.tile_size[name] for name in {p.tile_type for p in kept}
+            },
             placements=kept,
             pins={name: self.pins[name] for name in {p.tile_type for p in kept}},
             seams=seams,
@@ -183,7 +198,10 @@ def _decode(data: dict) -> Plan:
         row_y=data["row_y"],
         tile_size={name: tuple(size) for name, size in data["tile_size"].items()},
         placements=[TilePlacement(**item) for item in data["placements"]],
-        pins={name: [PinPlacement(**item) for item in pins] for name, pins in data["pins"].items()},
+        pins={
+            name: [PinPlacement(**item) for item in pins]
+            for name, pins in data["pins"].items()
+        },
         seams=[Seam(**item) for item in data["seams"]],
         stripe_pitch=data["stripe_pitch"],
         width=data["width"],
@@ -203,11 +221,16 @@ def read_reference_geometry(path: Path) -> tuple[list[int], list[int]]:
     height = int(re.search(r"^Height,(\d+)", text, re.M).group(1))
     block = text[text.index("FABRIC_LOCS") :].split("\n\n")[0].splitlines()[1:]
     grid = [
-        [tuple(int(v) for v in cell.split("/")) if "/" in cell else None for cell in line.split(",")]
+        [
+            tuple(int(v) for v in cell.split("/")) if "/" in cell else None
+            for cell in line.split(",")
+        ]
         for line in block
         if line.strip()
     ]
-    xs = [next(cell[0] for cell in column if cell) for column in zip(*grid, strict=True)]
+    xs = [
+        next(cell[0] for cell in column if cell) for column in zip(*grid, strict=True)
+    ]
     ys = [next(cell[1] for cell in row if cell) for row in grid]
     widths = [b - a for a, b in zip(xs, xs[1:] + [width], strict=True)]
     heights = [b - a for a, b in zip(ys, ys[1:] + [height], strict=True)]
@@ -238,7 +261,9 @@ def stripe_keepout(extent: int, pitch: int) -> list[tuple[int, int]]:
     ]
 
 
-def _tracks(low: int, high: int, count: int, blocked: list[tuple[int, int]]) -> list[int]:
+def _tracks(
+    low: int, high: int, count: int, blocked: list[tuple[int, int]]
+) -> list[int]:
     """Return `count` track-snapped offsets spread between `low` and `high`.
 
     Snapping to the routing grid is not cosmetic: in the single-tile spike it cut
@@ -382,7 +407,9 @@ def _assign(
 
     index_of = {
         root: index
-        for index, root in enumerate(sorted(wanted, key=lambda root: order(wanted[root])))
+        for index, root in enumerate(
+            sorted(wanted, key=lambda root: order(wanted[root]))
+        )
     }
     lane_members: dict[int, set[int]] = {lane: set() for lane in extent}
     for root, members in wanted.items():
@@ -441,13 +468,104 @@ def _boundary_offsets(
             blocked += stripe_keepout(extent, stripe_pitch)
         # Bit order along the edge, for the same reason the shared pins keep it.
         outside.sort(key=lambda bit: (fabric.port_of(bit), _bit_index(bit.name)))
-        for bit, offset in zip(outside, _tracks(0, extent, len(outside), blocked), strict=True):
+        for bit, offset in zip(
+            outside, _tracks(0, extent, len(outside), blocked), strict=True
+        ):
             placed[bit] = offset
     return placed
 
 
-def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type: str) -> Plan:
-    """Size every tile and place every pin, from the fabric and one measured tile."""
+def _edge(micron: float, quantum: int, what: str) -> int:
+    """Convert a requested die edge to DBU, refusing one off the fabric's grid.
+
+    The scaled reference is quantised because it is an arbitrary real number, but
+    a hand-written edge is refused instead: rounding it would build a tile the
+    config does not describe.
+    """
+    exact = micron * DBU
+    value = round(exact)
+    if abs(value - exact) > 1e-6 or value % quantum:
+        raise ValueError(
+            f"{what} {micron} um is {exact} DBU, not a whole number of {quantum} DBU. "
+            f"Abutment leaves a {quantum / DBU} um grid, so the edge has to land on it."
+        )
+    return value
+
+
+def _claim(
+    claims: dict[int, tuple[str, int]],
+    index: int,
+    tile_type: str,
+    value: int,
+    kind: str,
+) -> None:
+    """Record one type's size for one column or row, refusing a disagreement."""
+    held = claims.get(index)
+    if held is not None and held[1] != value:
+        raise ValueError(
+            f"{kind} {index} carries {held[0]} at {held[1] / DBU} um and {tile_type} at "
+            f"{value / DBU} um. Abutment gives a {kind} one size, so the two have to agree."
+        )
+    claims[index] = (tile_type, value)
+
+
+def _override_die(
+    fabric: Fabric,
+    column_width: list[int],
+    row_height: list[int],
+    tile_die: "Mapping[str, TileDie]",
+) -> None:
+    """Bind each type's requested die to the columns and rows its instances occupy.
+
+    A width reaches every type sharing those columns and a height every type
+    sharing those rows, because that is what abutment means; two types asking for
+    different sizes is refused here rather than resolved, since either answer
+    would silently be the other tile's.
+    """
+    widths: dict[int, tuple[str, int]] = {}
+    heights: dict[int, tuple[str, int]] = {}
+    for tile_type, die in sorted(tile_die.items()):
+        if die.width_micron is not None:
+            width = _edge(die.width_micron, SITE_WIDTH, f"{tile_type} die width")
+            for column in sorted(fabric.occupied_columns(tile_type)):
+                _claim(widths, column, tile_type, width, "column")
+        if die.height_micron is None:
+            continue
+        spanned = fabric.tile_types[tile_type].rows
+        if spanned > 1:
+            raise ValueError(
+                f"{tile_type} spans {spanned} grid rows, so one die height does not say "
+                "how tall each of them is. Set the height on a single-row type sharing "
+                "those rows instead."
+            )
+        height = _edge(die.height_micron, HEIGHT_QUANTUM, f"{tile_type} die height")
+        for row in sorted(fabric.occupied_rows(tile_type)):
+            _claim(heights, row, tile_type, height, "row")
+    for column, (_, width) in widths.items():
+        column_width[column] = width
+    for row, (_, height) in heights.items():
+        row_height[row] = height
+
+
+def build_plan(
+    fabric: Fabric,
+    geometry: Path,
+    anchor_micron: float,
+    anchor_type: str,
+    *,
+    stripe_pitch_micron: float,
+    tile_die: "Mapping[str, TileDie]",
+) -> Plan:
+    """Size every tile and place every pin, from the fabric and one measured tile.
+
+    `anchor_micron` scales every column and row together; `tile_die` then
+    replaces individual ones, so a type whose die is given is built to that and
+    the rest keep the reference proportions.
+
+    `stripe_pitch_micron` is the pitch asked for rather than the pitch used: the
+    core row height has to be a whole number of pitches, so the value below is
+    the nearest one that divides it.
+    """
     widths, heights = read_reference_geometry(geometry)
     if len(widths) != fabric.columns or len(heights) != fabric.rows:
         raise ValueError(
@@ -466,12 +584,14 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
 
     column_width = [_quantise(width * x_scale, SITE_WIDTH) for width in widths]
     row_height = [_quantise(height * y_scale, HEIGHT_QUANTUM) for height in heights]
+    _override_die(fabric, column_width, row_height, tile_die)
 
     # The supertile's stripes only meet its neighbours' if a core row is a whole
     # number of pitches; the core row is the tallest row and every stripe pitch
     # divides it, so derive the pitch from it rather than carrying ECC's default.
     core_height = max(row_height)
-    stripe_pitch = core_height // round(core_height / 16000)
+    wanted_pitch = round(stripe_pitch_micron * DBU)
+    stripe_pitch = core_height // round(core_height / wanted_pitch)
     # The pitch iEDA is configured with is the pitch of one power net, and VDD
     # and VSS interleave, so the supertile's stripes meet its neighbours' only if
     # the row divides by the half pitch.
@@ -495,10 +615,14 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
 
     tile_size: dict[str, tuple[int, int]] = {}
     for name, tile in fabric.tile_types.items():
-        column_widths = {column_width[column] for column in fabric.occupied_columns(name)}
+        column_widths = {
+            column_width[column] for column in fabric.occupied_columns(name)
+        }
         rows = sorted(fabric.occupied_rows(name))
         if len(column_widths) != 1:
-            raise ValueError(f"{name} sits in columns of {len(column_widths)} different widths")
+            raise ValueError(
+                f"{name} sits in columns of {len(column_widths)} different widths"
+            )
         spans = {
             sum(row_height[instance.y + offset] for offset in range(tile.rows))
             for instance in fabric.placements()
@@ -574,7 +698,9 @@ def build_plan(fabric: Fabric, geometry: Path, anchor_micron: float, anchor_type
                 # first sub-row is the northernmost, so it is the topmost slice.
                 offset += sum(
                     row_height[row]
-                    for row in sorted(fabric.occupied_rows(name))[: tile.rows - 1 - port.sub_row]
+                    for row in sorted(fabric.occupied_rows(name))[
+                        : tile.rows - 1 - port.sub_row
+                    ]
                 )
             placed.append(
                 PinPlacement(
@@ -619,7 +745,12 @@ def _seams(
             key = ("vertical", column_x[column], row_y[dy], row_y[dy] + row_height[dy])
         else:
             row = min(dy, ry)  # the northern of the two, so the seam is its bottom edge
-            key = ("horizontal", row_y[row], column_x[dx], column_x[dx] + column_width[dx])
+            key = (
+                "horizontal",
+                row_y[row],
+                column_x[dx],
+                column_x[dx] + column_width[dx],
+            )
         counts[key] = counts.get(key, 0) + 1
     return [
         Seam(orientation=orientation, at=at, low=low, high=high, crossings=crossings)

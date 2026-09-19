@@ -14,22 +14,34 @@ vars:
   JOBS: '{{.JOBS | default "3"}}'
   TILE: '{{.TILE | default "LUT4x8_ha"}}'
   STEP: '{{.STEP | default "filler_ecc"}}'
+  # Which tool assembles the hardened tiles: klayout abuts them and proves every
+  # seam, ecc runs the macro-placed parent through its own flow, both does each.
+  STITCHER: '{{.STITCHER | default "klayout"}}'
   BUILD: '{{.BUILD | default "build"}}'
   ECC: '{{.ECC | default "../eccw"}}'
   VIEWER: '{{.VIEWER | default "/home/kelvin/side-project/ecos-studio/ecos/chip-viewer/target/release/chip-viewer-native"}}'
   FLOW: python3 -m flow.cli
 
 tasks:
-  build:
-    aliases: [default]
-    desc: Plan, harden all fifteen tile types, paint, stitch and floorplan the fabric
+  efpga:
+    aliases: [default, build]
+    desc: >-
+      Compile the whole fabric on the ECC side, from the committed RTL to one
+      assembled layout. About forty minutes. STITCHER=klayout (default), ecc or
+      both picks which tool assembles the tiles.
     cmds:
       - task: plan
       - task: check
       - task: harden
-      - task: paint
-      - task: stitch
-      - task: top
+      - task: assemble
+
+  assemble:
+    desc: >-
+      Assemble the hardened tiles into one layout. STITCHER=klayout paints them,
+      abuts them and proves every seam, ecc hardens the macro-placed parent to
+      filler, both runs each.
+    cmds:
+      - "{{.FLOW}} assemble --stitcher {{.STITCHER}}"
 
   sync-tiles:
     desc: Re-vendor Tile/ and primitives/ from the pinned FABulous tile library
@@ -47,22 +59,24 @@ tasks:
       - "{{.FLOW}} check"
 
   harden:
-    desc: Run every tile type from synthesis to macro. Takes about forty minutes.
+    desc: >-
+      Run every tile type from synthesis to macro. Takes about forty minutes.
+      Pass ECC parameter overrides after --, as `-- --set place.target_density=0.55`
     cmds:
-      - "{{.FLOW}} harden --jobs {{.JOBS}}"
+      - "{{.FLOW}} harden --jobs {{.JOBS}} {{.CLI_ARGS}}"
 
   harden-one:
-    desc: Harden one tile type, discarding any existing run. Set TILE.
+    desc: >-
+      Harden one tile type, discarding any existing run. Set TILE. Pass ECC
+      parameter overrides after --, as `-- --set place.target_density=0.55`;
+      an overridden run builds into build/tiles/<TILE>@<overrides> of its own.
     cmds:
-      - "{{.FLOW}} harden --force --jobs 1 --tile {{.TILE}}"
-
-  paint:
-    desc: Draw each hardened tile's pins and boundary power into its GDS
-    cmds:
-      - "{{.FLOW}} paint"
+      - "{{.FLOW}} harden --force --jobs 1 --tile {{.TILE}} {{.CLI_ARGS}}"
 
   stitch:
-    desc: Abut the fabric and prove every seam conducts and pairs correctly
+    desc: >-
+      Paint every hardened tile, abut the fabric and prove every seam conducts and
+      pairs correctly. Refuses a tile whose die is not the one the plan says.
     cmds:
       - "{{.FLOW}} stitch"
 
@@ -71,9 +85,17 @@ tasks:
     cmds:
       - "{{.FLOW}} top"
 
+  synth:
+    desc: >-
+      Synthesise every tile type into build/tiles/<TYPE>_nl and stop, which is all
+      the flat control reads from them. Rerunning is cheap once the workspaces exist.
+    cmds:
+      - "{{.FLOW}} synth --jobs {{.JOBS}}"
+
   flat:
     desc: Harden the whole eFPGA as one design, composed from the tiles' gate netlists
     cmds:
+      - task: synth
       - "{{.FLOW}} flat"
 
   find:
@@ -102,12 +124,13 @@ tasks:
       - "{{.ECC}} layout-image --gds {{.BUILD}}/eFPGA.gds --image {{.BUILD}}/eFPGA.png --width 3000 --height 4800"
 
   drc:
-    desc: Report every tile type's signoff DRC count
+    desc: Report the signoff DRC count of every tile build that has one
     cmds:
       - >-
         python3 -c 'import json, pathlib;
-        [print(f"{d.name:16s}", next((m["value"] for m in json.loads((d / "runs/default/drc_ecc/analysis/qor_metrics.json").read_text())["metrics"] if m["id"] == "drc_count"), "-"))
-        for d in sorted(pathlib.Path("{{.BUILD}}/tiles").iterdir()) if d.is_dir()]'
+        [print(f"{d.name:16s}", next((m["value"] for m in json.loads(q.read_text())["metrics"] if m["id"] == "drc_count"), "-"))
+        for d in sorted(pathlib.Path("{{.BUILD}}/tiles").iterdir())
+        if (q := d / "runs/default/drc_ecc/analysis/qor_metrics.json").exists()]'
 
   clean:
     desc: Delete every build artefact. Everything here is reproducible with `task build`.

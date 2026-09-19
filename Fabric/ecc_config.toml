@@ -1,0 +1,36 @@
+# The ECC settings shared by every project this flow writes: the fifteen tile
+# runs, the fabric-level run the hardened tiles are placed into, and the flat
+# control build. `flow.config` reads this file; `flow.project.create_project`
+# renders each project's `ecc.toml` from it.
+#
+# `[fabric]` holds the two values that are not ECC parameters at all. Both reach
+# a run through `runs/default/config/fp_default_config.json`, which
+# `flow.project.patch_floorplan` writes after synthesis, and both are fabric-wide
+# rather than per-tile: the stripe pitch has to divide every row height or a
+# supertile's stripes miss those of the single-height tiles beside it, and the
+# core margin decides where two abutted cores meet.
+#
+# No die size appears here or in any tile file. `flow.plan` derives every die
+# from eFPGA_geometry.csv and the anchor width, and `flow.verify` proves the
+# seams meet on that derivation.
+
+[design]
+# Every tile overrides this: the classic tile library has no UserCLK, so a tile
+# meets the global-buffer network on N_GBUF_END, E_GBUF_END or W_GBUF_FEED_END
+# depending on where it sits, and `flow.cli._tile_settings` puts its own port in.
+# The value here stands for the fabric-level run and the flat control, neither of
+# which has a top-level clock port any more; both stop on it until one is chosen.
+clock_port = "UserCLK"
+frequency_mhz = 100.0
+
+[pdk]
+name = "ics55"
+root = "/home/kelvin/side-project/ecc-spike/pdk"
+
+[fabric]
+core_margin_micron = 2
+stripe_pitch_micron = 16.0
+
+# `[params.<section>]` here applies to the fabric-level run alone, which places
+# 153 hardened macros and no standard cell. Its die is set outright from the
+# plan, so it takes no utilisation and currently overrides nothing.

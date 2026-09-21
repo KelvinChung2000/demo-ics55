@@ -23,7 +23,7 @@ import typer
 from flow import defedit, ioplace, names, project, tilelib
 from flow.config import Config, FabricSettings, load_config
 from flow.fabric import Fabric, load_fabric
-from flow.plan import CORE_MARGIN, DBU, build_plan, Plan, uncovered
+from flow.plan import CORE_MARGIN, DBU, build_plan, Plan, stale_dies, uncovered
 
 app = typer.Typer(
     add_completion=False, help="Build a FABulous fabric on ICS55 with ECC."
@@ -225,6 +225,16 @@ def harden(
     fabric = load_fabric(PROJECT)
     config = load_config(PROJECT, tuple(fabric.tile_types))
     layout = Plan.read(PLAN_PATH)
+    # Checked over every type rather than only the ones asked for, since one
+    # stale plan makes every edited [die] table wrong and hardening the tile
+    # named here would still leave the fabric built to two different geometries.
+    stale = stale_dies(config.tile_die, layout.tile_size)
+    if stale:
+        raise typer.BadParameter(
+            f"{PLAN_PATH} was written before these [die] tables were edited, and "
+            f"harden builds to the plan: {'; '.join(stale)}. Run `task plan` to "
+            "carry them in, which `task harden-one` now does for you."
+        )
     wanted = tile or sorted(layout.tile_size)
     unknown = set(wanted) - layout.tile_size.keys()
     if unknown:

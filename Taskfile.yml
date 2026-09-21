@@ -91,10 +91,15 @@ tasks:
 
   harden-one:
     desc: >-
-      Harden one tile type, discarding any existing run. Set TILE. Pass ECC
-      parameter overrides after --, as `-- --set place.target_density=0.55`;
-      an overridden run builds into build/tiles/<TILE>@<overrides> of its own.
+      Replan, then harden one tile type, discarding any existing run. Set TILE.
+      Editing a [die] table and running this is the whole loop: plan and check
+      run no EDA tool, so they cost seconds and carry the new die into
+      build/fabric_plan.json before the harden reads it. Pass ECC parameter
+      overrides after --, as `-- --set place.target_density=0.55`; an
+      overridden run builds into build/tiles/<TILE>@<overrides> of its own.
     cmds:
+      - task: plan
+      - task: check
       - cmd: 'echo "==> harden-one: {{.TILE}}, discarding any existing run. ECC prints each step as it runs"'
         silent: true
       - "{{.FLOW}} harden --force --jobs 1 --tile {{.TILE}} {{.CLI_ARGS}}"
@@ -118,19 +123,11 @@ tasks:
   synth:
     desc: >-
       Synthesise every tile type into build/tiles/<TYPE>_nl and stop, which is all
-      the flat control reads from them. Rerunning is cheap once the workspaces exist.
+      a strategy sweep reads from them. Rerunning is cheap once the workspaces exist.
     cmds:
       - cmd: 'echo "==> synth: every tile type, {{.JOBS}} at a time"'
         silent: true
       - "{{.FLOW}} synth --jobs {{.JOBS}}"
-
-  flat:
-    desc: Harden the whole eFPGA as one design, composed from the tiles' gate netlists
-    cmds:
-      - task: synth
-      - cmd: 'echo "==> flat: the whole eFPGA as one design. Hours, not minutes; follow {{.BUILD}}/logs/"'
-        silent: true
-      - "{{.FLOW}} flat"
 
   find:
     desc: >-

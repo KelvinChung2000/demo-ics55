@@ -34,7 +34,7 @@ is the combination to run when the answer has to be both.
 
 `task --list` gives the rest, including `view-fabric` and `view-tile` for the
 ECOS layout viewer, `image` for a rendered PNG, `drc` for every tile's signoff
-count and `flat` for the whole eFPGA hardened as one design rather than abutted.
+count.
 
 ## Where the tiles come from
 
@@ -79,17 +79,16 @@ an abstract LEF, an extracted timing model and a GDS. `stitch` writes
 `build/painted` and then `build/eFPGA.gds` from it, and `top` writes a
 fabric-level project under `build/fabric`.
 
-`synth` belongs to the flat control rather than to the abutted flow and leaves a
+`synth` serves the ABC strategy sweep rather than the abutted flow and leaves a
 synthesis-only workspace at `build/tiles/<type>_nl`, beside the hardened tile but
-never sharing a directory with it, so rebuilding the control cannot discard a
-forty-minute run. `task flat` runs it first, then composes those fifteen gate
-netlists under a bit-blasted parent and hardens the whole eFPGA under
-`build/flat`. The duplicate synthesis is what buys the separation.
+never sharing a directory with it, so comparing strategies cannot discard a
+forty-minute run. `sweep/tile_strategies.py` reads those workspaces for the cell
+area each strategy gives. The duplicate synthesis is what buys the separation.
 
 ## Where the ECC settings live
 
 Every project this flow writes, the fifteen tile runs, the fabric-level run and
-the flat control, renders its `ecc.toml` from three files through
+the synthesis-only builds, renders its `ecc.toml` from three files through
 `flow.project.write_ecc_toml`, so no setting can drift between them.
 
     Fabric/ecc_config.toml         clock, PDK, core margin, stripe pitch
@@ -127,19 +126,30 @@ in one column or row asking for different sizes, an edge off the 0.2 um site or
 2.8 um row grid, and a height on a supertile like `MACC`, which spans two rows and
 so does not say how tall each is.
 
+A dimension is therefore stated once and inherited, not repeated. `LUT4x8_ha`
+carries the width of columns 1, 2, 4, 5, 7 and 8, and `N_IO` and `S_IO` state
+only the heights of rows 0 and 15, so one number moves the LUT column and the
+two terminator rows that sit on it follow. Repeating a width on a type that
+shares the column is legal and `_claim` checks the copies agree, but it turns
+one edit into three and a disagreement into a refusal.
+
 Because the override goes through `plan`, `check` still proves the fabric on it.
 `W_IO` widened to 90 um gives a 1064.2 x 1668.8 um fabric whose 32523 links
-still meet at one coordinate. After editing a `[die]` run `task plan`, `task
-check` and then `task harden` for every type whose size moved, which is every
-type sharing those columns and rows. Forgetting the harden is not silent:
-`task assemble` refuses the stale tile by name.
+still meet at one coordinate. `task harden-one` runs `plan` and `check` before
+it hardens, so editing a `[die]` and running it is the whole loop; both stages
+run no EDA tool and cost seconds. `task harden` does not, so after editing a
+`[die]` run `task plan` and `task check` first, then harden every type whose
+size moved, which is every type sharing those columns and rows. Neither
+forgetting is silent: `harden` refuses a plan older than the `[die]` tables, and
+`task assemble` refuses a stale tile by name.
 
 ## Failing loudly
 
 A stage refuses to run on stale inputs rather than producing a plausible wrong
 answer. `check` rejects a plan whose links do not meet at one coordinate.
-`harden` rejects a tile whose die does not match the plan, and reports any pin
-that moved between the floorplan and the filler DEF. `stitch` rejects a tile
+`harden` rejects a plan older than the `[die]` tables it would build to, naming
+every type that disagrees, and reports any pin that moved between the floorplan
+and the filler DEF. `stitch` rejects a tile
 whose routed die is not the size the plan being abutted says, which is the case
 that arises from editing a `[die]` and re-planning without re-hardening, and a
 pin that does not overlap its own net's routing. `stitch` rejects a seam carrying the

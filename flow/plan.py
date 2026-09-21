@@ -600,6 +600,41 @@ def uncovered(
     )
 
 
+def stale_dies(
+    tile_die: "Mapping[str, TileDie]",
+    tile_size: "Mapping[str, tuple[int, int]]",
+) -> list[str]:
+    """Name every type whose `[die]` table disagrees with the plan it would build to.
+
+    `flow.cli.harden` sizes a tile from `fabric_plan.json` rather than from the
+    config, because only the plan has been through the pin placement and the seam
+    proof. A `[die]` edited since the last `plan` therefore reaches no run at all,
+    and without this the tile is rebuilt to the old die and reports success.
+    Every type is reported at once because one stale plan makes every edited table
+    wrong together.
+    """
+    stale = []
+    for tile_type, die in sorted(tile_die.items()):
+        if tile_type not in tile_size:
+            continue
+        for index, (micron, quantum, axis) in enumerate(
+            (
+                (die.width_micron, SITE_WIDTH, "width"),
+                (die.height_micron, HEIGHT_QUANTUM, "height"),
+            )
+        ):
+            if micron is None:
+                continue
+            wanted = _edge(micron, quantum, f"{tile_type} die {axis}")
+            planned = tile_size[tile_type][index]
+            if wanted != planned:
+                stale.append(
+                    f"{tile_type} asks for a {micron} um {axis} and the plan holds "
+                    f"{planned / DBU}"
+                )
+    return stale
+
+
 def build_plan(
     fabric: Fabric,
     geometry: Path,

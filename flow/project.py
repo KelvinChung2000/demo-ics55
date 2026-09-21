@@ -2,7 +2,7 @@
 
 Every `ecc.toml` this flow writes goes through `write_ecc_toml`, reading the
 project configuration `flow.config` loads, so the clock, the PDK and the core
-margin cannot drift between a tile run, the fabric run and the flat control.
+margin cannot drift between a tile run, the fabric run and a synthesis-only build.
 The die and the PDN stripe pitch reach a run the same way: both are ordinary
 registry parameters on ECC main, so nothing is patched into a workspace step
 config after the fact.
@@ -250,8 +250,8 @@ def write_ecc_toml(
     """Render one project's `ecc.toml` from the project configuration.
 
     Every project this flow writes goes through here, so that the clock, the PDK
-    and the core margin cannot drift between a tile run, the fabric run and the
-    flat control. `params` is already validated against ECC's registry by
+    and the core margin cannot drift between a tile run, the fabric run and a
+    synthesis-only build. `params` is already validated against ECC's registry by
     `flow.config`; anything outside that registry has no `ecc.toml` spelling and
     reaches a run through the workspace step configs instead.
 
@@ -345,9 +345,9 @@ def workspace_of(directory: Path) -> Path:
     """Return a run's workspace as an absolute path.
 
     `run` invokes ECC with `cwd=directory`, so a relative `--workspace` is
-    resolved against the project directory rather than against the caller's:
-    `build/flat_0.5` came back as `build/flat_0.5/build/flat_0.5/runs/default`
-    and ECC rejected it as invalid.
+    resolved against the project directory rather than against the caller's,
+    which doubles the project path into the workspace path and ECC then rejects
+    it as invalid.
     """
     return directory.resolve() / WORKSPACE
 
@@ -734,54 +734,6 @@ def synthesis_netlist(directory: Path, top: str) -> Path:
     return path
 
 
-def subflow_state(directory: Path, step: str, name: str) -> str:
-    """Return what a step's subflow records for one of its own stages."""
-    path = workspace_of(directory) / step / "subflow.json"
-    for entry in json.loads(path.read_text()).get("steps", []):
-        if entry["name"] == name:
-            return entry["state"]
-    raise KeyError(f"{path} records no stage named {name}")
-
-
-def force_step_state(directory: Path, step: str, state: str) -> None:
-    """Record `state` for `step`, for a step whose artefact is known good."""
-    path = workspace_of(directory) / "home" / "flow.json"
-    data = json.loads(path.read_text())
-    for entry in data["steps"]:
-        if entry["name"] == step:
-            entry["state"] = state
-            path.write_text(json.dumps(data, indent=4))
-            return
-    raise KeyError(f"{path} records no step named {step}")
-
-
-def netlist_is_current(directory: Path, top: str) -> bool:
-    """Say whether the gate netlist is at least as new as every source it came from.
-
-    The workspace's own subflow record is not enough on its own: a run that is
-    stopped and returns later rewrites it, so a netlist that is present and
-    current can be filed under a step marked unstarted.
-    """
-    netlist = synthesis_netlist(directory, top)
-    newest = max(path.stat().st_mtime for path in (directory / "rtl").glob("*.v"))
-    return netlist.stat().st_mtime >= newest
-
-
-def set_core_util(directory: Path, utilisation: float) -> None:
-    """Change a workspace's target core utilisation without re-running synthesis.
-
-    `_refresh_floorplan_config` reads `Core.Utilitization` out of the run's own
-    parameters on every floorplan, so a die can be resized from an existing
-    netlist. `ecc.toml` is read only when the workspace is created, so editing it
-    alone changes nothing, and recreating the workspace repeats a synthesis whose
-    analysis stage fails on a design this size.
-    """
-    path = workspace_of(directory) / "home" / "parameters.json"
-    data = json.loads(path.read_text())
-    data["Core"]["Utilitization"] = utilisation
-    path.write_text(json.dumps(data, indent=4))
-
-
 def floorplan_measurement(directory: Path) -> Path:
     """Return the feature file recording what the last floorplan actually built."""
     return (
@@ -838,21 +790,3 @@ def placed_density(directory: Path) -> float:
             "enough to report one; read the log for why."
         )
     return float(found.group(1))
-
-
-def die_side(
-    directory: Path, top: str, utilisation: float, *, core_margin_micron: float
-) -> float:
-    """Return the square die, in microns, that fills to `utilisation` with logic.
-
-    The cell area comes from the last floorplan's own measurement rather than
-    from a target, because ECC's `Core.Utilitization` is rewritten from the
-    finished floorplan and does not survive being set beforehand. The core
-    height is rounded up to a whole number of `core7` rows, since `buildCore`
-    aligns down and would otherwise drop one.
-    """
-    layout = json.loads(floorplan_measurement(directory).read_text())["Design Layout"]
-    cell_area = layout["core_area"] * layout["core_usage"]
-    core = (cell_area / utilisation) ** 0.5
-    rows = -(-core // (SITE_HEIGHT_MICRON))
-    return round(rows * SITE_HEIGHT_MICRON + 2 * core_margin_micron, 3)

@@ -8,9 +8,9 @@ colour, to be loaded over the original as an overlay.
 Grouping by cell reads the placements themselves and names each group after the
 cell placed, so it separates standard cell types in an ECC layout and tile types
 in a stitched fabric. Grouping by tile reads the `Tile_XnYm_TYPE.` prefix ECC
-gives its net cells in the flat build, so it colours routing but not cells: a
-flat placement records no tile, and the standard cells sit directly under the
-top cell.
+gives its net cells in an ECC layout, so it colours routing but not cells, and
+it needs one: the klayout stitch keeps each tile as real hierarchy, where the
+cell grouping already separates them.
 """
 
 from __future__ import annotations

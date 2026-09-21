@@ -11,7 +11,6 @@ about two minutes against the hours a full batch costs.
 from __future__ import annotations
 
 import json
-import os
 import shutil
 from collections.abc import Sequence
 from dataclasses import replace
@@ -22,7 +21,7 @@ from pathlib import Path
 import typer
 
 from flow import defedit, ioplace, names, project, tilelib
-from flow.config import Config, FabricSettings, Param, load_config
+from flow.config import Config, FabricSettings, load_config
 from flow.fabric import Fabric, load_fabric
 from flow.plan import CORE_MARGIN, DBU, build_plan, Plan, uncovered
 
@@ -58,9 +57,11 @@ ANCHOR_TYPE = "LUT4x8_ha"
 TAIL_STEP = "postFloorplan"
 # What a post-synthesis build and the netlists it writes are named with.
 NETLIST_SUFFIX = "_nl"
-# The signoff layout of the flat build: routed, DRC'd, LVS'd and filled.
-FLAT_GEOMETRY = BUILD / "flat/runs/default/filler_ecc/output/geometry/geometry.manifest"
-FLAT_GDS = BUILD / "flat/runs/default/filler_ecc/output/eFPGA_filler.gds"
+# ECC's own assembly of the abutted fabric, which only `assemble --stitcher ecc`
+# writes; `stitch` abuts in klayout and produces no ECC workspace.
+FABRIC_GEOMETRY = (
+    BUILD / "fabric" / project.WORKSPACE / "filler_ecc/output/geometry/geometry.manifest"
+)
 
 
 def _tile_directory(
@@ -87,12 +88,12 @@ def _tile_directory(
 
 
 def _netlist_directory(tile_type: str) -> Path:
-    """Name the synthesis-only build of a tile type, which `flat` composes from.
+    """Name the synthesis-only build of a tile type, which the strategy sweep reads.
 
     `synth` and `harden` write an ECC workspace for the same top module, so one
-    directory between them would let a `flat` rebuild discard a hardened run
-    forty minutes deep. The netlist build keeps the `_nl` suffix a post-synthesis
-    netlist is named with, and the two builds never meet.
+    directory between them would let a sweep discard a hardened run forty minutes
+    deep. The netlist build keeps the `_nl` suffix a post-synthesis netlist is
+    named with, and the two builds never meet.
     """
     return BUILD / "tiles" / f"{tile_type}{NETLIST_SUFFIX}"
 
@@ -411,13 +412,13 @@ def pilot(
 
 @app.command()
 def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
-    """Synthesise tile types and stop, which is all the flat build needs from them.
+    """Synthesise tile types and stop, which is all a strategy sweep needs from them.
 
-    `flat --bottom-up` composes the tiles' gate netlists under a bit-blasted
-    parent, so it needs fifteen syntheses and none of the hardening that
-    follows them. Each one builds into its own `<type>_nl` directory rather than
-    the hardened tile's, so rebuilding the flat control cannot discard a
-    hardened run.
+    `sweep/tile_strategies.py` reads the `_nl` workspaces this writes to compare
+    a tile's cell area across ABC strategies, and none of the hardening that
+    follows synthesis changes that number. Each build goes to its own
+    `<type>_nl` directory rather than the hardened tile's, so a sweep cannot
+    discard a hardened run.
     """
     fabric = load_fabric(PROJECT)
     config = load_config(PROJECT, tuple(fabric.tile_types))
@@ -509,154 +510,6 @@ def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -
             )
         )
     stitcher.stitch(plan=layout, tile_gds=sources, out_gds=out)
-
-
-@app.command()
-def flat(
-    directory: Path = BUILD / "flat",
-    core_util: float = 0.8,
-    bottom_up: bool = True,
-    last: str = "Harden",
-) -> None:
-    """Harden the whole eFPGA as one flat design, with no tile macros at all.
-
-    This is the control the abutted fabric is measured against, so it takes none
-    of the abutment machinery: iEDA sizes the die from utilisation, places its
-    own boundary pins and keeps the PDN inside the core. A flat eFPGA is roughly
-    a quarter of a million standard cells, so synthesis alone runs far longer
-    than a tile and neither placement nor routing is expected to be quick.
-    """
-    rtl = directory / "rtl"
-    config = load_config(PROJECT, tuple(load_fabric(PROJECT).tile_types))
-    if bottom_up:
-        # Flattening the behavioural fabric in one pass wrote a 93 GB Yosys log,
-        # because every one of a quarter of a million flattened objects is logged
-        # with its full hierarchical path. Composing the tiles' own gate netlists
-        # under the bit-blasted parent gives Yosys mapped cells to flatten
-        # instead, out of the fifteen `synth` builds rather than out of RTL.
-        from flow import topdesign
-
-        rtl.mkdir(parents=True, exist_ok=True)
-        sources = []
-        for tile_type in sorted(Plan.read(PLAN_PATH).tile_size):
-            netlist = (
-                project.workspace_of(_netlist_directory(tile_type))
-                / "Synthesis_yosys"
-                / "output"
-                / f"{tile_type}_Synthesis.v.gz"
-            )
-            if not netlist.exists():
-                raise typer.BadParameter(
-                    f"{tile_type} has no netlist at {netlist}. Run `task synth` first; "
-                    "a hardened tile's own synthesis is a separate build and is not "
-                    "read here."
-                )
-            target = rtl / f"{tile_type}{NETLIST_SUFFIX}.v"
-            text = defedit.read_def(netlist)
-            if not target.exists() or target.read_text() != text:
-                target.write_text(text)
-            # Decompressing is not authoring: the copy is exactly as old as the
-            # tile netlist it came from, and dating it now would make the fabric
-            # netlist built from it look stale.
-            os.utime(target, (netlist.stat().st_atime, netlist.stat().st_mtime))
-            sources.append(target)
-        parent = rtl / "eFPGA_flat.v"
-        text = topdesign.netlist_text(load_fabric(PROJECT))
-        if not parent.exists() or parent.read_text() != text:
-            parent.write_text(text)
-        # The parent is derived from eFPGA.v, so it is no newer than that; dating
-        # it now would make every netlist built from it look stale.
-        source = PROJECT / "Fabric" / "eFPGA.v"
-        os.utime(parent, (source.stat().st_atime, source.stat().st_mtime))
-        sources.append(parent)
-    else:
-        roots = (
-            [PROJECT / "Fabric"]
-            + sorted(path for path in (PROJECT / "Tile").rglob("*") if path.is_dir())
-            + sorted(
-                path for path in (PROJECT / "primitives").rglob("*") if path.is_dir()
-            )
-            + [PROJECT / "user_design"]
-        )
-        sources = project.dependencies(TOP_MODULE, project.source_index(roots))
-
-    log = BUILD / "logs" / f"{directory.name}.log"
-    # The flat control is one design rather than fifteen, so it takes the tile
-    # defaults with its own utilisation, which is a flag here because the whole
-    # point of the build is to sweep it.
-    params = tuple(
-        param for param in config.tile_defaults if param.key != "floorplan.core_util"
-    ) + (Param(section="floorplan", name="core_util", value=core_util),)
-    project.create_project(
-        directory=directory,
-        top=TOP_MODULE,
-        sources=sources,
-        settings=config.fabric,
-        params=params,
-        # One design rather than an abutted fabric, so its rows are its own and
-        # the pitch the fabric settled on does not apply.
-        stripe_pitch_micron=config.fabric.stripe_pitch_micron,
-    )
-    step = project.create_workspace(directory, log, to="synthesis", progress=True)
-    yosys = project.subflow_state(directory, "Synthesis_yosys", "run yosys")
-    netlist = project.synthesis_netlist(directory, TOP_MODULE)
-    current = project.netlist_is_current(directory, TOP_MODULE)
-    typer.echo(
-        f"yosys recorded {yosys}, netlist {netlist.stat().st_size // 1024} KB and "
-        f"{'current' if current else 'older than its sources'}"
-    )
-    if not current:
-        typer.echo(
-            "the netlist predates its RTL; delete the workspace and synthesise again"
-        )
-        raise typer.Exit(code=1)
-    if project.step_state(directory, "Synthesis") != "Success":
-        # ECC's analysis stage runs iSTA over the whole design and fails on this
-        # one, which leaves the step unfinished even though Yosys wrote the
-        # netlist every later step reads. The netlist is the deliverable, so the
-        # step is recorded on the strength of it rather than of the metrics.
-        typer.echo(
-            "the analysis stage failed; recording synthesis on its netlist instead"
-        )
-        project.force_step_state(directory, "Synthesis", "Success")
-    project.widen_flow(directory)
-    if not project.floorplan_measurement(directory).exists():
-        # `die_side` sizes the die from a floorplan's own measurement, so a
-        # workspace that has never floorplanned has to run one first. ECC sizes
-        # that one from `core_util` itself, which is close but not exact.
-        first = project.run_range(
-            directory, "preFloorplan", "postFloorplan", log, progress=True
-        )
-        if not first.ok:
-            typer.echo(f"the sizing floorplan failed, see {log}")
-            raise typer.Exit(code=1)
-    # ECC rewrites `Core.Utilitization` from the finished floorplan, so setting
-    # it before the step does not survive: a run asked for 0.5 came out at
-    # 0.7998. The die is therefore sized here and set outright, from the cell
-    # area the last floorplan measured, and the core height is rounded to a
-    # whole number of core7 rows so no row is lost to alignment.
-    side = project.die_side(
-        directory,
-        TOP_MODULE,
-        core_util,
-        core_margin_micron=config.fabric.core_margin_micron,
-    )
-    project.set_params(
-        directory,
-        {
-            "floorplan.die_builder.mode": "die_size",
-            "floorplan.die_builder.die_size.width_micron": side,
-            "floorplan.die_builder.die_size.height_micron": side,
-        },
-        log,
-    )
-    typer.echo(f"floorplanning a {side} um square die, {core_util} of it filled")
-    step = project.run_range(directory, "preFloorplan", last, log, progress=True)
-    typer.echo(
-        f"flat flow recorded as {step.state} after {step.seconds:.0f} s, see {log}"
-    )
-    if not step.ok:
-        raise typer.Exit(code=1)
 
 
 @app.command()
@@ -759,7 +612,7 @@ def assemble(
 def find(
     pattern: str,
     kind: names.Kind = names.Kind.SIGNAL,
-    manifest: Path = FLAT_GEOMETRY,
+    manifest: Path = FABRIC_GEOMETRY,
     pick: int = 1,
     limit: int = 40,
     copy: bool = True,
@@ -794,7 +647,7 @@ def find(
 
 @app.command()
 def colour(
-    source: Path = FLAT_GDS,
+    source: Path = BUILD / "eFPGA.gds",
     by: str = "cell",
     out: Path = BUILD / "overlay",
     minimum: int = 1,

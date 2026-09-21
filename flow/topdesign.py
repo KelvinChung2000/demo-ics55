@@ -346,13 +346,3 @@ def main(
 
 if __name__ == "__main__":
     app()
-
-
-def netlist_text(fabric: Fabric) -> str:
-    """Return the bit-blasted `eFPGA` netlist on its own, without the macro project.
-
-    A bottom-up flat build needs the same parent this module writes for the macro
-    flow, because a tile's gate netlist carries the same scalar port names its
-    abstract LEF does, but it needs none of the stubs, locations or `ecc.toml`.
-    """
-    return _netlist_text(build_netlist(fabric))

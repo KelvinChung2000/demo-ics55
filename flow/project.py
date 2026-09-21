@@ -81,6 +81,7 @@ SITE_HEIGHT_MICRON = 1.4  # core7
 # cannot be matched together. The leading token of a line is enough, since a
 # known module name never opens a line for any other reason.
 LEADING_TOKEN_RE = re.compile(r"^[ \t]*(?:\(\*[^*]*\*\)[ \t]*)?([A-Za-z_]\w*)", re.M)
+PLACED_DENSITY_RE = re.compile(r"^utilization = ([0-9.]+), target_density", re.M)
 
 
 @dataclass(frozen=True)
@@ -809,10 +810,34 @@ def compiled_die(directory: Path, top: str) -> tuple[float, float]:
     return layout["die_bounding_width"], layout["die_bounding_height"]
 
 
-def compiled_usage(directory: Path) -> float:
-    """Return how much of the core the last floorplan of this tile filled."""
-    measurement = json.loads(floorplan_measurement(directory).read_text())
-    return measurement["Design Layout"]["core_usage"]
+def placed_density(directory: Path) -> float:
+    """Return how full the area DreamPlace places into ended up, after padding.
+
+    This is the ratio DreamPlace itself reports and the one it refuses a run on,
+    at 0.99. Both halves differ from `core_usage` in the floorplan report. The
+    denominator is the placeable area, the core less the fixed blockages, which
+    on a tile this size is about five percent of the core. The numerator is the
+    movable area after `place.cell_padding_x`, so a tile whose padding survives
+    reads well above its cell area alone; the LUT's padding is cut to 0 and the
+    two coincide there, a small terminator's does not.
+
+    Read from DreamPlace's own log because nothing structured carries it:
+    `place.db.json` and `qor_metrics.json` report only against the core.
+    """
+    log = workspace_of(directory) / "place_dreamplace" / "log" / "place.log"
+    if not log.exists():
+        raise FileNotFoundError(
+            f"{directory.name} has no placement log, so there is no placed density "
+            f"to read: {log} does not exist. Harden the tile first."
+        )
+    found = PLACED_DENSITY_RE.search(log.read_text(errors="replace"))
+    if found is None:
+        raise ValueError(
+            f"{log} has no `utilization = ` line, which DreamPlace prints in its "
+            "Benchmark Statistics on every run. The placement did not get far "
+            "enough to report one; read the log for why."
+        )
+    return float(found.group(1))
 
 
 def die_side(

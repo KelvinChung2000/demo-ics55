@@ -61,6 +61,12 @@ def placeable_area(log: Path) -> float | None:
     blockages take, and at this tile's density that is about five percent less.
     The figure is only in the log, in the line where cell padding is cut back,
     and it is printed as `0.99 * placeable` in square DBU.
+
+    `dp_util` built from this is raw cell area over placeable area, which is not
+    what `flow.project.placed_density` returns: that is DreamPlace's own figure
+    and counts the movable area after cell padding. The two agree only where the
+    padding was cut to 0. Do not fold them together, since every row already in
+    `results.tsv` carries this definition.
     """
     if not log.exists():
         return None

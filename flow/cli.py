@@ -316,10 +316,10 @@ def harden(
             )
         if not step.ok:
             return tile_type, f"{note}; the flow failed, see {log}"
-        usage = project.compiled_usage(directory)
+        density = project.placed_density(directory)
         return (
             tile_type,
-            f"{note}; {check_pins(directory, tile_type)}; core {usage:.3f} filled",
+            f"{note}; {check_pins(directory, tile_type)}; placed density {density:.3f}",
         )
 
     def attempt(tile_type: str) -> tuple[str, str, bool]:
@@ -331,12 +331,12 @@ def harden(
             return tile_type, f"{type(failure).__name__}: {failure}", False
         return name, message, "failed" not in message and "moved" not in message
 
-    failures, usages = 0, {}
+    failures, densities = 0, {}
     with ThreadPoolExecutor(max_workers=jobs) as pool:
         for tile_type, message, ok in pool.map(attempt, wanted):
             failures += not ok
             if ok:
-                usages[tile_type] = project.compiled_usage(
+                densities[tile_type] = project.placed_density(
                     _tile_directory(tile_type, chosen)
                 )
             # The directory rather than the tile type, so a run carrying an
@@ -345,14 +345,15 @@ def harden(
 
     built = len(wanted) - failures
     typer.echo(f"\n{built} of {len(wanted)} tile types hardened")
-    if usages:
-        worst = min(usages, key=usages.get)
-        best = max(usages, key=usages.get)
-        # The fabric is sized by whichever type fills its die least, so the
-        # spread matters more than the mean.
+    if densities:
+        worst = min(densities, key=densities.get)
+        best = max(densities, key=densities.get)
+        # The fabric is sized by whichever type fills its placeable area least,
+        # so the spread matters more than the mean. DreamPlace refuses a run at
+        # 0.99, which is what the top of this range is approaching.
         typer.echo(
-            f"core utilisation {usages[worst]:.3f} ({worst}) to "
-            f"{usages[best]:.3f} ({best})"
+            f"placed density {densities[worst]:.3f} ({worst}) to "
+            f"{densities[best]:.3f} ({best})"
         )
     if failures:
         typer.echo(f"{failures} failed; see {BUILD}/logs")

@@ -14,3 +14,12 @@ core_util = 0.5
 
 [params.place]
 target_density = 0.5
+
+# Both edges frozen at the sizes the fabric was measured and stitched at, rather
+# than left to the anchor's scaled proportions. Repeating a size another type in
+# the same column or row also states is deliberate: `flow.plan._claim` refuses a
+# column or row whose types disagree, so a number that goes stale fails the plan
+# instead of quietly resizing this tile.
+[die]
+width_micron = 70.8   # column 6, bound by MACC's placement
+height_micron = 22.4   # row 0, bound by N_IO's routing floor

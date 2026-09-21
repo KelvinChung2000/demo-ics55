@@ -1,0 +1,15 @@
+# Least cell area of the 46 ABC strategies, measured on this tile's own
+# netlist in sweep/strategies_MACC.tsv: 9983.1 um^2, 528.4 um^2 below DELAY 4's 10511.5.
+[synthesis]
+strategy = "AREA 6"
+
+# The width of this tile's fabric column, which every type in it is built to.
+# Bound by MACC: at 70.8 x 168.0 um it fills 0.9124 of its core and
+# 0.9481 of the area DreamPlace places into, and routes 680 -> 9 -> 0
+# with 0 DRC. Round r2, 2026-09-21.
+[die]
+width_micron = 70.8
+
+# No height. This type spans two grid rows and `flow.plan._override_die` refuses
+# a single height for a multi-row type, since one number cannot say how tall each
+# row is. Its 168.0 um is LUT4x8_ha's 84.0 twice, frozen there.

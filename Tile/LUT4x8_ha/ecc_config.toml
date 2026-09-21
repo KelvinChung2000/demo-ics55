@@ -5,7 +5,7 @@
 # `floorplan.core_util` is deliberately absent. An abutted tile runs
 # die_builder.mode = die_size because its die is the fabric pitch, so the
 # utilisation is recorded from the finished floorplan rather than reached; the
-# die itself comes from the anchor, or from a [die] table here.
+# die itself is the [die] table at the end of this file.
 # `place.cell_padding_x` is absent for a different reason: DreamPlace reduces it
 # to 0 whenever the padded cells would pass 0.99 of the placeable area, which
 # this tile does at every width it has been built at.
@@ -23,15 +23,22 @@ target_density = 0.95
 # adjust_node_area.py:352. Turning fillers off would need routability_opt = 0
 # too, which is the wrong trade at this utilisation.
 
-# ECC defaults this off, leaving global placement and legalisation to produce
-# the layout the router sees.
-detailed_place_flag = 1
-
 [synthesis]
-# Measured on 2026-09-20 across all 39 ABC strategies with the mux techmap in
-# place (`build/sweep/strategies_muxmap.tsv`). AREA 5 gives the least cell area,
-# 5817.0 um^2 against DELAY 4's 5881.0, and that difference is what decides the
-# die: at anchor 82.8 it routes clean in 2 detailed-routing iterations where
-# DELAY 4 still has 30 violations after 9. Cell area, not instance count,
-# ordered every strategy tried there.
+# Measured across all 46 ABC strategies with the mux techmap in place, in
+# `sweep/strategies_LUT4x8_ha.tsv`. AREA 5 gives the least cell area, 5817.0 um^2
+# against DELAY 4's 5882.0, and that difference is what decides the die: at
+# anchor 82.8 it routes clean in 2 detailed-routing iterations where DELAY 4
+# still has 30 violations after 9. Cell area, not instance count, ordered every
+# strategy tried there.
 strategy = "AREA 5"
+
+# The anchor, written down. Kelvin fixed this tile at 82.5 um on 2026-09-21 and
+# every other die in the fabric was measured around it, but 82.5 reached the
+# build only as `--anchor-micron` on a command line and `flow.plan._edge` refuses
+# it outright as 82500 DBU against the 200 DBU `core7` site, 412.5 sites wide.
+# 82.6 is the quantised width the fabric was built and stitched at, and 84.0 the
+# row height that anchor scaled to. With every type's die stated the anchor no
+# longer sets any edge.
+[die]
+width_micron = 82.6   # columns 1, 2, 4, 5, 7 and 8
+height_micron = 84.0   # rows 1 to 14

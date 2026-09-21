@@ -1,0 +1,9 @@
+# This tile's frozen die. The height is its fabric row's, which every type in
+# that row is built to, and the width its column's; both are repeated on the
+# other types sharing them so `flow.plan._claim` checks the pair agrees.
+# Bound by S_IO: at 82.6 x 22.4 um it fills 0.7571 of its core and
+# 0.9107 of the area DreamPlace places into, and routes 2 -> 0
+# with 0 DRC. Round r2, 2026-09-21.
+[die]
+width_micron = 82.6   # a LUT column, the 82.5 anchor quantised to the 0.2 um site
+height_micron = 22.4

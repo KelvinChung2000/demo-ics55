@@ -1,6 +1,6 @@
 # The ECC parameters every tile type is hardened with. A `Tile/<type>/ecc_config.toml`
-# replaces individual entries here for one type and leaves the rest standing;
-# no tile type needs one today, which is why none exists.
+# replaces individual entries here for one type and leaves the rest standing.
+# Every type carries one, because every type's die is frozen in it.
 #
 # Every key has to be one `ecc param list` prints in a project directory, spelled
 # `[params.<section>]` with the bare name under it. `flow.config.PARAM_REGISTRY`
@@ -29,3 +29,11 @@ core_util = 0.8
 # cores are filled to.
 [params.place]
 target_density = 0.8
+
+# ECC defaults this off, so DreamPlace does global placement and legalisation
+# and never detail-places. On LUT4x8_ha at 0.93 core usage the router then
+# oscillated across all nine of its detailed-routing iterations, 2134 to 2643
+# violations, where with detailed placement it went 687, 72, 21, 3, 0 and
+# stopped at the fifth. Every tile in this fabric is the same mux and
+# configuration-latch structure, so the setting is shared rather than per type.
+detailed_place_flag = 1

@@ -43,14 +43,29 @@ TILES: tuple[str, ...] = (
     "NW_term",
     "SE_term",
     "SW_term",
+    "E_IHP_SRAM",
 )
 """The classic library trimmed to what this fabric places.
 
-Dropped upstream tiles are dropped for a reason each: `E_IHP_SRAM` and
-`E_IHP_BRAM` wrap IHP macros that ICS55 has no equivalent of, the `TT_IF`
-family targets a Tiny Tapeout harness this fabric does not sit in, and the
-`W_IO_DDR`, `*_IO2` and `*_IO4` variants are wider pin counts of edges this
-fabric already covers with the plain `*_IO` tile.
+`E_IHP_SRAM` is vendored but not yet placed by `fabric.csv`. It is the only
+block-RAM tile the library has, a two-row supertile carrying an
+`IHP_SRAM_1024x32_1RW` BEL, and the ICS55 SRAM compiler produces the same shape
+of macro: single-port synchronous with a write mask. Adapting it means a new
+primitive around an ICS55 instance and a matching tile, and the macro has to fit
+one supertile, 168 um tall less margins.
+
+Dropped upstream tiles are dropped for a reason each: the `TT_IF` family targets
+a Tiny Tapeout harness this fabric does not sit in, and the `W_IO_DDR`, `*_IO2`
+and `*_IO4` variants are wider pin counts of edges this fabric already covers
+with the plain `*_IO` tile. The `*_IO2` and `*_IO4` variants become relevant the
+moment an edge has to carry a memory interface rather than single bits.
+
+`sync` copies each primitive's `fabulous/` directory and nothing else, so the
+upstream `yosys/` helpers do not come across. For `IHP_SRAM_1024x32_1RW` that
+drops `memlib/IHP_SRAM_1024x32_1RW_lib.txt`, which is what lets Yosys infer an
+RTL array into the macro rather than having it instantiated by hand. Bringing it
+over is a change to `sync`, not a file to copy beside the others, or the next
+sync deletes it.
 """
 
 BEL_DEPTH = re.compile(r"(\.\./)(\.\./\.\./primitives/)")

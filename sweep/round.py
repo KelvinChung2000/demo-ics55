@@ -13,10 +13,10 @@ at the top of a round, so a round left unfinalised strips the evidence from
 every table a previous one wrote.
 
 `ANCHOR` is the LUT width the user fixed, and it no longer sets any edge. Every
-one of the fifteen types now carries a `[die]` table, so `flow.plan` overrides
-every column and row it scaled and the anchor only has to be a number `cli.plan`
-accepts. It is kept here because `cli.plan` still requires one, reading the
-compiled LUT when the option is absent.
+one of the fifteen types carries a `[die]` table, so the claims cover the whole
+fabric and `cli.plan` reads no compiled tile at all. It is passed here only
+because a round exists to sweep a dimension, and a sweep that removes an edge
+from a table needs the anchor back to size what it left over.
 
 `setdie` and `finalise` each know six of the fifteen files, and `finalise` is the
 more dangerous of the two: it rewrites those six `[die]` tables from `results.tsv`

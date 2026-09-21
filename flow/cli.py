@@ -24,7 +24,7 @@ import typer
 from flow import defedit, ioplace, names, project, tilelib
 from flow.config import Config, FabricSettings, Param, load_config
 from flow.fabric import Fabric, load_fabric
-from flow.plan import CORE_MARGIN, DBU, build_plan, Plan
+from flow.plan import CORE_MARGIN, DBU, build_plan, Plan, uncovered
 
 app = typer.Typer(
     add_completion=False, help="Build a FABulous fabric on ICS55 with ECC."
@@ -130,19 +130,26 @@ def plan(
     anchor_micron: float = typer.Option(
         None,
         help="Override the anchor width instead of reading the compiled anchor "
-        "tile. Needed once to build that tile, and for sweeping the anchor.",
+        "tile. Needed once to build that tile, and for sweeping the anchor. "
+        "Ignored where a [die] table already sizes the column or row.",
     ),
     anchor_type: str = ANCHOR_TYPE,
 ) -> None:
     """Size every tile and place every pin, then write build/fabric_plan.json.
 
-    Every tile is scaled from one anchor type, and the anchor is that type's
-    own compiled die rather than a number carried beside the fabric: harden the
-    anchor tile and the rest of the fabric follows what it actually built.
+    A column or row a `[die]` table sizes is built to that. Anything left over
+    is scaled from one anchor type, whose anchor is that type's own compiled die
+    rather than a number carried beside the fabric: harden the anchor tile and
+    the rest of the fabric follows what it actually built. A fabric whose [die]
+    tables cover every column and row needs no anchor and none is read, which is
+    what lets it be planned before any tile has ever been built.
     """
     fabric = load_fabric(PROJECT)
     config = load_config(PROJECT, tuple(fabric.tile_types))
-    if anchor_micron is None:
+    loose_columns, loose_rows = uncovered(fabric, config.tile_die)
+    if anchor_micron is not None:
+        typer.echo(f"anchor {anchor_micron} um, given on the command line")
+    elif loose_columns or loose_rows:
         anchor_micron, anchor_height = project.compiled_die(
             _tile_directory(anchor_type, ()), anchor_type
         )
@@ -151,7 +158,9 @@ def plan(
             f"{anchor_micron} x {anchor_height} um"
         )
     else:
-        typer.echo(f"anchor {anchor_micron} um, given on the command line")
+        typer.echo(
+            "no anchor needed, every column and row is sized by a [die] table"
+        )
     result = build_plan(
         fabric,
         PROJECT / "eFPGA_geometry.csv",

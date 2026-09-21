@@ -2,8 +2,10 @@
 
 Two decisions are made here and nowhere else. The first is the die of each tile
 type, which abutment forces to be one width per fabric column and one height per
-fabric row; the shape of the reference `eFPGA_geometry.csv` run is kept and only
-its scale changes, anchored on a measured ICS55 LUT. The second is the offset
+fabric row. A `[die]` table states a column or row outright; anything it leaves
+over keeps the shape of the reference `eFPGA_geometry.csv` run and takes its
+scale from a measured anchor tile, so a fabric stated in full needs no anchor at
+all and a fabric stating none is sized entirely by one. The second is the offset
 of every scalar pin along its edge, which has to be agreed fabric-wide rather
 than per tile: `LUT4x8_ha`'s East edge faces `LUT4x8_ha` in column 2 and
 `RegFile` in column 3, so an offset chosen for one seam is binding on the other.
@@ -542,18 +544,19 @@ def _claim(
     claims[index] = (tile_type, value)
 
 
-def _override_die(
+def die_claims(
     fabric: Fabric,
-    column_width: list[int],
-    row_height: list[int],
     tile_die: "Mapping[str, TileDie]",
-) -> None:
+) -> tuple[dict[int, int], dict[int, int]]:
     """Bind each type's requested die to the columns and rows its instances occupy.
 
     A width reaches every type sharing those columns and a height every type
     sharing those rows, because that is what abutment means; two types asking for
     different sizes is refused here rather than resolved, since either answer
     would silently be the other tile's.
+
+    The claims are returned rather than applied so a caller can ask what they
+    cover before deciding whether it needs an anchor at all.
     """
     widths: dict[int, tuple[str, int]] = {}
     heights: dict[int, tuple[str, int]] = {}
@@ -574,26 +577,44 @@ def _override_die(
         height = _edge(die.height_micron, HEIGHT_QUANTUM, f"{tile_type} die height")
         for row in sorted(fabric.occupied_rows(tile_type)):
             _claim(heights, row, tile_type, height, "row")
-    for column, (_, width) in widths.items():
-        column_width[column] = width
-    for row, (_, height) in heights.items():
-        row_height[row] = height
+    return (
+        {column: width for column, (_, width) in widths.items()},
+        {row: height for row, (_, height) in heights.items()},
+    )
+
+
+def uncovered(
+    fabric: Fabric,
+    tile_die: "Mapping[str, TileDie]",
+) -> tuple[list[int], list[int]]:
+    """Return the columns and rows no `[die]` table sizes.
+
+    Empty lists mean the configuration alone fixes the whole fabric and the
+    anchor would set nothing, which is what lets `flow.cli` skip reading a
+    compiled tile that may not exist.
+    """
+    widths, heights = die_claims(fabric, tile_die)
+    return (
+        [column for column in range(fabric.columns) if column not in widths],
+        [row for row in range(fabric.rows) if row not in heights],
+    )
 
 
 def build_plan(
     fabric: Fabric,
     geometry: Path,
-    anchor_micron: float,
+    anchor_micron: float | None,
     anchor_type: str,
     *,
     stripe_pitch_micron: float,
     tile_die: "Mapping[str, TileDie]",
 ) -> Plan:
-    """Size every tile and place every pin, from the fabric and one measured tile.
+    """Size every tile and place every pin, from the fabric and its configuration.
 
-    `anchor_micron` scales every column and row together; `tile_die` then
-    replaces individual ones, so a type whose die is given is built to that and
-    the rest keep the reference proportions.
+    A column or row is sized one of two ways. `tile_die` states it outright, and
+    `anchor_micron` scales the reference proportions for whatever is left, so a
+    partly stated fabric takes both. `anchor_micron` may be None only when the
+    `[die]` tables leave nothing over, and then `anchor_type` is not read at all.
 
     `stripe_pitch_micron` is the pitch asked for rather than the pitch used: the
     core row height has to be a whole number of pitches, so the value below is
@@ -605,19 +626,39 @@ def build_plan(
             f"{geometry} describes a {len(widths)}x{len(heights)} fabric, "
             f"eFPGA.v a {fabric.columns}x{fabric.rows} one"
         )
-    anchor_columns = fabric.occupied_columns(anchor_type)
-    anchor_rows = fabric.occupied_rows(anchor_type)
-    reference_width = {widths[column] for column in anchor_columns}
-    reference_height = {heights[row] for row in anchor_rows}
-    if len(reference_width) != 1 or len(reference_height) != 1:
-        raise ValueError(f"{anchor_type} does not have one reference size to anchor on")
-    anchor = int(anchor_micron * DBU)
-    x_scale = anchor / reference_width.pop()
-    y_scale = anchor / reference_height.pop()
-
-    column_width = [_quantise(width * x_scale, SITE_WIDTH) for width in widths]
-    row_height = [_quantise(height * y_scale, HEIGHT_QUANTUM) for height in heights]
-    _override_die(fabric, column_width, row_height, tile_die)
+    claimed_widths, claimed_heights = die_claims(fabric, tile_die)
+    if anchor_micron is None:
+        loose_columns, loose_rows = uncovered(fabric, tile_die)
+        if loose_columns or loose_rows:
+            raise ValueError(
+                f"no anchor was given and columns {loose_columns} and rows {loose_rows} "
+                "have no [die] table sizing them, so nothing says how wide or tall they "
+                "are. Pass --anchor-micron, or give a [die] edge to a type occupying "
+                "each of them."
+            )
+        column_width = [claimed_widths[column] for column in range(fabric.columns)]
+        row_height = [claimed_heights[row] for row in range(fabric.rows)]
+    else:
+        anchor_columns = fabric.occupied_columns(anchor_type)
+        anchor_rows = fabric.occupied_rows(anchor_type)
+        reference_width = {widths[column] for column in anchor_columns}
+        reference_height = {heights[row] for row in anchor_rows}
+        if len(reference_width) != 1 or len(reference_height) != 1:
+            raise ValueError(
+                f"{anchor_type} does not have one reference size to anchor on"
+            )
+        anchor = int(anchor_micron * DBU)
+        x_scale = anchor / reference_width.pop()
+        y_scale = anchor / reference_height.pop()
+        column_width = [_quantise(width * x_scale, SITE_WIDTH) for width in widths]
+        row_height = [_quantise(height * y_scale, HEIGHT_QUANTUM) for height in heights]
+        column_width = [
+            claimed_widths.get(column, width)
+            for column, width in enumerate(column_width)
+        ]
+        row_height = [
+            claimed_heights.get(row, height) for row, height in enumerate(row_height)
+        ]
 
     # The supertile's stripes only meet its neighbours' if a core row is a whole
     # number of pitches; the core row is the tallest row and every stripe pitch
@@ -629,10 +670,14 @@ def build_plan(
     # and VSS interleave, so the supertile's stripes meet its neighbours' only if
     # the row divides by the half pitch.
     if core_height % (stripe_pitch // 2):
+        lever = (
+            "Choose a different --anchor-micron."
+            if anchor_micron is not None
+            else "Choose a different [die] height for a type in the tallest row."
+        )
         raise ValueError(
             f"a {core_height} DBU row is not a whole number of {stripe_pitch // 2} DBU stripe "
-            "spacings, so the supertile's power stripes would miss its neighbours'. "
-            "Choose a different --anchor-micron."
+            f"spacings, so the supertile's power stripes would miss its neighbours'. {lever}"
         )
 
     column_x, x = [], 0

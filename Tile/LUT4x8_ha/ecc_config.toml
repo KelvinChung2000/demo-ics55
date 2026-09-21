@@ -2,15 +2,36 @@
 # Tile/include/ecc_config.toml. Every key has to be one `ecc param list` prints;
 # flow.config refuses anything else before a run starts.
 #
-# The two targets are not the same thing and only one of them bites. ECC reads
-# die_util.utilization to size a die, and an abutted tile runs
-# die_builder.mode = die_size because its die is the fabric pitch, so core_util
-# is recorded and not reached; a die a tile is really built to goes in a [die]
-# table here. target_density is DreamPlace's own, read on every run, and it is
-# the bin density the placer spreads cells towards.
-
-[params.floorplan]
-core_util = 0.95
+# `floorplan.core_util` is deliberately absent. An abutted tile runs
+# die_builder.mode = die_size because its die is the fabric pitch, so the
+# utilisation is recorded from the finished floorplan rather than reached; the
+# die itself comes from the anchor, or from a [die] table here.
+# `place.cell_padding_x` is absent for a different reason: DreamPlace reduces it
+# to 0 whenever the padded cells would pass 0.99 of the placeable area, which
+# this tile does at every width it has been built at.
 
 [params.place]
+# Inert at this tile's utilisation and kept only to pin the request. DreamPlace
+# overwrites it with min(utilisation + 0.05, 1.0) whenever that is larger
+# (macroPlaceDB.py:1449), so anything asked for above 0.90 never survives, and
+# `Final PPA['density']` reports the overwritten value rather than a measurement.
 target_density = 0.95
+
+# `enable_fillers = 0` is not usable here. With no filler nodes the routability
+# area-adjust op indexes pos.data[num_nodes - 0:], an empty slice it then tries
+# to match against all 2247 nodes, and placement dies in
+# adjust_node_area.py:352. Turning fillers off would need routability_opt = 0
+# too, which is the wrong trade at this utilisation.
+
+# ECC defaults this off, leaving global placement and legalisation to produce
+# the layout the router sees.
+detailed_place_flag = 1
+
+[synthesis]
+# Measured on 2026-09-20 across all 39 ABC strategies with the mux techmap in
+# place (`build/sweep/strategies_muxmap.tsv`). AREA 5 gives the least cell area,
+# 5817.0 um^2 against DELAY 4's 5881.0, and that difference is what decides the
+# die: at anchor 82.8 it routes clean in 2 detailed-routing iterations where
+# DELAY 4 still has 30 violations after 9. Cell area, not instance count,
+# ordered every strategy tried there.
+strategy = "AREA 5"

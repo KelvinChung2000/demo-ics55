@@ -27,6 +27,7 @@ would put it past the only check that can tell whether it abuts, which is why
 
 from __future__ import annotations
 
+import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
@@ -53,6 +54,14 @@ PARAM_REGISTRY: dict[str, type] = {
     "place.global_right_padding": int,
     "place.cell_padding_x": int,
     "place.routability_opt": int,
+    # DreamPlace fills every remaining scrap of whitespace with filler nodes
+    # sized from `placeable_area * target_density`, and target_density
+    # saturates at 1.0 on an abutted tile, so at these utilisations the fillers
+    # compete with real cells for legalisation slack.
+    "place.enable_fillers": int,
+    # ECC's DreamPlace defaults to global placement and legalisation with no
+    # detailed placement at all.
+    "place.detailed_place_flag": int,
     "route.bottom_layer": str,
     "route.top_layer": str,
     "sta.max_paths": int,
@@ -128,6 +137,16 @@ class Config:
     tile_defaults: tuple[Param, ...]
     tile_params: dict[str, tuple[Param, ...]]
     tile_die: dict[str, TileDie]
+    synthesis_default: str | None
+    tile_synthesis: dict[str, str | None]
+
+    def strategy_for(self, tile_type: str) -> str | None:
+        """Return the ABC strategy this tile type synthesises with, if any.
+
+        A tile that names none falls back to the shared default, and a fabric
+        that names none anywhere leaves Yosys on its own `DELAY 4`.
+        """
+        return self.tile_synthesis.get(tile_type) or self.synthesis_default
 
     def params_for(self, tile_type: str) -> tuple[Param, ...]:
         """Return one tile type's parameters, its own entries replacing the defaults."""
@@ -218,6 +237,35 @@ def _die(table: object, source: Path) -> TileDie:
     )
 
 
+STRATEGY = re.compile(r"^(DELAY|AREA|BALANCE) (\d+)$")
+
+
+def _synthesis(table: object, source: Path) -> str | None:
+    """Read one layer's ABC strategy, refusing a spelling Yosys would reject.
+
+    The strategy is not an ECC parameter and cannot go under `[params]`: ECC
+    reads it from `YOSYS_SYNTH_STRATEGY` and its registry has no entry for it.
+    Checking the spelling here matters because a bad one is not caught until
+    the synthesis script has already read the liberty files and exits 1.
+    """
+    if table is None:
+        return None
+    if not isinstance(table, dict):
+        raise ValueError(f"{source}: [synthesis] is not a table")
+    unknown = sorted(set(table) - {"strategy"})
+    if unknown:
+        raise ValueError(f"{source}: [synthesis] takes strategy, not {unknown}")
+    if "strategy" not in table:
+        return None
+    value = table["strategy"]
+    if not isinstance(value, str) or not STRATEGY.match(value):
+        raise ValueError(
+            f"{source}: synthesis.strategy is {value!r}, not DELAY, AREA or "
+            "BALANCE followed by an index, as in \"AREA 5\""
+        )
+    return value
+
+
 def _section(table: dict[str, object], name: str, source: Path) -> dict[str, object]:
     value = table.get(name, {})
     if not isinstance(value, dict):
@@ -291,6 +339,7 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
             )
     tiles = {}
     dies = {}
+    strategies: dict[str, str | None] = {}
     for path in sorted((project / "Tile").glob(f"*/{CONFIG_NAME}")):
         tile_type = path.parent.name
         if tile_type == "include":
@@ -303,6 +352,7 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
         table = _read(path)
         tiles[tile_type] = _params(table.get("params"), path)
         dies[tile_type] = _die(table.get("die"), path)
+        strategies[tile_type] = _synthesis(table.get("synthesis"), path)
     settings = _fabric(fabric_table, fabric_path)
     # `flow.plan` places every pin and sizes every die against its own margin
     # constant, so a config that disagrees with it would move the pins without
@@ -321,4 +371,6 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
         tile_defaults=_params(defaults_table.get("params"), defaults_path),
         tile_params=tiles,
         tile_die=dies,
+        synthesis_default=_synthesis(defaults_table.get("synthesis"), defaults_path),
+        tile_synthesis=strategies,
     )

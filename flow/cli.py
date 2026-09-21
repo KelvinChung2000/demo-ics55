@@ -63,18 +63,27 @@ FLAT_GEOMETRY = BUILD / "flat/runs/default/filler_ecc/output/geometry/geometry.m
 FLAT_GDS = BUILD / "flat/runs/default/filler_ecc/output/eFPGA_filler.gds"
 
 
-def _tile_directory(tile_type: str, overrides: Sequence[project.Override] = ()) -> Path:
+def _tile_directory(
+    tile_type: str,
+    overrides: Sequence[project.Override] = (),
+    strategy: str | None = None,
+) -> Path:
     """Name a tile's build directory after the parameters it was built with.
 
     An override is an experiment rather than a fabric input, so it gets its own
     directory and leaves the baseline `paint`, `stitch` and `top` read alone.
     Sorting the overrides makes one set of parameters name one directory however
     the flags were ordered on the command line.
+
+    The ABC strategy names the directory on the same grounds, and it has to:
+    without it, comparing strategies means four builds racing for one directory.
     """
-    if not overrides:
+    parts = sorted(str(override) for override in overrides)
+    if strategy is not None:
+        parts.append(f"synth={strategy.replace(' ', '-')}")
+    if not parts:
         return BUILD / "tiles" / tile_type
-    key = ",".join(sorted(str(override) for override in overrides))
-    return BUILD / "tiles" / f"{tile_type}@{key}"
+    return BUILD / "tiles" / f"{tile_type}@{','.join(parts)}"
 
 
 def _netlist_directory(tile_type: str) -> Path:
@@ -103,7 +112,6 @@ def _tile_settings(config: Config, fabric: Fabric, tile_type: str) -> FabricSett
     stands only for builds that are not one tile.
     """
     return replace(config.fabric, clock_port=fabric.tile_types[tile_type].clock_port())
-
 
 
 @app.command()
@@ -195,6 +203,13 @@ def harden(
         help="Override one ECC parameter, spelled as `ecc param list` names it. "
         "Repeatable. A run carrying any override builds into its own directory.",
     ),
+    synth_strategy: str = typer.Option(
+        None,
+        "--synth-strategy",
+        metavar="DELAY|AREA|BALANCE N",
+        help="ABC strategy for synthesis, as YOSYS_SYNTH_STRATEGY spells it. "
+        "A run carrying one builds into its own directory.",
+    ),
 ) -> None:
     """Run one tile type from synthesis to filler, with the planned die and pins."""
     fabric = load_fabric(PROJECT)
@@ -210,7 +225,11 @@ def harden(
         raise typer.BadParameter(str(malformed)) from malformed
 
     def build(tile_type: str) -> tuple[str, str]:
-        directory = _tile_directory(tile_type, chosen)
+        # Only the flag names a directory. A strategy the tile's own config
+        # asks for is this fabric's baseline, so it belongs in the plain
+        # directory that `plan`, `paint` and `stitch` read.
+        directory = _tile_directory(tile_type, chosen, synth_strategy)
+        strategy = synth_strategy or config.strategy_for(tile_type)
         if force and directory.exists():
             shutil.rmtree(directory)
         log = BUILD / "logs" / f"{directory.name}.log"
@@ -243,7 +262,13 @@ def harden(
             # stages that read every tile directory would fail on it later.
             shutil.rmtree(directory, ignore_errors=True)
             raise
-        step = project.create_workspace(directory, log, to="macroPlacement")
+        step = project.create_workspace(
+            directory,
+            log,
+            to="macroPlacement",
+            progress=jobs == 1,
+            strategy=strategy,
+        )
         if not step.ok:
             return tile_type, f"synthesis through macroPlacement failed, see {log}"
         project.widen_flow(directory)
@@ -253,7 +278,9 @@ def harden(
         # From `preFloorplan` rather than from `postFloorplan` alone, so that a
         # rerun over an existing workspace has the die and the macro placement
         # its database initialisation reads.
-        step = project.run_range(directory, "preFloorplan", TAIL_STEP, log)
+        step = project.run_range(
+            directory, "preFloorplan", TAIL_STEP, log, progress=jobs == 1
+        )
         if not step.ok:
             return tile_type, f"{TAIL_STEP} failed, see {log}"
         floorplan = project.floorplan_def(directory, tile_type)
@@ -271,9 +298,13 @@ def harden(
             project.bypass_placement(
                 directory, tile_type, TAIL_STEP, "postFloorplan_ecc"
             )
-            step = project.run_range(directory, "route", "Harden", log)
+            step = project.run_range(
+                directory, "route", "Harden", log, progress=jobs == 1
+            )
         else:
-            step = project.run_range(directory, "place", "Harden", log)
+            step = project.run_range(
+                directory, "place", "Harden", log, progress=jobs == 1
+            )
         if not step.ok:
             return tile_type, f"{note}; the flow failed, see {log}"
         usage = project.compiled_usage(directory)
@@ -398,7 +429,16 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
             # Synthesis only, so no floorplan reads this.
             stripe_pitch_micron=config.fabric.stripe_pitch_micron,
         )
-        step = project.create_workspace(directory, log, to="synthesis")
+        step = project.create_workspace(
+            directory,
+            log,
+            # Spelled as the ledger records it, not as the CLI accepts it. ECC
+            # takes either case as an argument and writes back only `Synthesis`,
+            # and this name is then read back out of the ledger.
+            to="Synthesis",
+            progress=jobs == 1,
+            strategy=config.strategy_for(tile_type),
+        )
         if not step.ok:
             return tile_type, f"failed after {step.seconds:.0f} s, see {log}"
         netlist = project.synthesis_netlist(directory, tile_type)
@@ -547,7 +587,7 @@ def flat(
         # the pitch the fabric settled on does not apply.
         stripe_pitch_micron=config.fabric.stripe_pitch_micron,
     )
-    step = project.create_workspace(directory, log, to="synthesis")
+    step = project.create_workspace(directory, log, to="synthesis", progress=True)
     yosys = project.subflow_state(directory, "Synthesis_yosys", "run yosys")
     netlist = project.synthesis_netlist(directory, TOP_MODULE)
     current = project.netlist_is_current(directory, TOP_MODULE)
@@ -574,7 +614,9 @@ def flat(
         # `die_side` sizes the die from a floorplan's own measurement, so a
         # workspace that has never floorplanned has to run one first. ECC sizes
         # that one from `core_util` itself, which is close but not exact.
-        first = project.run_range(directory, "preFloorplan", "postFloorplan", log)
+        first = project.run_range(
+            directory, "preFloorplan", "postFloorplan", log, progress=True
+        )
         if not first.ok:
             typer.echo(f"the sizing floorplan failed, see {log}")
             raise typer.Exit(code=1)
@@ -599,7 +641,7 @@ def flat(
         log,
     )
     typer.echo(f"floorplanning a {side} um square die, {core_util} of it filled")
-    step = project.run_range(directory, "preFloorplan", last, log)
+    step = project.run_range(directory, "preFloorplan", last, log, progress=True)
     typer.echo(
         f"flat flow recorded as {step.state} after {step.seconds:.0f} s, see {log}"
     )
@@ -646,7 +688,7 @@ def top(
         for name in layout.tile_size
     }
     log = BUILD / "logs" / "fabric.log"
-    step = project.create_workspace(directory, log, to="synthesis")
+    step = project.create_workspace(directory, log, to="synthesis", progress=True)
     if not step.ok:
         raise typer.Exit(code=1)
     project.add_macro_views(
@@ -657,7 +699,9 @@ def top(
     project.widen_flow(directory)
     project.zero_macro_halos(directory, log)
     typer.echo(f"{len(layout.placements)} macros fixed at their planned coordinates")
-    step = project.run_range(directory, "preFloorplan", "postFloorplan", log)
+    step = project.run_range(
+        directory, "preFloorplan", "postFloorplan", log, progress=True
+    )
     typer.echo(
         f"fabric floorplan {'succeeded' if step.ok else 'failed'} in {step.seconds:.0f} s, "
         f"recorded as {step.state}, see {log}"
@@ -671,7 +715,7 @@ def top(
     project.bypass_placement(
         directory, TOP_MODULE, "postFloorplan", "postFloorplan_ecc"
     )
-    step = project.run_range(directory, "route", "filler", log)
+    step = project.run_range(directory, "route", "filler", log, progress=True)
     typer.echo(
         f"ECC assembly recorded as {step.state} after {step.seconds:.0f} s, see {log}"
     )

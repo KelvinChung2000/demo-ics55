@@ -82,9 +82,10 @@ tasks:
       Run every tile type from synthesis to macro. Takes about forty minutes.
       Pass ECC parameter overrides after --, as `-- --set place.target_density=0.55`
     cmds:
-      # A tile reports only once it finishes, so the log is the only progress
-      # there is for the first several minutes.
-      - cmd: 'echo "==> harden: 15 tiles, {{.JOBS}} at a time, anchor from the plan. About forty minutes; follow {{.BUILD}}/logs/"'
+      # ECC's step renderer draws one transient line, so it is handed the
+      # terminal only at JOBS=1; above that a tile reports when it finishes and
+      # build/tiles/<TILE>/default/<step>_<tool>/log/ is the progress there is.
+      - cmd: 'echo "==> harden: 15 tiles, {{.JOBS}} at a time, anchor from the plan. About forty minutes; run with JOBS=1 to watch the steps"'
         silent: true
       - "{{.FLOW}} harden --jobs {{.JOBS}} {{.CLI_ARGS}}"
 
@@ -94,7 +95,7 @@ tasks:
       parameter overrides after --, as `-- --set place.target_density=0.55`;
       an overridden run builds into build/tiles/<TILE>@<overrides> of its own.
     cmds:
-      - cmd: 'echo "==> harden-one: {{.TILE}}, discarding any existing run. Follow {{.BUILD}}/logs/{{.TILE}}.log"'
+      - cmd: 'echo "==> harden-one: {{.TILE}}, discarding any existing run. ECC prints each step as it runs"'
         silent: true
       - "{{.FLOW}} harden --force --jobs 1 --tile {{.TILE}} {{.CLI_ARGS}}"
 

@@ -18,6 +18,7 @@ break is one invocation and `flow.cli`'s `check_pins` tests that they held.
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -29,6 +30,17 @@ from pathlib import Path
 from flow.config import FabricSettings, Param
 
 ECC = Path("/home/kelvin/side-project/ecc-spike/eccw-main")
+# `ecc-tools` and `ecc-dreamplace` are installed editable, so scikit-build-core
+# reruns cmake on every import and prints the whole install manifest, 638 lines
+# an invocation. `_editable_redirect.py:181` treats the literal "0" as off,
+# which silences the print without skipping the rebuild that keeps the native
+# extensions current.
+QUIET_EDITABLE_REBUILD = {"SKBUILD_EDITABLE_VERBOSE": "0"}
+# Extra Yosys techmap rules, read by a local patch to ECC's synthesis script
+# that has no upstream counterpart yet. Without it `my_buf` is flattened into a
+# net alias and a tile loses every boundary buffer; see techmap/ics55_models.v.
+TECHMAP = Path(__file__).resolve().parent.parent / "techmap" / "ics55_models.v"
+TECHMAP_ENV = {"YOSYS_TECHMAP_FILES": str(TECHMAP)}
 WORKSPACE = "default"
 # `build_harden_flow`'s step list, which the workspace only receives if the
 # project was created with that preset. It is written in after synthesis
@@ -266,15 +278,16 @@ def write_ecc_toml(
     # workspace is first created, so both belong here rather than in a later
     # edit that the ledger would not see.
     sections.append(
-        f'[flow]\npreset = "{preset}"\n'
-        f"skip_steps = {json.dumps(list(SKIP_STEPS))}\n"
+        f'[flow]\npreset = "{preset}"\nskip_steps = {json.dumps(list(SKIP_STEPS))}\n'
     )
     if stripe_pitch_micron is not None:
         sections.append(stripe_tables(stripe_pitch_micron).lstrip("\n"))
     # The margin is the one registry entry the config files cannot carry, so it
     # is rendered here and the floorplan section always exists to hold it. A note
     # leads the section, since what it explains is the margin.
-    grouped: dict[str, list[str]] = {"floorplan": [f"core_margin = [{margin}, {margin}]"]}
+    grouped: dict[str, list[str]] = {
+        "floorplan": [f"core_margin = [{margin}, {margin}]"]
+    }
     for param in params:
         grouped.setdefault(param.section, []).append(param.render())
     for section, entries in grouped.items():
@@ -338,11 +351,26 @@ def workspace_of(directory: Path) -> Path:
     return directory.resolve() / WORKSPACE
 
 
-def run(directory: Path, arguments: list[str], log: Path) -> StepResult:  # noqa: D401
+def run(
+    directory: Path,
+    arguments: list[str],
+    log: Path,
+    *,
+    progress: bool,
+    strategy: str | None = None,
+) -> StepResult:  # noqa: D401
     """Invoke ECC, appending its output to `log`, and return without raising.
 
     A failing step is reported rather than thrown so that a batch over fifteen
     tile types finishes and names every tile that failed instead of the first.
+
+    `progress` lends ECC this process's stderr so its own renderer draws each
+    step, its running time and a tail of the step log onto the terminal.
+    `cli/rendering/progress.py:40` refuses to render under `--plain` or onto
+    anything that is not a tty, so both conditions are set here together: the
+    renderer redraws one transient line, which concurrent tiles would overwrite.
+    Tool output never reaches either stream, because ECC redirects it to the
+    workspace step log at file-descriptor level for the duration of the step.
     """
     import time
 
@@ -352,10 +380,19 @@ def run(directory: Path, arguments: list[str], log: Path) -> StepResult:  # noqa
         handle.write(f"\n=== ecc {' '.join(arguments)} ===\n")
         handle.flush()
         completed = subprocess.run(
-            [str(ECC), *arguments],
+            [str(ECC), *arguments] + ([] if progress else ["--plain"]),
             cwd=directory,
             stdout=handle,
-            stderr=subprocess.STDOUT,
+            stderr=None if progress else subprocess.STDOUT,
+            env={
+                **os.environ,
+                **QUIET_EDITABLE_REBUILD,
+                **TECHMAP_ENV,
+                # Passed rather than set on os.environ because `harden --jobs`
+                # runs its builds on a thread pool, where one process
+                # environment cannot hold a per-build value.
+                **({} if strategy is None else {"YOSYS_SYNTH_STRATEGY": strategy}),
+            },
         )
     return StepResult(
         step=arguments[-1] if arguments else "",
@@ -373,26 +410,32 @@ def step_state(directory: Path, step: str) -> str:
     raise KeyError(f"{path} records no step named {step}")
 
 
-def run_step(directory: Path, step: str, log: Path) -> StepResult:
+def run_step(directory: Path, step: str, log: Path, *, progress: bool) -> StepResult:
     workspace = workspace_of(directory)
     result = run(
         directory,
         ["run", "--workspace", str(workspace), "--only", step, "--force"],
         log,
+        progress=progress,
     )
     return StepResult(
         step, result.returncode, result.seconds, step_state(directory, step)
     )
 
 
-def run_from(directory: Path, step: str, log: Path) -> StepResult:
+def run_from(directory: Path, step: str, log: Path, *, progress: bool) -> StepResult:
     """Run `step` and every step after it in one invocation.
 
     `--force` is rejected alongside `--from`, so the steps have to be Unstart,
     which `install_harden_flow` arranges.
     """
     workspace = workspace_of(directory)
-    result = run(directory, ["run", "--workspace", str(workspace), "--from", step], log)
+    result = run(
+        directory,
+        ["run", "--workspace", str(workspace), "--from", step],
+        log,
+        progress=progress,
+    )
     return StepResult(
         step, result.returncode, result.seconds, step_state(directory, step)
     )
@@ -400,7 +443,10 @@ def run_from(directory: Path, step: str, log: Path) -> StepResult:
 
 def floorplan_def(directory: Path, top: str) -> Path:
     return (
-        workspace_of(directory) / "postFloorplan_ecc" / "output" / f"{top}_postFloorplan.def.gz"
+        workspace_of(directory)
+        / "postFloorplan_ecc"
+        / "output"
+        / f"{top}_postFloorplan.def.gz"
     )
 
 
@@ -414,7 +460,10 @@ def drop_floorplan_database(directory: Path, top: str) -> None:
     import shutil
 
     database = (
-        workspace_of(directory) / "postFloorplan_ecc" / "output" / f"{top}_postFloorplan_db"
+        workspace_of(directory)
+        / "postFloorplan_ecc"
+        / "output"
+        / f"{top}_postFloorplan_db"
     )
     if database.exists():
         shutil.rmtree(database)
@@ -435,7 +484,9 @@ def final_gds(directory: Path, top: str) -> Path:
     return candidates[0]
 
 
-def create_workspace(directory: Path, log: Path, *, to: str) -> StepResult:
+def create_workspace(
+    directory: Path, log: Path, *, to: str, progress: bool, strategy: str | None = None
+) -> StepResult:
     """Run the project up to `to`, materialising the workspace on the way.
 
     The bound is what leaves a clean point to intervene before the next step:
@@ -458,19 +509,23 @@ def create_workspace(directory: Path, log: Path, *, to: str) -> StepResult:
             "synthesis",
             "--to",
             to,
-            "--plain",
         ],
         log,
+        progress=progress,
+        strategy=strategy,
     )
     return StepResult(to, result.returncode, result.seconds, step_state(directory, to))
 
 
-def run_range(directory: Path, first: str, last: str, log: Path) -> StepResult:
+def run_range(
+    directory: Path, first: str, last: str, log: Path, *, progress: bool
+) -> StepResult:
     """Run `first` through `last` inclusive in one invocation."""
     result = run(
         directory,
-        ["run", "--workspace", WORKSPACE, "--from", first, "--to", last, "--plain"],
+        ["run", "--workspace", WORKSPACE, "--from", first, "--to", last],
         log,
+        progress=progress,
     )
     return StepResult(
         first, result.returncode, result.seconds, step_state(directory, last)
@@ -487,7 +542,10 @@ def set_params(directory: Path, assignments: dict[str, object], log: Path) -> No
     for key, value in assignments.items():
         rendered = value if isinstance(value, str) else json.dumps(value)
         result = run(
-            directory, ["param", "set", key, rendered, "--workspace", WORKSPACE], log
+            directory,
+            ["param", "set", key, rendered, "--workspace", WORKSPACE],
+            log,
+            progress=False,
         )
         if result.returncode:
             raise ValueError(f"ecc param set {key} {rendered} failed, see {log}")
@@ -725,7 +783,12 @@ def set_core_util(directory: Path, utilisation: float) -> None:
 
 def floorplan_measurement(directory: Path) -> Path:
     """Return the feature file recording what the last floorplan actually built."""
-    return workspace_of(directory) / "postFloorplan_ecc" / "feature" / "postFloorplan.db.json"
+    return (
+        workspace_of(directory)
+        / "postFloorplan_ecc"
+        / "feature"
+        / "postFloorplan.db.json"
+    )
 
 
 def compiled_die(directory: Path, top: str) -> tuple[float, float]:

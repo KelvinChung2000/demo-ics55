@@ -8,23 +8,26 @@ same ten core rows.
 
 | | with block RAM | without |
 |---|---|---|
-| array | 954.8 × 884.8 um | **781.8 × 884.8 um** |
-| area | 844,807 um², 87.6% of 1 mm² | **691,737 um², 69.2%** |
-| logic | 640 `FABULOUS_LC` | 640 `FABULOUS_LC` |
+| array | 954.8 × 884.8 um | **947.0 × 884.8 um** |
+| area | 844,807 um², 87.6% of 1 mm² | **837,906 um², 83.8%** |
+| logic | 640 `FABULOUS_LC` | **800 `FABULOUS_LC`** |
 | DSP | 5 `MACC_8x8_20` | 5 `MACC_8x8_20` |
 | block RAM | 80 kbit | **none** |
-| external IO | 26 | **36** |
-| tiles | 122 | 127 |
-| seam crossings | 26098, all conduct | **26218, all conduct** |
+| external IO | 26 | **40** |
+| tiles | 122 | 151 |
+| seam crossings | 26098, all conduct | **31760, all conduct** |
 | tiles with DRC | `E_BRAM` at 45 | **none** |
 | hard macro | one per two rows | **none** |
 
 The variant carries no hard macro at all, so it has no vendor dependency, no
-package to request and no tile above zero DRC. What it gives up is the memory
-and 173 um of width, which buys back ten external bits from `E_IO`'s `IOBUF`
-per row. The freed width is two more logic columns if the budget is the target
-rather than the area, which would put it at 160 more logic cells and about
-75.5% of 1 mm².
+package to request and no tile above zero DRC. It spends the width the memory
+column would have taken on two more logic columns instead, ten in place of
+eight, which is 160 more logic cells for 7.8 um less width.
+
+Ten is the last column count that fits. Eleven would be 1029.6 um wide, over
+the 1000 um axis, at 91.1% of the budget. The split is five each side of the
+multiplier, which is both the even split and the centred one: its midline is at
+477.2 um against the array's 473.5.
 
 Everything below describes the block-RAM fabric and is kept so the two branches
 can be diffed. Where it names `E_BRAM`, this variant has `E_IO`.

@@ -1,19 +1,15 @@
-module E_BRAM_bot
+module E_IO
     #(
 `ifdef EMULATION
         parameter [639:0] Emulate_Bitstream=640'b0,
 `endif
         parameter MaxFramesPerCol=20,
         parameter FrameBitsPerRow=32,
-        parameter NoConfigBits=172
+        parameter NoConfigBits=120
     )
     (
  //N
         output  [3:0] N_GBUF_BEG,        //TilePort({N} OUTPUT N_GBUF_BEG[3:0])
-        output  [15:0] bot2top_DOUT,        //TilePort({N} OUTPUT bot2top_DOUT[15:0])
-        input  [15:0] top2bot_DIN,        //TilePort({N} INPUT top2bot_DIN[15:0])
-        input  [15:0] top2bot_BM,        //TilePort({N} INPUT top2bot_BM[15:0])
-        input  [4:0] top2bot_ADDR,        //TilePort({N} INPUT top2bot_ADDR[4:0])
  //W
         input  [3:0] E1END,        //TilePort({W} INPUT E1END[3:0])
         input  [7:0] E2MID,        //TilePort({W} INPUT E2MID[7:0])
@@ -27,7 +23,9 @@ module E_BRAM_bot
         output  [11:0] W6BEG,        //TilePort({W} OUTPUT W6BEG[1:0])
  //S
         input  [3:0] N_GBUF_END,        //TilePort({S} INPUT N_GBUF_END[3:0])
-        input  CONFIGURED_top,
+        input  A_OUT_top,
+        output  A_IN_top,
+        output  A_EN_top,
     //Tile IO ports from BELs
         input  [FrameBitsPerRow-1:0] FrameData, //CONFIG_PORT
         output  [FrameBitsPerRow-1:0] FrameData_O,
@@ -37,116 +35,10 @@ module E_BRAM_bot
 );
  //signal declarations
  //BEL ports (e.g., slices)
-wire CLK;
-wire ADDR0;
-wire ADDR1;
-wire ADDR2;
-wire ADDR3;
-wire ADDR4;
-wire ADDR5;
-wire ADDR6;
-wire ADDR7;
-wire ADDR8;
-wire ADDR9;
-wire DIN0;
-wire DIN1;
-wire DIN2;
-wire DIN3;
-wire DIN4;
-wire DIN5;
-wire DIN6;
-wire DIN7;
-wire DIN8;
-wire DIN9;
-wire DIN10;
-wire DIN11;
-wire DIN12;
-wire DIN13;
-wire DIN14;
-wire DIN15;
-wire DIN16;
-wire DIN17;
-wire DIN18;
-wire DIN19;
-wire DIN20;
-wire DIN21;
-wire DIN22;
-wire DIN23;
-wire DIN24;
-wire DIN25;
-wire DIN26;
-wire DIN27;
-wire DIN28;
-wire DIN29;
-wire DIN30;
-wire DIN31;
-wire BM0;
-wire BM1;
-wire BM2;
-wire BM3;
-wire BM4;
-wire BM5;
-wire BM6;
-wire BM7;
-wire BM8;
-wire BM9;
-wire BM10;
-wire BM11;
-wire BM12;
-wire BM13;
-wire BM14;
-wire BM15;
-wire BM16;
-wire BM17;
-wire BM18;
-wire BM19;
-wire BM20;
-wire BM21;
-wire BM22;
-wire BM23;
-wire BM24;
-wire BM25;
-wire BM26;
-wire BM27;
-wire BM28;
-wire BM29;
-wire BM30;
-wire BM31;
-wire WEN;
-wire MEN;
-wire REN;
-wire DOUT0;
-wire DOUT1;
-wire DOUT2;
-wire DOUT3;
-wire DOUT4;
-wire DOUT5;
-wire DOUT6;
-wire DOUT7;
-wire DOUT8;
-wire DOUT9;
-wire DOUT10;
-wire DOUT11;
-wire DOUT12;
-wire DOUT13;
-wire DOUT14;
-wire DOUT15;
-wire DOUT16;
-wire DOUT17;
-wire DOUT18;
-wire DOUT19;
-wire DOUT20;
-wire DOUT21;
-wire DOUT22;
-wire DOUT23;
-wire DOUT24;
-wire DOUT25;
-wire DOUT26;
-wire DOUT27;
-wire DOUT28;
-wire DOUT29;
-wire DOUT30;
-wire DOUT31;
+wire A_CLK;
+wire A_IN;
+wire A_EN;
+wire A_OUT;
  //Jump wires
  //internal configuration data signal to daisy-chain all BELs (if any and in the order they are listed in the fabric.csv)
 wire[NoConfigBits-1:0] ConfigBits;
@@ -684,13 +576,13 @@ my_buf strobe_outbuf_19 (
 
 
  //configuration storage latches
-E_BRAM_bot_ConfigMem
+E_IO_ConfigMem
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(Emulate_Bitstream)
     )
 `endif
-    Inst_E_BRAM_bot_ConfigMem
+    Inst_E_IO_ConfigMem
     (
     .FrameData(FrameData),
     .FrameStrobe(FrameStrobe),
@@ -700,19 +592,18 @@ E_BRAM_bot_ConfigMem
 
 
  //BEL component instantiations
-ICS55_SRAM_512x32_1RW Inst_ICS55_SRAM_512x32_1RW (
-    .CLK(CLK),
-    .ADDR({ADDR9, ADDR8, ADDR7, ADDR6, ADDR5, ADDR4, ADDR3, ADDR2, ADDR1, ADDR0}),
-    .DIN({DIN31, DIN30, DIN29, DIN28, DIN27, DIN26, DIN25, DIN24, DIN23, DIN22, DIN21, DIN20, DIN19, DIN18, DIN17, DIN16, DIN15, DIN14, DIN13, DIN12, DIN11, DIN10, DIN9, DIN8, DIN7, DIN6, DIN5, DIN4, DIN3, DIN2, DIN1, DIN0}),
-    .BM({BM31, BM30, BM29, BM28, BM27, BM26, BM25, BM24, BM23, BM22, BM21, BM20, BM19, BM18, BM17, BM16, BM15, BM14, BM13, BM12, BM11, BM10, BM9, BM8, BM7, BM6, BM5, BM4, BM3, BM2, BM1, BM0}),
-    .WEN(WEN),
-    .MEN(MEN),
-    .REN(REN),
-    .DOUT({DOUT31, DOUT30, DOUT29, DOUT28, DOUT27, DOUT26, DOUT25, DOUT24, DOUT23, DOUT22, DOUT21, DOUT20, DOUT19, DOUT18, DOUT17, DOUT16, DOUT15, DOUT14, DOUT13, DOUT12, DOUT11, DOUT10, DOUT9, DOUT8, DOUT7, DOUT6, DOUT5, DOUT4, DOUT3, DOUT2, DOUT1, DOUT0}),
-    .CONFIGURED_top(CONFIGURED_top)
+IOBUF Inst_A_IOBUF (
+    .CLK(A_CLK),
+    .IN(A_IN),
+    .EN(A_EN),
+    .OUT(A_OUT),
+    .IN_top(A_IN_top),
+    .EN_top(A_EN_top),
+    .OUT_top(A_OUT_top),
+    .ConfigBits(ConfigBits[3-1:0])
 );
 
-E_BRAM_bot_switch_matrix Inst_E_BRAM_bot_switch_matrix (
+E_IO_switch_matrix Inst_E_IO_switch_matrix (
     .N_GBUF_END0(N_GBUF_END[0]),
     .N_GBUF_END1(N_GBUF_END[1]),
     .N_GBUF_END2(N_GBUF_END[2]),
@@ -765,75 +656,7 @@ E_BRAM_bot_switch_matrix Inst_E_BRAM_bot_switch_matrix (
     .E6END9(E6END[9]),
     .E6END10(E6END[10]),
     .E6END11(E6END[11]),
-    .top2bot_DIN0(top2bot_DIN[0]),
-    .top2bot_DIN1(top2bot_DIN[1]),
-    .top2bot_DIN2(top2bot_DIN[2]),
-    .top2bot_DIN3(top2bot_DIN[3]),
-    .top2bot_DIN4(top2bot_DIN[4]),
-    .top2bot_DIN5(top2bot_DIN[5]),
-    .top2bot_DIN6(top2bot_DIN[6]),
-    .top2bot_DIN7(top2bot_DIN[7]),
-    .top2bot_DIN8(top2bot_DIN[8]),
-    .top2bot_DIN9(top2bot_DIN[9]),
-    .top2bot_DIN10(top2bot_DIN[10]),
-    .top2bot_DIN11(top2bot_DIN[11]),
-    .top2bot_DIN12(top2bot_DIN[12]),
-    .top2bot_DIN13(top2bot_DIN[13]),
-    .top2bot_DIN14(top2bot_DIN[14]),
-    .top2bot_DIN15(top2bot_DIN[15]),
-    .top2bot_BM0(top2bot_BM[0]),
-    .top2bot_BM1(top2bot_BM[1]),
-    .top2bot_BM2(top2bot_BM[2]),
-    .top2bot_BM3(top2bot_BM[3]),
-    .top2bot_BM4(top2bot_BM[4]),
-    .top2bot_BM5(top2bot_BM[5]),
-    .top2bot_BM6(top2bot_BM[6]),
-    .top2bot_BM7(top2bot_BM[7]),
-    .top2bot_BM8(top2bot_BM[8]),
-    .top2bot_BM9(top2bot_BM[9]),
-    .top2bot_BM10(top2bot_BM[10]),
-    .top2bot_BM11(top2bot_BM[11]),
-    .top2bot_BM12(top2bot_BM[12]),
-    .top2bot_BM13(top2bot_BM[13]),
-    .top2bot_BM14(top2bot_BM[14]),
-    .top2bot_BM15(top2bot_BM[15]),
-    .top2bot_ADDR0(top2bot_ADDR[0]),
-    .top2bot_ADDR1(top2bot_ADDR[1]),
-    .top2bot_ADDR2(top2bot_ADDR[2]),
-    .top2bot_ADDR3(top2bot_ADDR[3]),
-    .top2bot_ADDR4(top2bot_ADDR[4]),
-    .DOUT0(DOUT0),
-    .DOUT1(DOUT1),
-    .DOUT2(DOUT2),
-    .DOUT3(DOUT3),
-    .DOUT4(DOUT4),
-    .DOUT5(DOUT5),
-    .DOUT6(DOUT6),
-    .DOUT7(DOUT7),
-    .DOUT8(DOUT8),
-    .DOUT9(DOUT9),
-    .DOUT10(DOUT10),
-    .DOUT11(DOUT11),
-    .DOUT12(DOUT12),
-    .DOUT13(DOUT13),
-    .DOUT14(DOUT14),
-    .DOUT15(DOUT15),
-    .DOUT16(DOUT16),
-    .DOUT17(DOUT17),
-    .DOUT18(DOUT18),
-    .DOUT19(DOUT19),
-    .DOUT20(DOUT20),
-    .DOUT21(DOUT21),
-    .DOUT22(DOUT22),
-    .DOUT23(DOUT23),
-    .DOUT24(DOUT24),
-    .DOUT25(DOUT25),
-    .DOUT26(DOUT26),
-    .DOUT27(DOUT27),
-    .DOUT28(DOUT28),
-    .DOUT29(DOUT29),
-    .DOUT30(DOUT30),
-    .DOUT31(DOUT31),
+    .A_OUT(A_OUT),
     .N_GBUF_BEG0(N_GBUF_BEG[0]),
     .N_GBUF_BEG1(N_GBUF_BEG[1]),
     .N_GBUF_BEG2(N_GBUF_BEG[2]),
@@ -886,102 +709,11 @@ E_BRAM_bot_switch_matrix Inst_E_BRAM_bot_switch_matrix (
     .W6BEG9(W6BEG[9]),
     .W6BEG10(W6BEG[10]),
     .W6BEG11(W6BEG[11]),
-    .bot2top_DOUT0(bot2top_DOUT[0]),
-    .bot2top_DOUT1(bot2top_DOUT[1]),
-    .bot2top_DOUT2(bot2top_DOUT[2]),
-    .bot2top_DOUT3(bot2top_DOUT[3]),
-    .bot2top_DOUT4(bot2top_DOUT[4]),
-    .bot2top_DOUT5(bot2top_DOUT[5]),
-    .bot2top_DOUT6(bot2top_DOUT[6]),
-    .bot2top_DOUT7(bot2top_DOUT[7]),
-    .bot2top_DOUT8(bot2top_DOUT[8]),
-    .bot2top_DOUT9(bot2top_DOUT[9]),
-    .bot2top_DOUT10(bot2top_DOUT[10]),
-    .bot2top_DOUT11(bot2top_DOUT[11]),
-    .bot2top_DOUT12(bot2top_DOUT[12]),
-    .bot2top_DOUT13(bot2top_DOUT[13]),
-    .bot2top_DOUT14(bot2top_DOUT[14]),
-    .bot2top_DOUT15(bot2top_DOUT[15]),
-    .CLK(CLK),
-    .ADDR0(ADDR0),
-    .ADDR1(ADDR1),
-    .ADDR2(ADDR2),
-    .ADDR3(ADDR3),
-    .ADDR4(ADDR4),
-    .ADDR5(ADDR5),
-    .ADDR6(ADDR6),
-    .ADDR7(ADDR7),
-    .ADDR8(ADDR8),
-    .ADDR9(ADDR9),
-    .DIN0(DIN0),
-    .DIN1(DIN1),
-    .DIN2(DIN2),
-    .DIN3(DIN3),
-    .DIN4(DIN4),
-    .DIN5(DIN5),
-    .DIN6(DIN6),
-    .DIN7(DIN7),
-    .DIN8(DIN8),
-    .DIN9(DIN9),
-    .DIN10(DIN10),
-    .DIN11(DIN11),
-    .DIN12(DIN12),
-    .DIN13(DIN13),
-    .DIN14(DIN14),
-    .DIN15(DIN15),
-    .DIN16(DIN16),
-    .DIN17(DIN17),
-    .DIN18(DIN18),
-    .DIN19(DIN19),
-    .DIN20(DIN20),
-    .DIN21(DIN21),
-    .DIN22(DIN22),
-    .DIN23(DIN23),
-    .DIN24(DIN24),
-    .DIN25(DIN25),
-    .DIN26(DIN26),
-    .DIN27(DIN27),
-    .DIN28(DIN28),
-    .DIN29(DIN29),
-    .DIN30(DIN30),
-    .DIN31(DIN31),
-    .BM0(BM0),
-    .BM1(BM1),
-    .BM2(BM2),
-    .BM3(BM3),
-    .BM4(BM4),
-    .BM5(BM5),
-    .BM6(BM6),
-    .BM7(BM7),
-    .BM8(BM8),
-    .BM9(BM9),
-    .BM10(BM10),
-    .BM11(BM11),
-    .BM12(BM12),
-    .BM13(BM13),
-    .BM14(BM14),
-    .BM15(BM15),
-    .BM16(BM16),
-    .BM17(BM17),
-    .BM18(BM18),
-    .BM19(BM19),
-    .BM20(BM20),
-    .BM21(BM21),
-    .BM22(BM22),
-    .BM23(BM23),
-    .BM24(BM24),
-    .BM25(BM25),
-    .BM26(BM26),
-    .BM27(BM27),
-    .BM28(BM28),
-    .BM29(BM29),
-    .BM30(BM30),
-    .BM31(BM31),
-    .WEN(WEN),
-    .MEN(MEN),
-    .REN(REN),
-    .ConfigBits(ConfigBits[172-1:0]),
-    .ConfigBits_N(ConfigBits_N[172-1:0])
+    .A_CLK(A_CLK),
+    .A_IN(A_IN),
+    .A_EN(A_EN),
+    .ConfigBits(ConfigBits[120-1:3]),
+    .ConfigBits_N(ConfigBits_N[120-1:3])
 );
 
 endmodule

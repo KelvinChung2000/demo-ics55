@@ -22,3 +22,6 @@ __pycache__/
 
 # FABulous writes a CSV beside each generated switch matrix; the .list is the source.
 Tile/**/*_switch_matrix.csv
+
+# Variant fabrics built as worktrees of this repo.
+.worktrees/

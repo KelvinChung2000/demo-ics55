@@ -69,6 +69,10 @@ FABULOUS_PYTHON = Path(
 # anchor type only has to be a tile that is always built.
 ANCHOR_TYPE = "LUT4x8_ha"
 TAIL_STEP = "postFloorplan"
+# The STA corner a hardened tile's extracted `.lib` belongs to. Every tile is
+# built against the standard cells' ss_rcworst_1p08_125 liberty, which is what
+# `sta_ecc.json` calls MAX.
+MACRO_CORNER = "MAX"
 # What a post-synthesis build and the netlists it writes are named with.
 NETLIST_SUFFIX = "_nl"
 # ECC's own assembly of the abutted fabric, which only `assemble --stitcher ecc`
@@ -641,12 +645,18 @@ def top(
     if not run:
         return
 
-    views = {
-        name: project.harden_views(_tile_directory(name), name)
-        for name in layout.tile_size
-    }
+    # Copied into the project rather than referenced, so `build/fabric` is a
+    # complete ECC project: hand it to a tool that has never heard of
+    # `build/tiles` and every macro it instantiates is there beside it.
+    views = project.stage_macro_views(
+        directory,
+        {
+            name: project.tile_views(_tile_directory(name), name)
+            for name in layout.tile_size
+        },
+    )
     unbound = topdesign.unbound_pins(
-        directory / "rtl", {name: lef for name, (lef, _, _) in views.items()}
+        directory / "rtl", {name: kinds["lef"] for name, kinds in views.items()}
     )
     if unbound:
         raise typer.BadParameter(
@@ -663,8 +673,11 @@ def top(
         raise typer.Exit(code=1)
     project.add_macro_views(
         directory,
-        lefs=[lef for lef, _, _ in views.values()],
-        libs=[lib for _, lib, _ in views.values()],
+        lefs=[kinds["lef"] for kinds in views.values()],
+        libs=[kinds["lib"] for kinds in views.values()],
+    )
+    timed = project.add_macro_timing(
+        directory, [kinds["lib"] for kinds in views.values()], MACRO_CORNER
     )
     project.widen_flow(directory)
     # `ecc param set --workspace` refreshes the step configs and fails on a step
@@ -689,7 +702,9 @@ def top(
     )
     typer.echo(
         f"{len(layout.placements)} macros fixed at their planned coordinates; "
-        f"{cleared} template stripes cleared, the tiles carry the PDN; {placed}"
+        f"{cleared} template stripes cleared, the tiles carry the PDN; "
+        f"{len(views)} tile view sets staged under macros/; "
+        f"{timed} macro timing models added to the {MACRO_CORNER} corner; {placed}"
     )
     step = project.run_range(
         directory, "preFloorplan", "postFloorplan", log, progress=True

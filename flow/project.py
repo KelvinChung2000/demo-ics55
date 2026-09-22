@@ -645,6 +645,103 @@ def add_macro_views(directory: Path, *, lefs: list[Path], libs: list[Path]) -> N
     config.write_text(json.dumps(data, indent=4))
 
 
+def tile_views(directory: Path, top: str) -> dict[str, Path]:
+    """Return every view of a hardened tile the parent project needs.
+
+    The abstract LEF and the extracted `.lib` are what the floorplanner and the
+    timing engine read. The routed DEF and the routed netlist are what makes the
+    parent a project in its own right rather than a pointer into `build/tiles`:
+    they are the tile as implemented, in the two forms iEDA reads natively, so
+    a check that has to descend into a macro has something to descend into.
+    The GDS is deliberately absent; it is 18 MB across the fabric and nothing
+    in the parent flow reads it.
+    """
+    output = workspace_of(directory)
+    views = {
+        "lef": output / "Harden_ecc" / "output" / f"{top}_Harden.lef",
+        "lib": output / "Harden_ecc" / "output" / f"{top}_Harden.lib",
+        "def": output / "route_ecc" / "output" / f"{top}_route.def.gz",
+        "netlist": output / "route_ecc" / "output" / f"{top}_route.v.gz",
+    }
+    missing = sorted(kind for kind, path in views.items() if not path.exists())
+    if missing:
+        raise FileNotFoundError(f"{top} has not been hardened: no {missing}")
+    return views
+
+
+def stage_macro_views(
+    directory: Path, views: dict[str, dict[str, Path]]
+) -> dict[str, dict[str, Path]]:
+    """Copy every tile's views under the parent project and index them.
+
+    The parent is handed to a tool that was not told where `build/tiles` is, so
+    it carries its own copy: `macros/<type>/` beside `ecc.toml`, and a
+    `views.json` naming them relative to the project. 3.3 MB for twelve types.
+    """
+    staged: dict[str, dict[str, Path]] = {}
+    for tile_type, kinds in sorted(views.items()):
+        into = directory / "macros" / tile_type
+        into.mkdir(parents=True, exist_ok=True)
+        staged[tile_type] = {}
+        for kind, source in kinds.items():
+            target = into / source.name
+            if not target.exists() or target.read_bytes() != source.read_bytes():
+                shutil.copy2(source, target)
+            staged[tile_type][kind] = target
+    (directory / "views.json").write_text(
+        json.dumps(
+            {
+                tile_type: {
+                    kind: str(path.relative_to(directory))
+                    for kind, path in sorted(kinds.items())
+                }
+                for tile_type, kinds in sorted(staged.items())
+            },
+            indent=1,
+        )
+        + "\n"
+    )
+    return staged
+
+
+def routed_netlist(directory: Path, top: str) -> Path:
+    """Return the routed gate-level netlist of a hardened tile."""
+    path = workspace_of(directory) / "route_ecc" / "output" / f"{top}_route.v.gz"
+    if not path.exists():
+        raise FileNotFoundError(f"{top} has no routed netlist at {path}")
+    return path
+
+
+def add_macro_timing(directory: Path, libs: list[Path], corner: str) -> int:
+    """Put the macros' own timing models into the STA corner they were extracted at.
+
+    `sta_ecc.json` carries its own multi-corner liberty list and STA reads that
+    rather than `db_ecc.json`'s `lib_path`, so a macro appended by
+    `add_macro_views` reaches the database and not the timing engine: a parent
+    STA would see every tile as a cell with no arcs. A hardened tile has one
+    `.lib`, extracted at the corner it was built at, so it joins that corner and
+    the others keep only the standard cells.
+    """
+    config = workspace_of(directory) / "config" / "sta_ecc.json"
+    if not config.exists():
+        raise FileNotFoundError(f"{config} does not exist. Run one step first.")
+    data = json.loads(config.read_text())
+    named = [entry for entry in data["liberty"] if entry["corner"] == corner]
+    if not named:
+        raise ValueError(
+            f"{config} has no {corner} corner to put the macro models in: "
+            f"{[entry['corner'] for entry in data['liberty']]}"
+        )
+    added = 0
+    for entry in named:
+        for lib in libs:
+            if str(lib) not in entry["path"]:
+                entry["path"].append(str(lib))
+                added += 1
+    config.write_text(json.dumps(data, indent=4))
+    return added
+
+
 def clear_pdn_stripes(directory: Path) -> int:
     """Empty the parent's stripe list, and return how many entries went.
 

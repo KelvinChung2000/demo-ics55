@@ -1,3 +1,34 @@
+# A 1 mm² eFPGA on ICS55, without block RAM
+
+**This branch is the `nobram` variant.** It is the same fabric with `E_IO` back
+in the east column where `E_BRAM` sits on `master`, for an integration that
+cannot take a dependency on the ECOS SRAM compiler. Nothing else differs: the
+same eight logic columns, the same multiplier column in the same place, the
+same ten core rows.
+
+| | with block RAM | without |
+|---|---|---|
+| array | 954.8 × 884.8 um | **781.8 × 884.8 um** |
+| area | 844,807 um², 87.6% of 1 mm² | **691,737 um², 69.2%** |
+| logic | 640 `FABULOUS_LC` | 640 `FABULOUS_LC` |
+| DSP | 5 `MACC_8x8_20` | 5 `MACC_8x8_20` |
+| block RAM | 80 kbit | **none** |
+| external IO | 26 | **36** |
+| tiles | 122 | 127 |
+| seam crossings | 26098, all conduct | **26218, all conduct** |
+| tiles with DRC | `E_BRAM` at 45 | **none** |
+| hard macro | one per two rows | **none** |
+
+The variant carries no hard macro at all, so it has no vendor dependency, no
+package to request and no tile above zero DRC. What it gives up is the memory
+and 173 um of width, which buys back ten external bits from `E_IO`'s `IOBUF`
+per row. The freed width is two more logic columns if the budget is the target
+rather than the area, which would put it at 160 more logic cells and about
+75.5% of 1 mm².
+
+Everything below describes the block-RAM fabric and is kept so the two branches
+can be diffed. Where it names `E_BRAM`, this variant has `E_IO`.
+
 # A 1 mm² eFPGA on ICS55
 
 This spec sizes a FABulous fabric to a one square millimetre budget on the ICS55

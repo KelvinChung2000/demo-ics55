@@ -85,7 +85,7 @@ tasks:
       # ECC's step renderer draws one transient line, so it is handed the
       # terminal only at JOBS=1; above that a tile reports when it finishes and
       # build/tiles/<TILE>/default/<step>_<tool>/log/ is the progress there is.
-      - cmd: 'echo "==> harden: 15 tiles, {{.JOBS}} at a time, anchor from the plan. About forty minutes; run with JOBS=1 to watch the steps"'
+      - cmd: 'echo "==> harden: 12 tiles, {{.JOBS}} at a time, anchor from the plan. About half an hour; run with JOBS=1 to watch the steps"'
         silent: true
       - "{{.FLOW}} harden --jobs {{.JOBS}} {{.CLI_ARGS}}"
 

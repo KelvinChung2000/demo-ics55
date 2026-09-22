@@ -19,3 +19,6 @@ __pycache__/
 # Harness state, not project state.
 .claude/
 .mcp.json
+
+# FABulous writes a CSV beside each generated switch matrix; the .list is the source.
+Tile/**/*_switch_matrix.csv

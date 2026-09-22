@@ -3,7 +3,6 @@ delayOffset=3.0
 delayEpsilon=0.25
 ripupPenalty=0.5
 carryPredictDelay=0.5
-pipDelayScale=0.05
 BelBegin,FABULOUS_LC
 Clock,CLK,FF=1
 Delay,I0,O,3.0,FF=0

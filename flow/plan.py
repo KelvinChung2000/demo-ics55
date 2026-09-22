@@ -33,9 +33,14 @@ from flow.ioyaml import Rank
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
-    from flow.config import TileDie
+    from flow.config import TileDie, TileMacro
 
 DBU = 1000  # DEF database units per micron, from the ICS55 tech LEF
+# A gap this narrow between a hard macro and the core edge beside it is not a
+# routing channel, so a boundary pin is not placed along it. `E_BRAM`'s macro
+# leaves 0.17 um at the east core edge and its 35 east pins were placed into
+# that, which the router answered with 4768 DRC violations it never cleared.
+MACRO_CHANNEL = 2000  # DBU
 SITE_WIDTH = 200  # DBU, core7
 SITE_HEIGHT = 1400  # DBU, core7
 TRACK_OFFSET = 100  # DBU, tech LEF OFFSET
@@ -466,47 +471,99 @@ def _assign(
     return offsets
 
 
+def macro_shadow(
+    macro: "TileMacro", width: int, height: int
+) -> dict[str, tuple[int, int]]:
+    """Return, per edge, the offsets a macro leaves no channel beside.
+
+    An edge the macro stands `MACRO_CHANNEL` or more away from is clear and does
+    not appear. The span returned is along the edge, so it is measured in y for
+    east and west and in x for north and south, which is how a pin offset is.
+    """
+    left = round(macro.x_micron * DBU)
+    bottom = round(macro.y_micron * DBU)
+    right = left + round(macro.width_micron * DBU)
+    top = bottom + round(macro.height_micron * DBU)
+    core_x = core_edge(width, SITE_WIDTH)
+    core_y = core_edge(height, SITE_HEIGHT)
+    blocked = {}
+    if core_x[1] - right < MACRO_CHANNEL:
+        blocked["E"] = (bottom, top)
+    if left - core_x[0] < MACRO_CHANNEL:
+        blocked["W"] = (bottom, top)
+    if core_y[1] - top < MACRO_CHANNEL:
+        blocked["N"] = (left, right)
+    if bottom - core_y[0] < MACRO_CHANNEL:
+        blocked["S"] = (left, right)
+    return blocked
+
+
 def _boundary_offsets(
     *,
     fabric: Fabric,
     tile,
     shared: dict[Bit, int],
     width: int,
-    height: int,
+    sub_row_height: dict[int, int],
+    sub_row_shift: dict[int, int],
     stripe_pitch: int,
     ranks: dict[Bit, "Rank"],
+    shadow: dict[str, tuple[int, int]],
 ) -> dict[Bit, int]:
     """Place a tile's boundary pins in the space its shared pins leave free.
 
     A pin that leaves the fabric answers to nothing on the far side, so it is
-    placed on its own tile's edge, on tracks no shared pin and no power stripe
-    already holds.
+    placed on its own tile's edge, on tracks no shared pin, no power stripe and
+    no hard macro already holds.
+
+    Offsets are returned in the frame `build_plan` shifts, which is the sub-row's
+    own, so an east or west pin is normally placed inside its sub-row's slice.
+    An edge a macro stands against is the exception: there the whole edge is one
+    space, and the shift is subtracted back out so that the pin lands where this
+    function put it. Spreading a supertile's pins over its whole height without
+    that correction put `E_BRAM`'s `FrameData_O` 76 um past the die.
     """
     placed: dict[Bit, int] = {}
     for side in ("N", "E", "S", "W"):
         vertical = side in ("E", "W")
-        outside = [
-            bit
-            for bit in tile.bits()
-            if fabric.bit_side(bit).side == side and bit not in shared
-        ]
-        if not outside:
-            continue
-        taken = {
-            shared[bit]
-            for bit in tile.bits()
-            if fabric.bit_side(bit).side == side and bit in shared
-        }
-        extent = height if vertical else width
-        site = SITE_HEIGHT if vertical else SITE_WIDTH
-        blocked = [(offset, offset) for offset in taken]
-        if not vertical:
-            blocked += stripe_keepout(extent, stripe_pitch)
-        # The same order the shared pins take, for the same reason.
-        outside.sort(key=lambda bit: ranks[bit].key)
-        tracks = _tracks(0, extent, len(outside), blocked, site)
-        for bit, offset in zip(outside, tracks, strict=True):
-            placed[bit] = offset
+        whole = vertical and side in shadow
+        lanes = [None] if whole or not vertical else sorted(sub_row_height)
+
+        def lane_of(bit: Bit) -> int:
+            return tile.ports[fabric.port_of(bit)].sub_row
+
+        for lane in lanes:
+            on_side = [
+                bit
+                for bit in tile.bits()
+                if fabric.bit_side(bit).side == side
+                and (lane is None or not vertical or lane_of(bit) == lane)
+            ]
+            outside = [bit for bit in on_side if bit not in shared]
+            if not outside:
+                continue
+            # In the frame the pins are compared in: the whole edge for a
+            # shadowed side, one sub-row's slice otherwise.
+            shift = (lambda bit: sub_row_shift[lane_of(bit)]) if whole else (lambda _: 0)
+            taken = {shared[bit] + shift(bit) for bit in on_side if bit in shared}
+            extent = (
+                sum(sub_row_height.values())
+                if whole
+                else sub_row_height[lane]
+                if vertical
+                else width
+            )
+            site = SITE_HEIGHT if vertical else SITE_WIDTH
+            blocked = [(offset, offset) for offset in taken]
+            if side in shadow:
+                blocked.append(shadow[side])
+            if not vertical:
+                blocked += stripe_keepout(extent, stripe_pitch)
+            # The same order the shared pins take, for the same reason.
+            outside.sort(key=lambda bit: ranks[bit].key)
+            tracks = _tracks(0, extent, len(outside), blocked, site)
+            for bit, offset in zip(outside, tracks, strict=True):
+                placed[bit] = offset - shift(bit)
     return placed
 
 
@@ -643,6 +700,7 @@ def build_plan(
     *,
     stripe_pitch_micron: float,
     tile_die: "Mapping[str, TileDie]",
+    tile_macro: "Mapping[str, TileMacro]" = {},
 ) -> Plan:
     """Size every tile and place every pin, from the fabric and its configuration.
 
@@ -800,14 +858,30 @@ def build_plan(
 
     pins: dict[str, list[PinPlacement]] = {}
     for name, tile in fabric.tile_types.items():
+        # The row each sub-row's pins are measured inside and the displacement
+        # that carries them there, both named the way the loop below names them
+        # so that the three cannot drift apart.
+        occupied = sorted(fabric.occupied_rows(name))
+        sub_row_height = {
+            sub: row_height[occupied[tile.rows - 1 - sub]] for sub in range(tile.rows)
+        }
+        sub_row_shift = {
+            sub: sum(row_height[row] for row in occupied[: tile.rows - 1 - sub])
+            for sub in range(tile.rows)
+        }
+        macro = tile_macro.get(name)
         offsets |= _boundary_offsets(
             fabric=fabric,
             tile=tile,
             shared=offsets,
             width=tile_size[name][0],
-            height=tile_size[name][1],
+            sub_row_height=sub_row_height,
+            sub_row_shift=sub_row_shift,
             stripe_pitch=stripe_pitch,
             ranks=ranks,
+            shadow={}
+            if macro is None
+            else macro_shadow(macro, *tile_size[name]),
         )
         placed = []
         for bit in tile.bits():
@@ -817,12 +891,7 @@ def build_plan(
             if side.side in ("E", "W"):
                 # A supertile's pin sits in the slice its sub-row names, and the
                 # first sub-row is the northernmost, so it is the topmost slice.
-                offset += sum(
-                    row_height[row]
-                    for row in sorted(fabric.occupied_rows(name))[
-                        : tile.rows - 1 - port.sub_row
-                    ]
-                )
+                offset += sub_row_shift[port.sub_row]
             placed.append(
                 PinPlacement(
                     tile_type=name,

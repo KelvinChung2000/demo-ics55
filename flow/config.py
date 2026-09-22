@@ -116,6 +116,31 @@ class TileDie:
     height_micron: float | None = None
 
 
+ORIENTATIONS = ("R0", "R90", "R180", "R270", "MX", "MY", "MX90", "MY90")
+
+
+@dataclass(frozen=True)
+class TileMacro:
+    """The hard macro one tile type carries, from its own `[macro]` table.
+
+    A tile with no `[macro]` table is standard cells alone and takes none of
+    this. The coordinates are the macro's lower-left corner in the tile's own
+    die, fixed rather than placed, because an abutted tile has no room for
+    DreamPlace to move it into and the pin plan is drawn around where it sits.
+    """
+
+    cell: str
+    lef: Path
+    lib: Path
+    x_micron: float
+    y_micron: float
+    orientation: str
+    # Measured from the LEF rather than written down, so the coordinates above
+    # and the outline they place cannot describe different macros.
+    width_micron: float
+    height_micron: float
+
+
 @dataclass(frozen=True)
 class FabricSettings:
     """The values shared by every project this flow writes, tile and fabric alike."""
@@ -137,6 +162,7 @@ class Config:
     tile_defaults: tuple[Param, ...]
     tile_params: dict[str, tuple[Param, ...]]
     tile_die: dict[str, TileDie]
+    tile_macro: dict[str, TileMacro]
     synthesis_default: str | None
     tile_synthesis: dict[str, str | None]
 
@@ -234,6 +260,72 @@ def _die(table: object, source: Path) -> TileDie:
 
     return TileDie(
         width_micron=edge("width_micron"), height_micron=edge("height_micron")
+    )
+
+
+def _macro(table: object, source: Path) -> TileMacro | None:
+    """Read one tile type's hard macro, refusing a view that is not on disk.
+
+    The LEF and the liberty are checked here rather than at harden time because
+    a missing view only shows up as an unplaceable instance forty minutes in.
+    """
+    if table is None:
+        return None
+    if not isinstance(table, dict):
+        raise ValueError(f"{source}: [macro] is not a table")
+    wanted = {"cell", "lef", "lib", "x_micron", "y_micron", "orientation"}
+    missing = sorted(wanted - set(table))
+    unknown = sorted(set(table) - wanted)
+    if missing or unknown:
+        raise ValueError(
+            f"{source}: [macro] takes exactly {sorted(wanted)}"
+            + (f", missing {missing}" if missing else "")
+            + (f", not {unknown}" if unknown else "")
+        )
+    views = {}
+    for key in ("lef", "lib"):
+        value = table[key]
+        if not isinstance(value, str):
+            raise ValueError(f"{source}: macro.{key} is not a path")
+        path = (source.parent / value).resolve()
+        if not path.is_file():
+            raise ValueError(f"{source}: macro.{key} {path} does not exist")
+        views[key] = path
+    for key in ("cell", "orientation"):
+        if not isinstance(table[key], str):
+            raise ValueError(f"{source}: macro.{key} is not a string")
+    if table["orientation"] not in ORIENTATIONS:
+        raise ValueError(
+            f"{source}: macro.orientation {table['orientation']!r} is not one ECC "
+            f"takes: {list(ORIENTATIONS)}"
+        )
+    for key in ("x_micron", "y_micron"):
+        value = table[key]
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            raise ValueError(f"{source}: macro.{key} is not a number")
+        if value < 0:
+            raise ValueError(f"{source}: macro.{key} is {value}, outside the die")
+    size = re.search(
+        rf"MACRO {re.escape(table['cell'])}\b.*?SIZE\s+([\d.]+)\s+BY\s+([\d.]+)",
+        views["lef"].read_text(),
+        re.S,
+    )
+    if size is None:
+        raise ValueError(
+            f"{source}: macro.lef {views['lef']} declares no MACRO {table['cell']} "
+            "with a SIZE"
+        )
+    turned = table["orientation"] in ("R90", "R270", "MX90", "MY90")
+    edges = (float(size.group(1)), float(size.group(2)))
+    return TileMacro(
+        cell=table["cell"],
+        lef=views["lef"],
+        lib=views["lib"],
+        x_micron=float(table["x_micron"]),
+        y_micron=float(table["y_micron"]),
+        orientation=table["orientation"],
+        width_micron=edges[turned],
+        height_micron=edges[not turned],
     )
 
 
@@ -339,6 +431,7 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
             )
     tiles = {}
     dies = {}
+    macros = {}
     strategies: dict[str, str | None] = {}
     for path in sorted((project / "Tile").glob(f"*/{CONFIG_NAME}")):
         tile_type = path.parent.name
@@ -352,6 +445,9 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
         table = _read(path)
         tiles[tile_type] = _params(table.get("params"), path)
         dies[tile_type] = _die(table.get("die"), path)
+        macro = _macro(table.get("macro"), path)
+        if macro is not None:
+            macros[tile_type] = macro
         strategies[tile_type] = _synthesis(table.get("synthesis"), path)
     settings = _fabric(fabric_table, fabric_path)
     # `flow.plan` places every pin and sizes every die against its own margin
@@ -371,6 +467,7 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
         tile_defaults=_params(defaults_table.get("params"), defaults_path),
         tile_params=tiles,
         tile_die=dies,
+        tile_macro=macros,
         synthesis_default=_synthesis(defaults_table.get("synthesis"), defaults_path),
         tile_synthesis=strategies,
     )

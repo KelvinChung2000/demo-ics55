@@ -21,6 +21,7 @@ comment for someone to carry across by hand.
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Annotated
@@ -30,7 +31,7 @@ import typer
 from flow import project as ecc_project
 from flow.config import FabricSettings, Param, load_config
 from flow.fabric import Fabric, Port, TileType, load_fabric
-from flow.plan import CORE_MARGIN, DBU, SITE_HEIGHT, SITE_WIDTH, Plan
+from flow.plan import CORE_MARGIN, DBU, SITE_HEIGHT, SITE_WIDTH, PinPlacement, Plan
 
 ORIENT = "R0"  # a tile is hardened once, so abutment never mirrors or rotates it
 TOP_MODULE = "eFPGA"
@@ -75,11 +76,14 @@ def _scalars(stem: str, port: Port) -> list[str]:
     """Bit-blast `stem` into the names iEDA writes, shaped by the port it reaches.
 
     Same rule as `Port.bits`, applied to a net rather than to the port's own
-    name, so a net on a `[0:0]` port gains the `_0_` its macro pin carries.
+    name, so a net on a `[0:0]` port gains the `_0` its macro pin carries. The
+    trailing underscore this used to add went with ECC main's pin rename: a
+    hardened `SE_term` declares `FrameStrobe_O_0`, and `FrameStrobe_O_0_` makes
+    Yosys refuse the parent with "does not have a port named".
     """
     if not port.vectored:
         return [stem]
-    return [f"{stem}_{index}_" for index in range(port.width)]
+    return [f"{stem}_{index}" for index in range(port.width)]
 
 
 def build_netlist(fabric: Fabric) -> Netlist:
@@ -171,6 +175,86 @@ def plan_die(plan: Plan) -> Die:
     return Die(width=plan.width + 2 * CORE_MARGIN, height=core_height + 2 * CORE_MARGIN)
 
 
+def unbound_pins(rtl: Path, lefs: dict[str, Path]) -> list[str]:
+    """Return one line per tile type whose stub and hardened macro disagree.
+
+    The stub is never bound to the tile in RTL: Yosys elaborates the parent
+    against an empty blackbox and the real macro arrives by cell name, when
+    `flow.project.add_macro_views` hands the workspace database the abstract
+    LEF. Nothing else compares the two, so a port that the tile gained or lost
+    since the parent netlist was written would reach routing as a pin with
+    nothing on it rather than as an error.
+
+    Power is excluded because it is not in the netlist by construction: the
+    abstract LEF carries `VDD`, `VSS` and the two stripe pins `flow.defedit`
+    extends to the die edge, and the parent connects none of them.
+    """
+    power = {"VDD", "VSS", "vdd_stripe_generate", "vss_stripe_generate"}
+    report = []
+    for name, lef in sorted(lefs.items()):
+        stub = rtl / f"{name}_stub.v"
+        if not stub.exists():
+            report.append(f"{name}: no stub was written")
+            continue
+        ports = set(re.findall(r"^\s*(?:input|output)\s+(\w+)", stub.read_text(), re.M))
+        pins = set(re.findall(r"^\s*PIN (\w+)", lef.read_text(), re.M)) - power
+        if ports != pins:
+            report.append(
+                f"{name}: {sorted(ports - pins)[:4]} in the netlist only, "
+                f"{sorted(pins - ports)[:4]} in the macro only"
+            )
+    return report
+
+
+def boundary_pins(plan: Plan, fabric: Fabric, netlist: Netlist) -> list[PinPlacement]:
+    """Place every parent pin where the macro pin it connects to already is.
+
+    A top-level scalar of the flattened fabric is one edge tile's pin and
+    nothing else, so the parent has no freedom here: putting the pin anywhere
+    but at that macro's own coordinate makes the parent assert a connection the
+    abutment does not draw, and leaves ECC's automatic placer to scatter 688
+    pins around a die whose every net is already at its boundary.
+
+    Offsets come out in the parent's die coordinates, which are the array's
+    inset by `CORE_MARGIN`, because `plan_die` sizes the die so its core is
+    exactly the array.
+    """
+    origin = {placement.name: placement for placement in plan.placements}
+    by_type = {
+        tile_type: {pin.name: pin for pin in pins}
+        for tile_type, pins in plan.pins.items()
+    }
+    owner: dict[str, tuple[str, str]] = {}
+    boundary = set(netlist.inputs) | set(netlist.outputs)
+    for instance in netlist.instances:
+        for pin, net in instance.pins:
+            if net in boundary and net not in owner:
+                owner[net] = (instance.name, pin)
+    unresolved = sorted(boundary - owner.keys())
+    if unresolved:
+        raise ValueError(
+            f"{len(unresolved)} parent pins reach no macro pin, so they have no "
+            f"coordinate to take: {unresolved[:4]}"
+        )
+    placed = []
+    for net in sorted(boundary):
+        instance, pin = owner[net]
+        placement = origin[instance]
+        tile = by_type[placement.tile_type][pin]
+        along = placement.x if tile.side in ("N", "S") else placement.y
+        placed.append(
+            PinPlacement(
+                tile_type=TOP_MODULE,
+                name=net,
+                side=tile.side,
+                offset=along + tile.offset + CORE_MARGIN,
+                layer=tile.layer,
+                external=True,
+            )
+        )
+    return placed
+
+
 def _micron(value: int) -> str:
     return f"{value / DBU:.3f}"
 
@@ -226,14 +310,23 @@ def _macro_placements(plan: Plan) -> str:
 
 
 def _sdc(settings: FabricSettings) -> str:
-    """Render the one clock constraint the fabric takes."""
+    """Render the one clock constraint the fabric takes.
+
+    `clock_port` names either a top-level port or an `instance/pin` of one
+    hardened macro, and this fabric needs the second form: the clock reaches a
+    tile over the global-buffer network, which is rooted in the `GBUF` BELs of
+    `SW_term` and fed from a user IO, so no port of `eFPGA.v` carries it.
+    """
     port = settings.clock_port
+    instance, separator, pin = port.rpartition("/")
+    getter = f"get_pins {port}" if separator else f"get_ports {port}"
+    name = pin if separator else port
     return (
-        f"# One clock for the whole fabric. The tile lib carries arcs from {port} to\n"
+        f"# One clock for the whole fabric. The tile lib carries arcs from {name} to\n"
         "# the tile outputs, so a second create_clock on any other tile clock port\n"
         "# makes iSTA abort with overlapping clock trees at the first seam.\n"
-        f"create_clock -name {port} -period {1000.0 / settings.frequency_mhz:.1f} "
-        f"[get_ports {port}]\n"
+        f"create_clock -name {name} -period {1000.0 / settings.frequency_mhz:.1f} "
+        f"[{getter}]\n"
     )
 
 
@@ -284,10 +377,23 @@ def write_project(
         )
 
     netlist = build_netlist(fabric)
-    if clock_port not in netlist.inputs:
+    instance, separator, pin = clock_port.rpartition("/")
+    if separator:
+        carriers = [i for i in netlist.instances if i.name == instance]
+        if not carriers:
+            raise ValueError(
+                f"{clock_port} names instance {instance}, which the flattened fabric "
+                "does not hold; check Fabric/ecc_config.toml against eFPGA.v"
+            )
+        if pin not in {name for name, _ in carriers[0].pins}:
+            raise ValueError(
+                f"{instance} has no pin {pin}, so the SDC would constrain nothing"
+            )
+    elif clock_port not in netlist.inputs:
         raise ValueError(
-            f"{clock_port} is not a top-level input of the flattened fabric, so the SDC "
-            "would constrain nothing; check which net eFPGA.v drives the bottom row with"
+            f"{clock_port} is neither a top-level input of the flattened fabric nor an "
+            "instance/pin of one of its macros, so the SDC would constrain nothing; "
+            "this fabric's clock is rooted in SW_term's GBUF outputs"
         )
 
     rtl = directory / "rtl"
@@ -304,9 +410,15 @@ def write_project(
         params=[*params, *_die_params(plan_die(plan))],
         preset="rtl2gds",
         sdc="fabric.sdc",
-        # The parent abuts the same macros, so it takes the pitch the plan
-        # settled on rather than the one the fabric configuration asked for.
-        stripe_pitch_micron=plan.stripe_pitch / DBU,
+        # No stripes. An abutted parent's power is the tiles' own boundary rails
+        # meeting at the seams, which `flow.stitch` counts on MET1, MET4 and
+        # MET5 across every one of them, and a parent grid would be a second
+        # grid laid over the first: on 2026-09-14 it was 945 stripes colliding
+        # with the tiles' across the whole array. `pdn_generator` builds nothing
+        # here anyway, since the parent has no standard-cell row to follow, so
+        # configuring it only made `flow.ioplace` refuse 57 pins against stripes
+        # that never appear.
+        stripe_pitch_micron=None,
     )
     with (directory / "ecc.toml").open("a") as handle:
         handle.write(_macro_placements(plan))

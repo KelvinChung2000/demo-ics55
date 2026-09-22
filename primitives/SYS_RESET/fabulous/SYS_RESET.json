@@ -4,7 +4,7 @@
     "SYS_RESET": {
       "attributes": {
         "top": 1,
-        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:15.1-26.10"
+        "src": "/home/kelvin/side-project/demo-ics55/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:15.1-26.10"
       },
       "ports": {
         "RESET": {
@@ -23,7 +23,7 @@
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:17.12-17.17"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:17.12-17.17"
           }
         },
         "RESET_top": {
@@ -32,7 +32,7 @@
           "attributes": {
             "EXTERNAL": 1,
             "FABulous": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:20.37-20.46"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v:20.37-20.46"
           }
         }
       }

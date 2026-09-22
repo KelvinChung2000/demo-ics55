@@ -11,7 +11,9 @@ about two minutes against the hours a full batch costs.
 from __future__ import annotations
 
 import json
+import os
 import shutil
+import subprocess
 from collections.abc import Sequence
 from dataclasses import replace
 from enum import Enum
@@ -50,6 +52,18 @@ SHARED_SOURCES = [
     PROJECT / "user_design",
 ]
 TOP_MODULE = "eFPGA"
+# Two FABulous checkouts built this fabric and they are not interchangeable.
+# `user-clk-attr` at c0ca47639 wrote every generated `.v` under `Tile/`, and
+# regenerating with it reproduces all eleven frozen tiles byte for byte; the
+# revision `fix-direction` names reorders a tile's ports, moving `CO` ahead of
+# `S1END` on `LUT4x8_ha`, and rewrites the `//TilePort` comments. Pin order went
+# the other way: every committed `io_pin_order.yaml` regenerates unchanged under
+# `fix-direction` and not under `user-clk-attr`, which orders `CO` and the
+# global-buffer ports differently. Hardened tiles were built to that order, so
+# this is the one `gen-io-order` runs and neither checkout can do both jobs.
+FABULOUS_PYTHON = Path(
+    "/home/kelvin/FABulous/.worktrees-tmp/fix-direction/.venv/bin/python"
+)
 # Every tile is scaled from this one, and `plan` takes the anchor from its
 # compiled die. The fabric's proportions come from `eFPGA_geometry.csv`, so the
 # anchor type only has to be a tile that is always built.
@@ -116,6 +130,29 @@ def _tile_settings(config: Config, fabric: Fabric, tile_type: str) -> FabricSett
 
 
 @app.command()
+def gen_io_order(fabulous_python: Path = FABULOUS_PYTHON) -> None:
+    """Regenerate each tile's io_pin_order.yaml with FABulous's own generator.
+
+    Through a separate interpreter because the flow's own environment does not
+    carry FABulous, and through this one in particular because a tile's pin
+    order has to match the RTL it was hardened from.
+    """
+    if not fabulous_python.exists():
+        raise typer.BadParameter(
+            f"{fabulous_python} does not exist; pass --fabulous-python for the "
+            "FABulous checkout that generated Tile/"
+        )
+    checkout = fabulous_python.parent.parent.parent
+    completed = subprocess.run(
+        [str(fabulous_python), "-m", "flow.genioyaml", str(PROJECT)],
+        cwd=PROJECT,
+        env={**os.environ, "PYTHONPATH": str(checkout)},
+    )
+    if completed.returncode:
+        raise typer.Exit(code=completed.returncode)
+
+
+@app.command()
 def sync_tiles(cache: Path = BUILD / "fabulous-tiles") -> None:
     """Re-vendor Tile/ and primitives/ from the pinned FABulous tile library."""
     result = tilelib.sync(PROJECT, cache)
@@ -169,6 +206,7 @@ def plan(
         anchor_type,
         stripe_pitch_micron=config.fabric.stripe_pitch_micron,
         tile_die=config.tile_die,
+        tile_macro=config.tile_macro,
     )
     BUILD.mkdir(exist_ok=True)
     result.write(PLAN_PATH)
@@ -282,16 +320,63 @@ def harden(
             # stages that read every tile directory would fail on it later.
             shutil.rmtree(directory, ignore_errors=True)
             raise
-        step = project.create_workspace(
-            directory,
-            log,
-            to="macroPlacement",
-            progress=jobs == 1,
-            strategy=strategy,
-        )
-        if not step.ok:
-            return tile_type, f"synthesis through macroPlacement failed, see {log}"
-        project.widen_flow(directory)
+        macro = config.tile_macro.get(tile_type)
+        if macro is None:
+            step = project.create_workspace(
+                directory,
+                log,
+                to="macroPlacement",
+                progress=jobs == 1,
+                strategy=strategy,
+            )
+            if not step.ok:
+                return tile_type, f"synthesis through macroPlacement failed, see {log}"
+            project.widen_flow(directory)
+        else:
+            # A hard macro splits the run in a third place. Its LEF and liberty
+            # can only be appended to `config/db_ecc.json`, which the workspace
+            # creates on its first step, so synthesis has to finish before the
+            # floorplanner can be told the cell exists; Yosys reads the blackbox
+            # beside the BEL instead. The coordinate is fixed here rather than
+            # left to DreamPlace because an abutted tile has nowhere to move it
+            # and `flow.plan` drew the pin plan around where it sits.
+            step = project.create_workspace(
+                directory, log, to="Synthesis", progress=jobs == 1, strategy=strategy
+            )
+            if not step.ok:
+                return tile_type, f"synthesis failed, see {log}"
+            project.widen_flow(directory)
+            project.add_macro_views(directory, lefs=[macro.lef], libs=[macro.lib])
+            # `ecc param set --workspace` refreshes the step configs and fails on
+            # a step whose config does not exist yet, so the floorplan has to run
+            # once before either of the two settings below can be made. Its own
+            # automatic macro placement is discarded by the rerun that follows.
+            step = project.run_range(
+                directory, "preFloorplan", "preFloorplan", log, progress=jobs == 1
+            )
+            if not step.ok:
+                return tile_type, f"preFloorplan failed, see {log}"
+            # The 3 um halos ECC ships would take area a core this tight cannot
+            # spare, and they guard against crowding this macro is not at risk
+            # of: its placement is fixed and its east face is the fabric edge.
+            project.zero_macro_halos(directory, log)
+            instance = project.macro_instance(directory, tile_type, macro.cell)
+            project.set_params(
+                directory,
+                {
+                    "macro.placements": json.dumps(
+                        [
+                            {
+                                "instance": instance,
+                                "x": macro.x_micron,
+                                "y": macro.y_micron,
+                                "orientation": macro.orientation,
+                            }
+                        ]
+                    )
+                },
+                log,
+            )
         placed = ioplace.install(
             project.workspace_of(directory), layout.pins[tile_type], (width, height)
         )
@@ -545,7 +630,7 @@ def top(
     layout = Plan.read(PLAN_PATH)
     fabric = load_fabric(PROJECT)
     config = load_config(PROJECT, tuple(fabric.tile_types))
-    topdesign.write_project(
+    netlist = topdesign.write_project(
         plan=layout,
         fabric=fabric,
         directory=directory,
@@ -560,8 +645,20 @@ def top(
         name: project.harden_views(_tile_directory(name), name)
         for name in layout.tile_size
     }
+    unbound = topdesign.unbound_pins(
+        directory / "rtl", {name: lef for name, (lef, _, _) in views.items()}
+    )
+    if unbound:
+        raise typer.BadParameter(
+            "the parent's blackbox stubs and the hardened macros they bind to by "
+            "name disagree, so the floorplan would carry pins with nothing on "
+            "them: " + "; ".join(unbound)
+        )
     log = BUILD / "logs" / "fabric.log"
-    step = project.create_workspace(directory, log, to="synthesis", progress=True)
+    # `Synthesis` as the ledger spells it, not the lowercase `--from` selector:
+    # `project.step_state` reads the state back by that name and a mismatch is a
+    # KeyError after the step has already run.
+    step = project.create_workspace(directory, log, to="Synthesis", progress=True)
     if not step.ok:
         raise typer.Exit(code=1)
     project.add_macro_views(
@@ -570,8 +667,30 @@ def top(
         libs=[lib for _, lib, _ in views.values()],
     )
     project.widen_flow(directory)
+    # `ecc param set --workspace` refreshes the step configs and fails on a step
+    # whose config does not exist, so the floorplan runs once before the halos
+    # can be zeroed and again afterwards. Its first pass places nothing that
+    # survives: every macro is fixed by `macro.placements` at project scope.
+    step = project.run_range(
+        directory, "preFloorplan", "preFloorplan", log, progress=True
+    )
+    if not step.ok:
+        typer.echo(f"the first floorplan pass failed, see {log}")
+        raise typer.Exit(code=1)
     project.zero_macro_halos(directory, log)
-    typer.echo(f"{len(layout.placements)} macros fixed at their planned coordinates")
+    cleared = project.clear_pdn_stripes(directory)
+    # Every parent pin is one edge tile's pin and has no freedom, so it is placed
+    # rather than left to ECC's automatic placer, which scatters 688 of them
+    # around a die whose every net already sits on its boundary.
+    die = topdesign.plan_die(layout)
+    boundary = topdesign.boundary_pins(layout, fabric, netlist)
+    placed = ioplace.install(
+        project.workspace_of(directory), boundary, (die.width, die.height)
+    )
+    typer.echo(
+        f"{len(layout.placements)} macros fixed at their planned coordinates; "
+        f"{cleared} template stripes cleared, the tiles carry the PDN; {placed}"
+    )
     step = project.run_range(
         directory, "preFloorplan", "postFloorplan", log, progress=True
     )

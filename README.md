@@ -1,18 +1,18 @@
 # Building this fabric on ICS55 with ECC
 
-`flow` hardens each of the fifteen tile types this fabric uses, abuts them into
+`flow` hardens each of the twelve tile types this fabric uses, abuts them into
 one layout and proves that every wire `Fabric/eFPGA.v` declares across a seam
 actually conducts through it. `FINDINGS.md`, one directory up, records why each
 step exists and what in the toolchain forced it; this file says how to run them.
 
 The whole build is `task efpga`, aliased to `task build` and to bare `task`,
 which runs the five stages below in order and stops at the first that fails.
-Hardening fifteen tile types takes about forty minutes at three concurrent jobs,
+Hardening twelve tile types takes about half an hour at three concurrent jobs,
 so start it under `nohup` and read `build/logs`.
 
     task plan      # size every tile, place every pin
     task check     # test the plan's wiring properties, no EDA tool involved
-    task harden    # fifteen ECC runs, synthesis to macro
+    task harden    # twelve ECC runs, synthesis to macro
     task assemble  # paint every tile and abut them into one fabric layout
 
 `assemble` takes `STITCHER`. At `klayout`, the default, `stitch` paints every
@@ -34,7 +34,8 @@ is the combination to run when the answer has to be both.
 
 `task --list` gives the rest, including `view-fabric` and `view-tile` for the
 ECOS layout viewer, `image` for a rendered PNG, `drc` for every tile's signoff
-count.
+count. `view-fabric` reads the manifest `top` writes at `postFloorplan`, so
+`task top` is enough for it and the routed assembly is not needed.
 
 ## Where the tiles come from
 
@@ -52,12 +53,24 @@ else, because `generate_IO_pin_order_config` is not on the revision
 `config.yaml` does not come across at all: it configures LibreLane for PDKs this
 project does not build on, and `Tile/include/ecc_config.toml` replaces it.
 
-The classic library is trimmed to what this fabric places. `E_IHP_SRAM` and
-`E_IHP_BRAM` wrap IHP macros ICS55 has no equivalent of, so the East column is
-`E_IO` and this fabric has no block RAM; the `TT_IF` family targets a Tiny
-Tapeout harness this fabric does not sit in. `fabric.csv` sets `DisableUserCLK`,
-so a tile takes its clock off the global-buffer network the library carries and
-`Fabric/eFPGA.v` has no top-level `UserCLK` port.
+The classic library is trimmed to what this fabric places. The `TT_IF` family
+targets a Tiny Tapeout harness this fabric does not sit in, and `E_IHP_BRAM`
+wraps a second IHP macro nothing here uses. `E_IHP_SRAM` is vendored under the
+name `E_BRAM`, because only its BEL line is this project's: the wire lists and
+both switch matrices are upstream's, and the BEL is now
+`primitives/ICS55_SRAM_512x32_1RW`, which instantiates an ECOS Factory macro
+rather than bringing an IHP one out on EXTERNAL ports. It fills the East column,
+where `E_IO` used to sit. `fabric.csv` sets `DisableUserCLK`, so a tile takes its
+clock off the global-buffer network the library carries and `Fabric/eFPGA.v` has
+no top-level `UserCLK` port.
+
+Two FABulous checkouts built this fabric and `flow/cli.py` names both. The RTL
+under `Tile/` regenerates byte for byte under `FABulous.worktrees/user-clk-attr`
+and not under later revisions, which reorder a tile's ports; every
+`io_pin_order.yaml` regenerates unchanged under
+`FABulous/.worktrees-tmp/fix-direction` and not under `user-clk-attr`. Neither
+does both, so `run_fab` runs under the first and `task gen-io-order` under the
+second.
 
 ## What each stage leaves behind
 
@@ -87,7 +100,7 @@ area each strategy gives. The duplicate synthesis is what buys the separation.
 
 ## Where the ECC settings live
 
-Every project this flow writes, the fifteen tile runs, the fabric-level run and
+Every project this flow writes, the twelve tile runs, the fabric-level run and
 the synthesis-only builds, renders its `ecc.toml` from three files through
 `flow.project.write_ecc_toml`, so no setting can drift between them.
 

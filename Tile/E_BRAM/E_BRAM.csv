@@ -1,0 +1,7 @@
+# tiles/classic/E_IHP_SRAM of FPGA-Research/fabulous-tiles, renamed and given
+# an ICS55 BEL. The wire lists and both switch matrices are upstream's; the
+# only edit is the BEL line of E_BRAM_bot.
+SuperTILE,E_BRAM,,,,,,,,,,,,,,,,,
+E_BRAM_top,,,,,,,,,,,,,,,,,,
+E_BRAM_bot,,,,,,,,,,,,,,,,,,
+EndSuperTILE,,,,,,,,,,,,,,,,,,

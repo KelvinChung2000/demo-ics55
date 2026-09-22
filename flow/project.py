@@ -602,6 +602,29 @@ def harden_views(directory: Path, top: str) -> tuple[Path, Path, Path]:
     return views
 
 
+def macro_instance(directory: Path, top: str, cell: str) -> str:
+    """Return the name synthesis gave the one instance of `cell` in `top`.
+
+    Read from the netlist rather than written down, because Yosys flattens the
+    BEL's hierarchy into the tile and the name it lands on is its own. More than
+    one instance is a real ambiguity: `macro.placements` names instances, and a
+    tile with two memories needs two coordinates rather than one guess.
+    """
+    import gzip
+
+    netlist = workspace_of(directory) / "Synthesis_yosys" / "output" / f"{top}_Synthesis.v.gz"
+    if not netlist.exists():
+        raise FileNotFoundError(f"{netlist} does not exist, so synthesis has not run")
+    text = gzip.decompress(netlist.read_bytes()).decode()
+    found = re.findall(rf"^\s*{re.escape(cell)}\s+(\\?\S+)\s*\(", text, re.M)
+    if len(found) != 1:
+        raise ValueError(
+            f"{netlist} holds {len(found)} instances of {cell}, and "
+            "macro.placements needs exactly one to name"
+        )
+    return found[0].lstrip("\\")
+
+
 def add_macro_views(directory: Path, *, lefs: list[Path], libs: list[Path]) -> None:
     """Bring the hardened tiles into a parent run as library cells.
 
@@ -620,6 +643,27 @@ def add_macro_views(directory: Path, *, lefs: list[Path], libs: list[Path]) -> N
             str(p) for p in additions if str(p) not in existing
         ]
     config.write_text(json.dumps(data, indent=4))
+
+
+def clear_pdn_stripes(directory: Path) -> int:
+    """Empty the parent's stripe list, and return how many entries went.
+
+    An abutted parent takes its power from the tiles' own boundary rails meeting
+    at the seams, so it must not lay a second grid over them. It already builds
+    none, having no standard-cell row for `pdn_generator` to follow, but ECC's
+    template still carries a stripe entry per layer and `flow.ioplace` reads
+    that entry rather than the output: it refused 53 parent pins against stripes
+    that were never going to exist. Clearing the list makes the configuration
+    say what the run does.
+    """
+    config = workspace_of(directory) / "config" / "floorplan_ecc.json"
+    if not config.exists():
+        raise FileNotFoundError(f"{config} does not exist. Run one step first.")
+    data = json.loads(config.read_text())
+    stripes = data["pdn_generator"]["stripe"]
+    data["pdn_generator"]["stripe"] = []
+    config.write_text(json.dumps(data, indent=4))
+    return len(stripes)
 
 
 def zero_macro_halos(directory: Path, log: Path) -> None:

@@ -10,7 +10,7 @@
         "FABulous": 1,
         "dynports": 1,
         "top": 1,
-        "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:20.1-60.10"
+        "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:20.1-60.10"
       },
       "parameter_default_values": {
         "NoConfigBits": 3
@@ -59,7 +59,7 @@
           },
           "attributes": {
             "always_ff": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
           },
           "port_directions": {
             "CLK": "input",
@@ -81,7 +81,7 @@
           },
           "attributes": {
             "always_ff": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
           },
           "port_directions": {
             "CLK": "input",
@@ -103,7 +103,7 @@
           },
           "attributes": {
             "always_ff": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
           },
           "port_directions": {
             "CLK": "input",
@@ -116,14 +116,14 @@
             "Q": [ 14 ]
           }
         },
-        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54$2": {
+        "$ternary$/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54$2": {
           "hide_name": 1,
           "type": "$mux",
           "parameters": {
             "WIDTH": 1
           },
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54.21-54.39"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54.21-54.39"
           },
           "port_directions": {
             "A": "input",
@@ -138,14 +138,14 @@
             "Y": [ 6 ]
           }
         },
-        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55$3": {
+        "$ternary$/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55$3": {
           "hide_name": 1,
           "type": "$mux",
           "parameters": {
             "WIDTH": 1
           },
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55.21-55.39"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55.21-55.39"
           },
           "port_directions": {
             "A": "input",
@@ -160,14 +160,14 @@
             "Y": [ 7 ]
           }
         },
-        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58$4": {
+        "$ternary$/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58$4": {
           "hide_name": 1,
           "type": "$mux",
           "parameters": {
             "WIDTH": 1
           },
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58.18-58.47"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58.18-58.47"
           },
           "port_directions": {
             "A": "input",
@@ -188,49 +188,49 @@
           "hide_name": 1,
           "bits": [ 4 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
           }
         },
         "$0\\IN_q[0:0]": {
           "hide_name": 1,
           "bits": [ 3 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
           }
         },
         "$0\\OUT_top_q[0:0]": {
           "hide_name": 1,
           "bits": [ 8 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:47.5-51.8"
           }
         },
-        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54$2_Y": {
+        "$ternary$/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54$2_Y": {
           "hide_name": 1,
           "bits": [ 6 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54.21-54.39"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:54.21-54.39"
           }
         },
-        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55$3_Y": {
+        "$ternary$/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55$3_Y": {
           "hide_name": 1,
           "bits": [ 7 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55.21-55.39"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:55.21-55.39"
           }
         },
-        "$ternary$/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58$4_Y": {
+        "$ternary$/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58$4_Y": {
           "hide_name": 1,
           "bits": [ 5 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58.18-58.47"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:58.18-58.47"
           }
         },
         "CLK": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:24.12-24.15"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:24.12-24.15"
           }
         },
         "ConfigBits": {
@@ -239,28 +239,28 @@
           "attributes": {
             "FABulous": 1,
             "GLOBAL": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:35.53-35.63"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:35.53-35.63"
           }
         },
         "EN": {
           "hide_name": 0,
           "bits": [ 4 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:26.12-26.14"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:26.12-26.14"
           }
         },
         "EN_REG": {
           "hide_name": 0,
           "bits": [ 9 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.10-38.16"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.10-38.16"
           }
         },
         "EN_q": {
           "hide_name": 0,
           "bits": [ 12 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.11-45.15"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.11-45.15"
           }
         },
         "EN_top": {
@@ -269,28 +269,28 @@
           "attributes": {
             "EXTERNAL": 1,
             "FABulous": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:31.37-31.43"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:31.37-31.43"
           }
         },
         "IN": {
           "hide_name": 0,
           "bits": [ 3 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:25.12-25.14"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:25.12-25.14"
           }
         },
         "IN_REG": {
           "hide_name": 0,
           "bits": [ 10 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.18-38.24"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.18-38.24"
           }
         },
         "IN_q": {
           "hide_name": 0,
           "bits": [ 13 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.17-45.21"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.17-45.21"
           }
         },
         "IN_top": {
@@ -299,21 +299,21 @@
           "attributes": {
             "EXTERNAL": 1,
             "FABulous": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:30.37-30.43"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:30.37-30.43"
           }
         },
         "OUT": {
           "hide_name": 0,
           "bits": [ 5 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:27.12-27.15"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:27.12-27.15"
           }
         },
         "OUT_REG": {
           "hide_name": 0,
           "bits": [ 11 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.26-38.33"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:38.26-38.33"
           }
         },
         "OUT_top": {
@@ -322,14 +322,14 @@
           "attributes": {
             "EXTERNAL": 1,
             "FABulous": 1,
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:32.37-32.44"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:32.37-32.44"
           }
         },
         "OUT_top_q": {
           "hide_name": 0,
           "bits": [ 14 ],
           "attributes": {
-            "src": "/home/kelvin/.t3/worktrees/demo-ics55/t3code-fe445720/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.23-45.32"
+            "src": "/home/kelvin/side-project/demo-ics55/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v:45.23-45.32"
           }
         }
       }

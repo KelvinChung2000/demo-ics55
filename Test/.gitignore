@@ -15,3 +15,4 @@ build
 *.bin
 *.cf
 *.txt
+!config/sequential_16bit_en.bin

@@ -1,19 +1,40 @@
 # Building this fabric on ICS55 with ECC
 
-`flow` hardens each of the twelve tile types this fabric uses, abuts them into
-one layout and proves that every wire `Fabric/eFPGA.v` declares across a seam
-actually conducts through it. `FINDINGS.md`, one directory up, records why each
+`flow` hardens each of the twelve tile types a fabric uses, abuts them into
+one layout and proves that every wire its `Fabric/eFPGA.v` declares across a
+seam actually conducts through it. `FINDINGS.md`, one directory up, records why each
 step exists and what in the toolchain forced it; this file says how to run them.
+
+## Variants
+
+The repository builds two fabrics from one tile library, and they differ only
+in the east column. `fabrics/bram` places `E_BRAM` there. `fabrics/nobram`
+places `E_IO`, for an integration that cannot depend on the ECOS SRAM compiler,
+and spends the width the memory column took on two more logic columns.
+`SPEC.md` compares them.
+
+Each `fabrics/<variant>/` is a FABulous project of its own: its `fabric.csv`,
+the `Fabric/eFPGA.v`, `eFPGA_geometry.csv` and `.FABulous/` FABulous generated
+from it, and `dies.toml` for the die edges its grid fixes on tile types both
+variants place, which is the width of `NE_term` and `SE_term` above and below
+the east column. `Tile/`, `primitives/` and `user_design/` inside it link back
+to the root, where both variants share them with `Fabric/ecc_config.toml` and
+the configuration RTL. A variant builds into `build/<variant>/`, so the two
+never share a workspace, and the flow refuses to start until one is chosen,
+with `VARIANT=` to `task`, `--variant` to `flow.cli` or `FLOW_VARIANT` in the
+environment for the scripts under `sweep/`.
+
+## Running the build
 
 The whole build is `task efpga`, aliased to `task build` and to bare `task`,
 which runs the five stages below in order and stops at the first that fails.
 Hardening twelve tile types takes about half an hour at three concurrent jobs,
-so start it under `nohup` and read `build/logs`.
+so start it under `nohup` and read `build/<variant>/logs`.
 
-    task plan      # size every tile, place every pin
-    task check     # test the plan's wiring properties, no EDA tool involved
-    task harden    # twelve ECC runs, synthesis to macro
-    task assemble  # paint every tile and abut them into one fabric layout
+    task plan VARIANT=nobram      # size every tile, place every pin
+    task check VARIANT=nobram     # test the plan's wiring properties, no EDA tool involved
+    task harden VARIANT=nobram    # twelve ECC runs, synthesis to macro
+    task assemble VARIANT=nobram  # paint every tile and abut them into one fabric layout
 
 `assemble` takes `STITCHER`. At `klayout`, the default, `stitch` paints every
 hardened tile and abuts them and proves every seam, then `top` writes the
@@ -59,10 +80,11 @@ wraps a second IHP macro nothing here uses. `E_IHP_SRAM` is vendored under the
 name `E_BRAM`, because only its BEL line is this project's: the wire lists and
 both switch matrices are upstream's, and the BEL is now
 `primitives/ICS55_SRAM_512x32_1RW`, which instantiates an ECOS Factory macro
-rather than bringing an IHP one out on EXTERNAL ports. It fills the East column,
-where `E_IO` used to sit. `fabric.csv` sets `DisableUserCLK`, so a tile takes its
-clock off the global-buffer network the library carries and `Fabric/eFPGA.v` has
-no top-level `UserCLK` port.
+rather than bringing an IHP one out on EXTERNAL ports. It fills the east column
+of `fabrics/bram`, and `fabrics/nobram` keeps upstream's `E_IO` there. Both
+`fabric.csv` files set `DisableUserCLK`, so a tile takes its clock off the
+global-buffer network the library carries and `Fabric/eFPGA.v` has no top-level
+`UserCLK` port.
 
 Two FABulous checkouts built this fabric and `flow/cli.py` names both. The RTL
 under `Tile/` regenerates byte for byte under `FABulous.worktrees/user-clk-attr`
@@ -74,7 +96,7 @@ second.
 
 ## What each stage leaves behind
 
-`plan` writes `build/fabric_plan.json`, which every later stage reads and nothing
+`plan` writes `build/<variant>/fabric_plan.json`, which every later stage reads and nothing
 later modifies: one die size per tile type, one offset per scalar pin, and the
 seam list. The order of pins along an edge is not this flow's to choose: it
 comes from each tile's `io_pin_order.yaml`, which FABulous writes, and facing
@@ -82,18 +104,18 @@ sides list the same buses at the same positions, so an order chosen per tile
 still meets across a seam and `plan` only decides which tracks it lands on.
 
 Its one free parameter is `ANCHOR`, the width of a `LUT4x8_ha` in microns, from
-which every other tile is scaled using `eFPGA_geometry.csv`'s proportions. 110
+which every other tile is scaled using the variant's `eFPGA_geometry.csv` proportions. 110
 routes `LUT4x8_ha` itself, filling 0.507 of its core and reporting no DRC. The
 90 that oscillates without converging was measured on the old `LUT4AB` and has
 never been retried against this library, so the lower bound is unknown.
 
-`harden` leaves one ECC workspace per tile type under `build/tiles`, each with
-an abstract LEF, an extracted timing model and a GDS. `stitch` writes
-`build/painted` and then `build/eFPGA.gds` from it, and `top` writes a
-fabric-level project under `build/fabric`.
+`harden` leaves one ECC workspace per tile type under `build/<variant>/tiles`,
+each with an abstract LEF, an extracted timing model and a GDS. `stitch` writes
+`build/<variant>/painted` and then `build/<variant>/eFPGA.gds` from it, and `top`
+writes a fabric-level project under `build/<variant>/fabric`.
 
 `synth` serves the ABC strategy sweep rather than the abutted flow and leaves a
-synthesis-only workspace at `build/tiles/<type>_nl`, beside the hardened tile but
+synthesis-only workspace at `build/<variant>/tiles/<type>_nl`, beside the hardened tile but
 never sharing a directory with it, so comparing strategies cannot discard a
 forty-minute run. `sweep/tile_strategies.py` reads those workspaces for the cell
 area each strategy gives. The duplicate synthesis is what buys the separation.
@@ -107,10 +129,14 @@ the synthesis-only builds, renders its `ecc.toml` from three files through
     Fabric/ecc_config.toml         clock, PDK, core margin, stripe pitch
     Tile/include/ecc_config.toml   the ECC parameters every tile is hardened with
     Tile/<type>/ecc_config.toml    optional, replaces entries for one tile type
+    fabrics/<variant>/dies.toml    die edges a variant's grid fixes on shared types
 
 `flow.config` refuses at load any key that is not one `ecc param list` prints,
 any value of the wrong type, and a per-tile file under a directory that is not a
 tile type, so a misspelling is reported in a second rather than forty minutes in.
+A per-tile file for a type the library carries but this variant does not place
+is skipped, and a die edge stated both in `dies.toml` and in the tile's own
+`[die]` is refused.
 It also refuses a tile setting `core_margin` or `frequency_mhz`, which
 `Fabric/ecc_config.toml` owns for the whole fabric: the stripe pitch has to
 divide every row height and the margin decides where two abutted cores meet.

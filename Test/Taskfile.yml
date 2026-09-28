@@ -5,15 +5,19 @@
 # Override any variable via CLI: task run-simulation DESIGN=my_design WAVEFORM_TYPE=vcd
 version: "3"
 
-dotenv: ["../.FABulous/.env"]
+dotenv: ["../fabrics/{{.VARIANT}}/.FABulous/.env"]
 
 includes:
   compile:
     taskfile: "./compile.Taskfile.yml"
 
 vars:
+  # Declared so a command-line VARIANT reaches the vars below that name it.
+  VARIANT: '{{.VARIANT}}'
   MAX_BITBYTES: '{{.MAX_BITBYTES | default "16384"}}'
-  FAB_PROJ_ROOT: '{{.FAB_PROJ_ROOT | default ".."}}'
+  # The variant's FABulous project; Tile/, primitives/ and user_design/ inside
+  # it link back to the repository root. task run-simulation VARIANT=nobram
+  FAB_PROJ_ROOT: ../fabrics/{{.VARIANT}}
   BUILD_DIR: '{{.BUILD_DIR | default "build"}}'
   DESIGN: '{{.DESIGN | default "sequential_16bit_en"}}'
   TESTBENCH: "{{.DESIGN}}_tb"
@@ -120,7 +124,8 @@ tasks:
     deps: [mkdir-build]
     cmds:
       - find {{.FAB_PROJ_ROOT}}/Tile/ -name '*.v' -type f -exec cp {} {{.FABRIC_FILES_DIR}}/ \;
-      - find {{.FAB_PROJ_ROOT}}/Fabric/ -name '*.v' -type f -exec cp {} {{.FABRIC_FILES_DIR}}/ \;
+      # The configuration RTL is shared at the root, the fabric is the variant's.
+      - find ../Fabric/ {{.FAB_PROJ_ROOT}}/Fabric/ -name '*.v' -type f -exec cp {} {{.FABRIC_FILES_DIR}}/ \;
 
   run-simulation:
     desc: Run simulation using Icarus Verilog (iverilog)

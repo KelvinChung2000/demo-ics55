@@ -15,7 +15,10 @@ import sys
 from pathlib import Path
 
 SWEEP = Path(__file__).resolve().parent
-TILES = SWEEP.parent / "build" / "tiles"
+sys.path.insert(0, str(SWEEP.parent))
+from flow.variant import Paths  # noqa: E402
+
+TILES = Paths.from_environment().build / "tiles"
 RESULTS = SWEEP / "results.tsv"
 COLUMNS = (
     "tile round strategy die_w die_h die_area core_usage dp_util cell_area "

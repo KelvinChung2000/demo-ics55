@@ -21,5 +21,4 @@ target_density = 0.5
 # column or row whose types disagree, so a number that goes stale fails the plan
 # instead of quietly resizing this tile.
 [die]
-width_micron = 194.4  # column 10, bound by E_BRAM's memory macro
 height_micron = 22.4   # row 11, bound by S_IO's routing floor

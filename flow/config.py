@@ -23,6 +23,12 @@ type occupies before deriving every pin offset and seam from the result, so
 then does the size reach `ecc.toml`. Setting `floorplan.die_builder` directly
 would put it past the only check that can tell whether it abuts, which is why
 `gds_config.yaml`'s per-tile `DIE_AREA` has no equivalent here.
+
+A die edge set by a column or row a variant fills differently belongs to the
+variant, not the tile. `NE_term` is as wide as whatever sits in the east column,
+`E_BRAM` in one variant and `E_IO` in the other, so `fabrics/<variant>/dies.toml`
+supplies that edge and the tile's own `[die]` keeps the one both variants share.
+An edge stated in both places is refused rather than resolved.
 """
 
 from __future__ import annotations
@@ -31,6 +37,10 @@ import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from flow.variant import Paths
 
 CONFIG_NAME = "ecc_config.toml"
 
@@ -263,6 +273,37 @@ def _die(table: object, source: Path) -> TileDie:
     )
 
 
+def _variant_dies(source: Path, tile_types: tuple[str, ...]) -> dict[str, TileDie]:
+    """Read the die edges a variant fixes, one `[<type>]` table per tile type."""
+    if not source.exists():
+        raise FileNotFoundError(
+            f"{source} does not exist. Every variant states the die edges its grid "
+            "fixes for tile types it shares with the other, even if there are none."
+        )
+    table = _read(source)
+    unknown = sorted(set(table) - set(tile_types)) if tile_types else []
+    if unknown:
+        raise ValueError(f"{source}: {unknown} are not tile types this variant places")
+    return {name: _die(entry, source) for name, entry in table.items()}
+
+
+def _merge_die(own: TileDie, variant: TileDie, tile_type: str, source: Path) -> TileDie:
+    """Fill the edges a tile leaves open with the variant's, refusing any set twice."""
+
+    def edge(name: str, mine: float | None, theirs: float | None) -> float | None:
+        if mine is not None and theirs is not None:
+            raise ValueError(
+                f"{source}: {tile_type}.{name} is also set in Tile/{tile_type}/"
+                f"{CONFIG_NAME}; state each edge in one place"
+            )
+        return mine if theirs is None else theirs
+
+    return TileDie(
+        width_micron=edge("width_micron", own.width_micron, variant.width_micron),
+        height_micron=edge("height_micron", own.height_micron, variant.height_micron),
+    )
+
+
 def _macro(table: object, source: Path) -> TileMacro | None:
     """Read one tile type's hard macro, refusing a view that is not on disk.
 
@@ -405,21 +446,23 @@ def _fabric(table: dict[str, object], source: Path) -> FabricSettings:
     return settings
 
 
-def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
-    """Read the three config layers under `project` into one validated `Config`.
+def load_config(paths: Paths, tile_types: tuple[str, ...] = ()) -> Config:
+    """Read the config layers for one variant into one validated `Config`.
 
-    `tile_types` names the types a per-tile file is allowed to exist for, so a
-    file under a directory that is not a tile type, or one misspelled, is
-    reported here rather than ignored for the length of a forty-minute build.
+    `tile_types` names the types this variant builds. A per-tile file for a type
+    the tile library carries but this variant does not place, such as the other
+    variant's east column, is skipped; one under a directory that is no tile type
+    at all, or misspelled, is reported here rather than ignored for the length of
+    a forty-minute build.
     """
-    fabric_path = project / "Fabric" / CONFIG_NAME
+    fabric_path = paths.root / "Fabric" / CONFIG_NAME
     if not fabric_path.exists():
         raise FileNotFoundError(
             f"{fabric_path} does not exist. It carries the clock, the PDK and the "
             "fabric-wide floorplan settings every build reads."
         )
     fabric_table = _read(fabric_path)
-    defaults_path = project / "Tile" / "include" / CONFIG_NAME
+    defaults_path = paths.tiles / "include" / CONFIG_NAME
     defaults_table = _read(defaults_path)
     # A die belongs to one tile type, and the fabric and the shared defaults
     # cover every type at once, so neither can carry one.
@@ -433,15 +476,17 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
     dies = {}
     macros = {}
     strategies: dict[str, str | None] = {}
-    for path in sorted((project / "Tile").glob(f"*/{CONFIG_NAME}")):
+    for path in sorted(paths.tiles.glob(f"*/{CONFIG_NAME}")):
         tile_type = path.parent.name
         if tile_type == "include":
             continue
-        if tile_types and tile_type not in tile_types:
+        if not (path.parent / f"{tile_type}.csv").exists():
             raise ValueError(
-                f"{path} configures {tile_type}, which is not a tile type this fabric "
-                f"uses: {sorted(tile_types)}"
+                f"{path} configures {tile_type}, but {path.parent} holds no "
+                f"{tile_type}.csv, so it is not a tile type the library carries"
             )
+        if tile_types and tile_type not in tile_types:
+            continue
         table = _read(path)
         tiles[tile_type] = _params(table.get("params"), path)
         dies[tile_type] = _die(table.get("die"), path)
@@ -449,6 +494,8 @@ def load_config(project: Path, tile_types: tuple[str, ...] = ()) -> Config:
         if macro is not None:
             macros[tile_type] = macro
         strategies[tile_type] = _synthesis(table.get("synthesis"), path)
+    for tile_type, die in _variant_dies(paths.dies, tile_types).items():
+        dies[tile_type] = _merge_die(dies.get(tile_type, TileDie()), die, tile_type, paths.dies)
     settings = _fabric(fabric_table, fabric_path)
     # `flow.plan` places every pin and sizes every die against its own margin
     # constant, so a config that disagrees with it would move the pins without

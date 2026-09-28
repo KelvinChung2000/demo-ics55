@@ -25,7 +25,10 @@ from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parents[1]
-BUILD = PROJECT / "build"
+sys.path.insert(0, str(PROJECT))
+from flow.variant import Paths  # noqa: E402
+
+BUILD = Paths.from_environment().build
 SWEEP = PROJECT / "sweep"
 SCRATCH = Path(os.environ.get("TMPDIR", "/tmp")) / "strategysweep"
 TECHMAP = PROJECT / "techmap" / "ics55_models.v"

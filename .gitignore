@@ -4,13 +4,13 @@
 build/
 
 # FABulous regenerates these from fabric.csv. The bitstream spec alone is 14 MB.
-.FABulous/bitStreamSpec.bin
-.FABulous/bitStreamSpec.csv
-.FABulous/pips.txt
-.FABulous/bel.txt
-.FABulous/bel.v2.txt
-.FABulous/bel.v3.txt
-.FABulous/.fabulous_history
+fabrics/*/.FABulous/bitStreamSpec.bin
+fabrics/*/.FABulous/bitStreamSpec.csv
+fabrics/*/.FABulous/pips.txt
+fabrics/*/.FABulous/bel.txt
+fabrics/*/.FABulous/bel.v2.txt
+fabrics/*/.FABulous/bel.v3.txt
+fabrics/*/.FABulous/.fabulous_history
 
 __pycache__/
 *.pyc

@@ -15,7 +15,10 @@ import sys
 from pathlib import Path
 
 PROJECT = Path(__file__).resolve().parents[1]
-SWEEP = PROJECT / "build" / "sweep"
+sys.path.insert(0, str(PROJECT))
+from flow.variant import Paths  # noqa: E402
+
+SWEEP = Paths.from_environment().build / "sweep"
 
 
 def best(tile_type: str) -> tuple[str, float]:

@@ -7,7 +7,8 @@
 version: "3"
 
 vars:
-  FAB_PROJ_ROOT: '{{.FAB_PROJ_ROOT | default ".."}}'
+  # No FAB_PROJ_ROOT default: Task lets an include's vars override the parent's,
+  # and Taskfile.yml names the variant's project, so every caller passes it.
   YOSYS_PATH: '{{.YOSYS_PATH | default .FAB_YOSYS_PATH | default "yosys"}}'
   NEXTPNR_PATH: '{{.NEXTPNR_PATH | default .FAB_NEXTPNR_PATH | default "nextpnr-generic"}}'
   SYNTH_CMD: "{{.SYNTH_CMD}}"

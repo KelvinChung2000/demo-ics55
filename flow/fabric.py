@@ -21,7 +21,10 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
+
+if TYPE_CHECKING:
+    from flow.variant import Paths
 
 Side = Literal["N", "E", "S", "W"]
 OPPOSITE: dict[Side, Side] = {"N": "S", "S": "N", "E": "W", "W": "E"}
@@ -365,11 +368,10 @@ def _boundary_side(instance: Instance, columns: int, rows: int, height: int) -> 
     return candidates[0]
 
 
-def load_fabric(project: Path) -> Fabric:
-    """Build the whole model from a FABulous project directory."""
-    fabric_verilog = project / "Fabric" / "eFPGA.v"
-    instances = read_instances(fabric_verilog)
-    tile_types = read_tile_types(project / "Tile", {i.tile_type for i in instances})
+def load_fabric(paths: Paths) -> Fabric:
+    """Build the whole model from a variant's generated fabric and the shared tiles."""
+    instances = read_instances(paths.fabric_verilog)
+    tile_types = read_tile_types(paths.tiles, {i.tile_type for i in instances})
 
     by_position: dict[tuple[int, int], Instance] = {}
     for instance in instances:

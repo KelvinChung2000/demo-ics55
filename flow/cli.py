@@ -19,6 +19,7 @@ from dataclasses import replace
 from enum import Enum
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import Annotated
 
 import typer
 
@@ -26,6 +27,7 @@ from flow import defedit, ioplace, names, project, tilelib
 from flow.config import Config, FabricSettings, load_config
 from flow.fabric import Fabric, load_fabric
 from flow.plan import CORE_MARGIN, DBU, build_plan, Plan, stale_dies, uncovered
+from flow.variant import ENVIRONMENT, ROOT, Paths, Variant
 
 app = typer.Typer(
     add_completion=False, help="Build a FABulous fabric on ICS55 with ECC."
@@ -40,16 +42,13 @@ class Stitcher(str, Enum):
     BOTH = "both"
 
 
-PROJECT = Path(__file__).resolve().parent.parent
-BUILD = PROJECT / "build"
-PLAN_PATH = BUILD / "fabric_plan.json"
 SHARED_SOURCES = [
-    PROJECT / "Fabric",
-    PROJECT / "Tile" / "include",
+    ROOT / "Fabric",
+    ROOT / "Tile" / "include",
     # The tile library keeps a BEL in one place and names it from every tile
     # that instantiates it, rather than copying it into each tile directory.
-    PROJECT / "primitives",
-    PROJECT / "user_design",
+    ROOT / "primitives",
+    ROOT / "user_design",
 ]
 TOP_MODULE = "eFPGA"
 # Two FABulous checkouts built this fabric and they are not interchangeable.
@@ -75,11 +74,37 @@ TAIL_STEP = "postFloorplan"
 MACRO_CORNER = "MAX"
 # What a post-synthesis build and the netlists it writes are named with.
 NETLIST_SUFFIX = "_nl"
-# ECC's own assembly of the abutted fabric, which only `assemble --stitcher ecc`
-# writes; `stitch` abuts in klayout and produces no ECC workspace.
-FABRIC_GEOMETRY = (
-    BUILD / "fabric" / project.WORKSPACE / "filler_ecc/output/geometry/geometry.manifest"
-)
+_selected: Paths | None = None
+
+
+@app.callback()
+def select(
+    variant: Annotated[
+        Variant,
+        typer.Option(envvar=ENVIRONMENT, help="Which fabrics/<variant> to build."),
+    ],
+) -> None:
+    """Build a FABulous fabric on ICS55 with ECC."""
+    global _selected
+    _selected = Paths(variant)
+
+
+def paths() -> Paths:
+    """The variant `select` chose, which Typer runs before every command."""
+    if _selected is None:
+        raise RuntimeError("no variant selected; pass --variant or set FLOW_VARIANT")
+    return _selected
+
+
+def _fabric_geometry() -> Path:
+    """ECC's own assembly of the abutted fabric, which only `assemble --stitcher ecc`
+    writes; `stitch` abuts in klayout and produces no ECC workspace."""
+    return (
+        paths().build
+        / "fabric"
+        / project.WORKSPACE
+        / "filler_ecc/output/geometry/geometry.manifest"
+    )
 
 
 def _tile_directory(
@@ -101,8 +126,8 @@ def _tile_directory(
     if strategy is not None:
         parts.append(f"synth={strategy.replace(' ', '-')}")
     if not parts:
-        return BUILD / "tiles" / tile_type
-    return BUILD / "tiles" / f"{tile_type}@{','.join(parts)}"
+        return paths().build / "tiles" / tile_type
+    return paths().build / "tiles" / f"{tile_type}@{','.join(parts)}"
 
 
 def _netlist_directory(tile_type: str) -> Path:
@@ -113,7 +138,7 @@ def _netlist_directory(tile_type: str) -> Path:
     deep. The netlist build keeps the `_nl` suffix a post-synthesis netlist is
     named with, and the two builds never meet.
     """
-    return BUILD / "tiles" / f"{tile_type}{NETLIST_SUFFIX}"
+    return paths().build / "tiles" / f"{tile_type}{NETLIST_SUFFIX}"
 
 
 def _sources(tile_type: str, source: Path) -> list[Path]:
@@ -148,8 +173,8 @@ def gen_io_order(fabulous_python: Path = FABULOUS_PYTHON) -> None:
         )
     checkout = fabulous_python.parent.parent.parent
     completed = subprocess.run(
-        [str(fabulous_python), "-m", "flow.genioyaml", str(PROJECT)],
-        cwd=PROJECT,
+        [str(fabulous_python), "-m", "flow.genioyaml", str(paths().fabric)],
+        cwd=ROOT,
         env={**os.environ, "PYTHONPATH": str(checkout)},
     )
     if completed.returncode:
@@ -157,9 +182,9 @@ def gen_io_order(fabulous_python: Path = FABULOUS_PYTHON) -> None:
 
 
 @app.command()
-def sync_tiles(cache: Path = BUILD / "fabulous-tiles") -> None:
+def sync_tiles(cache: Path = ROOT / "build" / "fabulous-tiles") -> None:
     """Re-vendor Tile/ and primitives/ from the pinned FABulous tile library."""
-    result = tilelib.sync(PROJECT, cache)
+    result = tilelib.sync(ROOT, cache)
     typer.echo(
         f"{tilelib.LIBRARY} at {tilelib.COMMIT[:12]}: {len(result.tiles)} tiles, "
         f"{len(result.primitives)} primitives, {len(result.rewritten)} BEL paths shifted"
@@ -186,8 +211,8 @@ def plan(
     tables cover every column and row needs no anchor and none is read, which is
     what lets it be planned before any tile has ever been built.
     """
-    fabric = load_fabric(PROJECT)
-    config = load_config(PROJECT, tuple(fabric.tile_types))
+    fabric = load_fabric(paths())
+    config = load_config(paths(), tuple(fabric.tile_types))
     loose_columns, loose_rows = uncovered(fabric, config.tile_die)
     if anchor_micron is not None:
         typer.echo(f"anchor {anchor_micron} um, given on the command line")
@@ -205,17 +230,17 @@ def plan(
         )
     result = build_plan(
         fabric,
-        PROJECT / "eFPGA_geometry.csv",
+        paths().geometry,
         anchor_micron,
         anchor_type,
         stripe_pitch_micron=config.fabric.stripe_pitch_micron,
         tile_die=config.tile_die,
         tile_macro=config.tile_macro,
     )
-    BUILD.mkdir(exist_ok=True)
-    result.write(PLAN_PATH)
+    paths().build.mkdir(parents=True, exist_ok=True)
+    result.write(paths().plan)
     typer.echo(
-        f"{PLAN_PATH}: {result.width / DBU} x {result.height / DBU} um, "
+        f"{paths().plan}: {result.width / DBU} x {result.height / DBU} um, "
         f"{len(result.placements)} tiles of {len(result.tile_size)} types, "
         f"{len(result.seams)} seams carrying {sum(s.crossings for s in result.seams)} wires"
     )
@@ -228,8 +253,8 @@ def check() -> None:
     """Test the plan's four wiring properties without running anything."""
     from flow import verify
 
-    fabric = load_fabric(PROJECT)
-    layout = Plan.read(PLAN_PATH)
+    fabric = load_fabric(paths())
+    layout = Plan.read(paths().plan)
     failures = verify.check_plan(fabric, layout)
     for line in failures:
         typer.echo(line)
@@ -264,16 +289,16 @@ def harden(
     ),
 ) -> None:
     """Run one tile type from synthesis to filler, with the planned die and pins."""
-    fabric = load_fabric(PROJECT)
-    config = load_config(PROJECT, tuple(fabric.tile_types))
-    layout = Plan.read(PLAN_PATH)
+    fabric = load_fabric(paths())
+    config = load_config(paths(), tuple(fabric.tile_types))
+    layout = Plan.read(paths().plan)
     # Checked over every type rather than only the ones asked for, since one
     # stale plan makes every edited [die] table wrong and hardening the tile
     # named here would still leave the fabric built to two different geometries.
     stale = stale_dies(config.tile_die, layout.tile_size)
     if stale:
         raise typer.BadParameter(
-            f"{PLAN_PATH} was written before these [die] tables were edited, and "
+            f"{paths().plan} was written before these [die] tables were edited, and "
             f"harden builds to the plan: {'; '.join(stale)}. Run `task plan` to "
             "carry them in, which `task harden-one` now does for you."
         )
@@ -294,7 +319,7 @@ def harden(
         strategy = synth_strategy or config.strategy_for(tile_type)
         if force and directory.exists():
             shutil.rmtree(directory)
-        log = BUILD / "logs" / f"{directory.name}.log"
+        log = paths().build / "logs" / f"{directory.name}.log"
         width, height = layout.tile_size[tile_type]
         try:
             project.create_project(
@@ -456,7 +481,7 @@ def harden(
             f"{densities[best]:.3f} ({best})"
         )
     if failures:
-        typer.echo(f"{failures} failed; see {BUILD}/logs")
+        typer.echo(f"{failures} failed; see {paths().build}/logs")
         raise typer.Exit(code=1)
 
 
@@ -519,9 +544,9 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
     `<type>_nl` directory rather than the hardened tile's, so a sweep cannot
     discard a hardened run.
     """
-    fabric = load_fabric(PROJECT)
-    config = load_config(PROJECT, tuple(fabric.tile_types))
-    layout = Plan.read(PLAN_PATH)
+    fabric = load_fabric(paths())
+    config = load_config(paths(), tuple(fabric.tile_types))
+    layout = Plan.read(paths().plan)
     wanted = tile or sorted(layout.tile_size)
     unknown = set(wanted) - layout.tile_size.keys()
     if unknown:
@@ -529,7 +554,7 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
 
     def build(tile_type: str) -> tuple[str, str]:
         directory = _netlist_directory(tile_type)
-        log = BUILD / "logs" / f"{directory.name}.log"
+        log = paths().build / "logs" / f"{directory.name}.log"
         project.create_project(
             directory=directory,
             top=tile_type,
@@ -564,7 +589,7 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
 
 
 @app.command()
-def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -> None:
+def stitch(out: Path | None = None, columns: str = "", rows: str = "") -> None:
     """Paint every hardened tile, abut them at their planned positions, prove the seams.
 
     Painting and abutting are one step because a painted GDS is only valid for
@@ -581,7 +606,8 @@ def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -
     from flow import paint as painter
     from flow import stitch as stitcher
 
-    layout = Plan.read(PLAN_PATH)
+    out = out or paths().build / "eFPGA.gds"
+    layout = Plan.read(paths().plan)
     if columns or rows:
         span = lambda text, whole: (  # noqa: E731
             range(*(int(part) for part in text.split(":"))) if text else whole
@@ -593,7 +619,7 @@ def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -
         typer.echo(
             f"window of {len(layout.placements)} tiles, {len(layout.seams)} seams"
         )
-    painted = BUILD / "painted"
+    painted = paths().build / "painted"
     painted.mkdir(parents=True, exist_ok=True)
     sources = {}
     for tile_type in sorted(layout.tile_size):
@@ -608,13 +634,11 @@ def stitch(out: Path = BUILD / "eFPGA.gds", columns: str = "", rows: str = "") -
                 size=layout.tile_size[tile_type],
             )
         )
-    stitcher.stitch(plan=layout, tile_gds=sources, out_gds=out)
+    stitcher.stitch(plan=layout, fabric=load_fabric(paths()), tile_gds=sources, out_gds=out)
 
 
 @app.command()
-def top(
-    directory: Path = BUILD / "fabric", run: bool = True, assemble: bool = False
-) -> None:
+def top(directory: Path | None = None, run: bool = True, assemble: bool = False) -> None:
     """Write the fabric-level ECC project and floorplan it with the tiles as macros.
 
     Without `--assemble` only the floorplan is run. The parent is 151 blackboxes
@@ -631,9 +655,10 @@ def top(
     """
     from flow import topdesign
 
-    layout = Plan.read(PLAN_PATH)
-    fabric = load_fabric(PROJECT)
-    config = load_config(PROJECT, tuple(fabric.tile_types))
+    directory = directory or paths().build / "fabric"
+    layout = Plan.read(paths().plan)
+    fabric = load_fabric(paths())
+    config = load_config(paths(), tuple(fabric.tile_types))
     netlist = topdesign.write_project(
         plan=layout,
         fabric=fabric,
@@ -664,7 +689,7 @@ def top(
             "name disagree, so the floorplan would carry pins with nothing on "
             "them: " + "; ".join(unbound)
         )
-    log = BUILD / "logs" / "fabric.log"
+    log = paths().build / "logs" / "fabric.log"
     # `Synthesis` as the ledger spells it, not the lowercase `--from` selector:
     # `project.step_state` reads the state back by that name and a mismatch is a
     # KeyError after the step has already run.
@@ -734,8 +759,8 @@ def top(
 @app.command()
 def assemble(
     stitcher: Stitcher = Stitcher.KLAYOUT,
-    out: Path = BUILD / "eFPGA.gds",
-    directory: Path = BUILD / "fabric",
+    out: Path | None = None,
+    directory: Path | None = None,
 ) -> None:
     """Assemble the hardened tiles into one fabric layout, by klayout or by ECC.
 
@@ -756,7 +781,7 @@ def assemble(
 def find(
     pattern: str,
     kind: names.Kind = names.Kind.SIGNAL,
-    manifest: Path = FABRIC_GEOMETRY,
+    manifest: Path | None = None,
     pick: int = 1,
     limit: int = 40,
     copy: bool = True,
@@ -769,6 +794,7 @@ def find(
     `signal` because the net tables carry a `clock` kind that is rarely what a
     layout question is about.
     """
+    manifest = manifest or _fabric_geometry()
     if not manifest.exists():
         raise typer.BadParameter(f"no chip-viewer snapshot at {manifest}")
     matches = names.search(manifest, pattern, kind)
@@ -791,9 +817,9 @@ def find(
 
 @app.command()
 def colour(
-    source: Path = BUILD / "eFPGA.gds",
+    source: Path | None = None,
     by: str = "cell",
-    out: Path = BUILD / "overlay",
+    out: Path | None = None,
     minimum: int = 1,
     limit: int = 0,
 ) -> None:
@@ -806,6 +832,8 @@ def colour(
     """
     from flow import overlay as painter
 
+    source = source or paths().build / "eFPGA.gds"
+    out = out or paths().build / "overlay"
     if not source.exists():
         raise typer.BadParameter(f"no layout at {source}")
     grouping = painter.By(by)

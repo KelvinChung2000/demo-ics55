@@ -1,5 +1,9 @@
 MAX_BITBYTES=16384
-FAB_PROJ_ROOT=..
+ifndef VARIANT
+$(error VARIANT is not set; run make VARIANT=bram or VARIANT=nobram)
+endif
+# The variant's FABulous project; Tile/, primitives/ and user_design/ link back to the root.
+FAB_PROJ_ROOT=../fabrics/$(VARIANT)
 BUILD_DIR=build
 YOSYS?=$(or $(FAB_YOSYS_PATH),yosys)
 NEXTPNR?=$(or $(FAB_NEXTPNR_PATH),nextpnr-generic)
@@ -62,7 +66,7 @@ run_bitgen: mkdir_build
 
 copy_files: mkdir_build
 	find ${FAB_PROJ_ROOT}/Tile/ -name '*.v' -type f -exec cp {} ${FABRIC_FILES_DIR}/ \;
-	find ${FAB_PROJ_ROOT}/Fabric/ -name '*.v' -type f -exec cp {} ${FABRIC_FILES_DIR}/ \;
+	find ../Fabric/ ${FAB_PROJ_ROOT}/Fabric/ -name '*.v' -type f -exec cp {} ${FABRIC_FILES_DIR}/ \;
 
 mkdir_build:
 	mkdir -p ${BUILD_DIR}

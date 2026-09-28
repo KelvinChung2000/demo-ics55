@@ -5,7 +5,11 @@
 # Override any variable via CLI: task harden JOBS=6 TILE=LUT4x8_ha
 version: "3"
 
+# Every task builds one variant, fabrics/<VARIANT>, into build/<VARIANT>, and
+# the flow refuses to start without one: task plan VARIANT=nobram
 vars:
+  # Declared so a command-line VARIANT reaches the vars below that name it.
+  VARIANT: '{{.VARIANT}}'
   # Left empty, `plan` takes the anchor from the compiled LUT4x8_ha's own die,
   # so hardening the anchor tile is what moves the fabric. Set it to override
   # that, which is how the anchor tile is first built and how it is swept: 110
@@ -18,10 +22,10 @@ vars:
   # Which tool assembles the hardened tiles: klayout abuts them and proves every
   # seam, ecc runs the macro-placed parent through its own flow, both does each.
   STITCHER: '{{.STITCHER | default "klayout"}}'
-  BUILD: '{{.BUILD | default "build"}}'
+  BUILD: build/{{.VARIANT}}
   ECC: '{{.ECC | default "/home/kelvin/side-project/ecc-spike/eccw-main"}}'
   VIEWER: '{{.VIEWER | default "/home/kelvin/side-project/ecos-studio/ecos/chip-viewer/target/release/chip-viewer-native"}}'
-  FLOW: python3 -m flow.cli
+  FLOW: python3 -m flow.cli --variant {{.VARIANT}}
 
 tasks:
   efpga:
@@ -64,7 +68,7 @@ tasks:
       - "{{.FLOW}} gen-io-order"
 
   plan:
-    desc: Size every tile and place every pin, writing build/fabric_plan.json
+    desc: Size every tile and place every pin, writing build/<VARIANT>/fabric_plan.json
     cmds:
       - cmd: 'echo "==> plan: {{if .ANCHOR}}anchor {{.ANCHOR}} um, overridden{{else}}sized from the [die] tables, anchored on the compiled tile only where one is missing{{end}}"'
         silent: true
@@ -84,7 +88,7 @@ tasks:
     cmds:
       # ECC's step renderer draws one transient line, so it is handed the
       # terminal only at JOBS=1; above that a tile reports when it finishes and
-      # build/tiles/<TILE>/default/<step>_<tool>/log/ is the progress there is.
+      # build/<VARIANT>/tiles/<TILE>/default/<step>_<tool>/log/ is the progress there is.
       - cmd: 'echo "==> harden: 12 tiles, {{.JOBS}} at a time, anchor from the plan. About half an hour; run with JOBS=1 to watch the steps"'
         silent: true
       - "{{.FLOW}} harden --jobs {{.JOBS}} {{.CLI_ARGS}}"
@@ -94,9 +98,9 @@ tasks:
       Replan, then harden one tile type, discarding any existing run. Set TILE.
       Editing a [die] table and running this is the whole loop: plan and check
       run no EDA tool, so they cost seconds and carry the new die into
-      build/fabric_plan.json before the harden reads it. Pass ECC parameter
+      build/<VARIANT>/fabric_plan.json before the harden reads it. Pass ECC parameter
       overrides after --, as `-- --set place.target_density=0.55`; an
-      overridden run builds into build/tiles/<TILE>@<overrides> of its own.
+      overridden run builds into build/<VARIANT>/tiles/<TILE>@<overrides> of its own.
     cmds:
       - task: plan
       - task: check
@@ -122,7 +126,7 @@ tasks:
 
   synth:
     desc: >-
-      Synthesise every tile type into build/tiles/<TYPE>_nl and stop, which is all
+      Synthesise every tile type into build/<VARIANT>/tiles/<TYPE>_nl and stop, which is all
       a strategy sweep reads from them. Rerunning is cheap once the workspaces exist.
     cmds:
       - cmd: 'echo "==> synth: every tile type, {{.JOBS}} at a time"'

@@ -32,6 +32,7 @@ from flow import project as ecc_project
 from flow.config import FabricSettings, Param, load_config
 from flow.fabric import Fabric, Port, TileType, load_fabric
 from flow.plan import CORE_MARGIN, DBU, SITE_HEIGHT, SITE_WIDTH, PinPlacement, Plan
+from flow.variant import Paths, Variant
 
 ORIENT = "R0"  # a tile is hardened once, so abutment never mirrors or rotates it
 TOP_MODULE = "eFPGA"
@@ -431,15 +432,13 @@ app = typer.Typer(add_completion=False, help="Generate the fabric-level ECC proj
 @app.command()
 def main(
     directory: Annotated[Path, typer.Argument(help="where the parent project is written")],
-    project: Annotated[Path, typer.Option(help="the FABulous project directory")] = Path("."),
-    plan_file: Annotated[Path, typer.Option(help="the plan flow/plan.py wrote")] = Path(
-        "build/fabric_plan.json"
-    ),
+    variant: Annotated[Variant, typer.Option(help="which fabrics/<variant> to read")],
 ) -> None:
-    """Build the parent project from a FABulous project and its plan."""
-    fabric = load_fabric(project)
-    plan = Plan.read(plan_file)
-    config = load_config(project, tuple(fabric.tile_types))
+    """Build the parent project from a variant's fabric and its plan."""
+    paths = Paths(variant)
+    fabric = load_fabric(paths)
+    plan = Plan.read(paths.plan)
+    config = load_config(paths, tuple(fabric.tile_types))
     netlist = write_project(
         plan=plan,
         fabric=fabric,

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import klayout.db as kdb
 
-from flow.fabric import Fabric, Side, load_fabric
+from flow.fabric import Fabric, Side
 from flow.plan import DBU, PIN_WIDTH, Plan, Seam, TilePlacement
 
 TILE_CELL = "DIEAREA"
@@ -290,7 +290,7 @@ def _check_pdn(cell: kdb.Cell, layout: kdb.Layout, plan: Plan) -> list[str]:
     return failures
 
 
-def stitch(plan: Plan, tile_gds: dict[str, Path], out_gds: Path) -> None:
+def stitch(plan: Plan, fabric: Fabric, tile_gds: dict[str, Path], out_gds: Path) -> None:
     """Abut the planned fabric from painted tile GDS files and check every seam.
 
     The layout is written before the checks run, so a fabric that fails is still
@@ -303,8 +303,8 @@ def stitch(plan: Plan, tile_gds: dict[str, Path], out_gds: Path) -> None:
     print(f"{out_gds}  {len(plan.placements)} tiles  bbox {cell.dbbox()}")
 
     # The plan carries the seams but not the links, and the link table is the one
-    # thing that must come from FABulous rather than from this flow.
-    fabric = load_fabric(Path("."))
+    # thing that must come from FABulous rather than from this flow, so `fabric`
+    # is the one `load_fabric` read from eFPGA.v.
     failures = _check_crossings(cell, layout, plan)
     failures += _check_pairing(plan, fabric)
     failures += _check_pdn(cell, layout, plan)

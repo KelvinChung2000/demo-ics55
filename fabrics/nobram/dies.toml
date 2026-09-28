@@ -1,0 +1,8 @@
+# Die edges this grid fixes for tile types the other variant also places. The
+# east column holds E_IO here, so the corners above and below it take its width.
+
+[NE_term]
+width_micron = 21.4  # column 12, bound by E_IO's routing floor
+
+[SE_term]
+width_micron = 21.4  # column 12, bound by E_IO's routing floor

@@ -1,5 +1,31 @@
 # A 1 mm² eFPGA on ICS55
 
+Two variants share this spec's tile library and differ only in the east column.
+`fabrics/bram` places `E_BRAM` there. `fabrics/nobram` places `E_IO`, for an
+integration that cannot depend on the ECOS SRAM compiler, and spends the width
+the memory column took on two more logic columns. The sections after this table
+describe the block-RAM fabric, and where they name `E_BRAM` the no-BRAM variant
+has `E_IO`.
+
+| | `bram` | `nobram` |
+|---|---|---|
+| array | 954.8 × 884.8 um | 947.0 × 884.8 um |
+| area | 844,807 um², 87.6% of 1 mm² | 837,906 um², 83.8% |
+| logic | 640 `FABULOUS_LC` | 800 `FABULOUS_LC` |
+| DSP | 5 `MACC_8x8_20` | 5 `MACC_8x8_20` |
+| block RAM | 80 kbit | none |
+| external IO | 26 | 40 |
+| tiles | 122 | 151 |
+| seam crossings | 26098, all conduct | 31760, all conduct |
+| tiles with DRC | `E_BRAM` at 45 | none |
+| hard macro | one per two rows | none |
+
+The no-BRAM variant carries no hard macro, so it has no vendor dependency and no
+tile above zero DRC. Ten logic columns is the last count that fits: eleven would
+be 1029.6 um wide, over the 1000 um axis, at 91.1% of the budget. The split is
+five each side of the multiplier, which is both the even split and the centred
+one, with the multiplier's midline at 477.2 um against the array's 473.5.
+
 This spec sizes a FABulous fabric to a one square millimetre budget on the ICS55
 55 nm process, delivered through the OpenECOS MPC shared die. It fixes the grid,
 names the memory macro and states which figures are measured and which are not.

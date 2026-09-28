@@ -249,6 +249,20 @@ def plan(
 
 
 @app.command()
+def gen_top() -> None:
+    """Write fabrics/<variant>/Fabric/eFPGA_top.v from the variant's eFPGA.v."""
+    from flow import topwrap
+
+    fabric = load_fabric(paths())
+    size, widths = topwrap.write_top(paths(), fabric)
+    buses = ", ".join(f"{port}[{width}]" for port, width in sorted(widths.items()))
+    typer.echo(
+        f"{paths().fabric / 'Fabric' / 'eFPGA_top.v'}: {size} bytes, "
+        f"{fabric.columns} x {fabric.rows} frames grid, {buses}"
+    )
+
+
+@app.command()
 def check() -> None:
     """Test the plan's four wiring properties without running anything."""
     from flow import verify

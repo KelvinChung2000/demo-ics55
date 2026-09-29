@@ -458,16 +458,20 @@ def drop_floorplan_database(directory: Path, top: str) -> None:
     back to `read_def` when it is absent, so an externally written PINS section
     is ignored while the database is there.
     """
+    drop_step_database(directory, top, "postFloorplan", "postFloorplan_ecc")
+
+
+def drop_step_database(directory: Path, top: str, step: str, folder: str) -> None:
+    """Delete one step's binary database so the step after it reads its DEF."""
     import shutil
 
-    database = (
-        workspace_of(directory)
-        / "postFloorplan_ecc"
-        / "output"
-        / f"{top}_postFloorplan_db"
-    )
+    database = workspace_of(directory) / folder / "output" / f"{top}_{step}_db"
     if database.exists():
         shutil.rmtree(database)
+
+
+def step_def(directory: Path, top: str, step: str, folder: str) -> Path:
+    return workspace_of(directory) / folder / "output" / f"{top}_{step}.def.gz"
 
 
 def final_def(directory: Path, top: str) -> Path:

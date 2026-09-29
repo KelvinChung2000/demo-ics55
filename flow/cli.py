@@ -225,9 +225,7 @@ def plan(
             f"{anchor_micron} x {anchor_height} um"
         )
     else:
-        typer.echo(
-            "no anchor needed, every column and row is sized by a [die] table"
-        )
+        typer.echo("no anchor needed, every column and row is sized by a [die] table")
     result = build_plan(
         fabric,
         paths().geometry,
@@ -648,11 +646,15 @@ def stitch(out: Path | None = None, columns: str = "", rows: str = "") -> None:
                 size=layout.tile_size[tile_type],
             )
         )
-    stitcher.stitch(plan=layout, fabric=load_fabric(paths()), tile_gds=sources, out_gds=out)
+    stitcher.stitch(
+        plan=layout, fabric=load_fabric(paths()), tile_gds=sources, out_gds=out
+    )
 
 
 @app.command()
-def top(directory: Path | None = None, run: bool = True, assemble: bool = False) -> None:
+def top(
+    directory: Path | None = None, run: bool = True, assemble: bool = False
+) -> None:
     """Write the fabric-level ECC project and floorplan it with the tiles as macros.
 
     Without `--assemble` only the floorplan is run. The parent is 151 blackboxes
@@ -768,6 +770,155 @@ def top(directory: Path | None = None, run: bool = True, assemble: bool = False)
     if not step.ok:
         raise typer.Exit(code=1)
     typer.echo(f"{project.final_gds(directory, TOP_MODULE)}: assembled by ECC")
+
+
+@app.command()
+def integrate(
+    channel_micron: float = typer.Option(
+        48.0, help="Width of the standard-cell channel west of the fabric."
+    ),
+    strip_micron: float = typer.Option(
+        22.4, help="Height of the standard-cell strip south of the fabric."
+    ),
+    directory: Path | None = None,
+    run: bool = True,
+) -> None:
+    """Harden eFPGA_top: the tile macros, the loader and the front-ends in one run.
+
+    The fabric sits in the north-east corner of the die and the configuration
+    logic is placed in the strip and the channel, whose PDN `flow.integrate`
+    draws into the floorplan DEF because ECC's would cover the tiles too.
+    """
+    from flow import integrate as toprun
+    from flow import topdesign
+
+    directory = directory or paths().build / "top"
+    layout = Plan.read(paths().plan)
+    fabric = load_fabric(paths())
+    config = load_config(paths(), tuple(fabric.tile_types))
+    shape = toprun.geometry(layout, channel_micron, strip_micron)
+    netlist = toprun.write_project(
+        paths=paths(),
+        plan=layout,
+        fabric=fabric,
+        directory=directory,
+        settings=config.fabric,
+        params=config.fabric_params,
+        shape=shape,
+    )
+    typer.echo(
+        f"{directory}: die {shape.width / DBU} x {shape.height / DBU} um, fabric at "
+        f"({shape.origin[0] / DBU}, {shape.origin[1] / DBU}) um"
+    )
+    if not run:
+        return
+    views = project.stage_macro_views(
+        directory,
+        {
+            name: project.tile_views(_tile_directory(name), name)
+            for name in layout.tile_size
+        },
+    )
+    unbound = topdesign.unbound_pins(
+        directory / "rtl", {name: kinds["lef"] for name, kinds in views.items()}
+    )
+    if unbound:
+        raise typer.BadParameter("stubs and macros disagree: " + "; ".join(unbound))
+    log = paths().build / "logs" / "top.log"
+    step = project.create_workspace(directory, log, to="Synthesis", progress=True)
+    if not step.ok:
+        raise typer.Exit(code=1)
+    project.add_macro_views(
+        directory,
+        lefs=[kinds["lef"] for kinds in views.values()],
+        libs=[kinds["lib"] for kinds in views.values()],
+    )
+    project.widen_flow(directory)
+    step = project.run_range(
+        directory, "preFloorplan", "preFloorplan", log, progress=True
+    )
+    if not step.ok:
+        typer.echo(f"the first floorplan pass failed, see {log}")
+        raise typer.Exit(code=1)
+    project.zero_macro_halos(directory, log)
+    project.clear_pdn_stripes(directory)
+    # Global placement puts each row's FrameData flops beside the row and each
+    # column's strobe gates under the column; legalising alone left all 3105
+    # cells at one corner and the router at 56% overflow. Overflow bottoms out
+    # at 0.147 around iteration 300, the cells still over the fabric then, and
+    # DreamPlace's divergence guard restarts it towards 0.70, so it stops at
+    # 0.15 and the legaliser moves the rest into the free rows.
+    x0, y0 = shape.origin
+    project.set_params(
+        directory,
+        {
+            "place.target_overflow": "0.15",
+            "place.init_loc_perc_x": f"{x0 / shape.width:.4f}",
+            "place.init_loc_perc_y": f"{y0 / shape.height:.4f}",
+        },
+        log,
+    )
+    # After the last `param set`: each one rewrites every STA liberty path
+    # outside the PDK as if it were inside it, `/home/...` becoming
+    # `<pdk>/home/...`, and STA then refuses the missing files.
+    project.add_macro_timing(
+        directory, [kinds["lib"] for kinds in views.values()], MACRO_CORNER
+    )
+    text = paths().fabric_verilog.read_text()
+    ports = set(
+        toprun.top_ports(project.synthesis_netlist(directory, toprun.TOP_MODULE))
+    )
+    fabric_pins = toprun.fabric_pins(layout, fabric, netlist, text, shape, ports)
+    config_names = sorted(ports - {pin.name for pin in fabric_pins})
+    pins = fabric_pins + toprun.config_pins(config_names, shape)
+    if {pin.name for pin in pins} != ports or len(pins) != len(ports):
+        raise typer.BadParameter("the pin plan and the synthesised ports disagree")
+    placed = ioplace.install(
+        project.workspace_of(directory), pins, (shape.width, shape.height)
+    )
+    typer.echo(f"{placed}; {len(config_names)} of them configuration ports")
+    step = project.run_range(
+        directory, "preFloorplan", "postFloorplan", log, progress=True
+    )
+    if not step.ok:
+        typer.echo(f"floorplan failed, see {log}")
+        raise typer.Exit(code=1)
+    floorplan = project.floorplan_def(directory, toprun.TOP_MODULE)
+    typer.echo(
+        toprun.write_pdn(
+            floorplan,
+            layout,
+            shape,
+            {name: kinds["def"] for name, kinds in views.items()},
+        )
+    )
+    project.drop_floorplan_database(directory, toprun.TOP_MODULE)
+    step = project.run_range(directory, "place", "legalization", log, progress=True)
+    if not step.ok:
+        typer.echo(f"placement recorded as {step.state}, see {log}")
+        raise typer.Exit(code=1)
+    legalised = project.step_def(
+        directory, toprun.TOP_MODULE, "legalization", "legalization_dreamplace"
+    )
+    withheld = toprun.withhold_seam_nets(legalised, set(netlist.wires))
+    project.drop_step_database(
+        directory, toprun.TOP_MODULE, "legalization", "legalization_dreamplace"
+    )
+    typer.echo(f"{len(withheld)} seam nets withheld from routing")
+    step = project.run_range(directory, "route", "filler", log, progress=True)
+    typer.echo(
+        f"top run recorded as {step.state} after {step.seconds:.0f} s, see {log}"
+    )
+    if not step.ok:
+        raise typer.Exit(code=1)
+    # Signed off on the database the router wrote, which lacks the seam nets;
+    # `flow.stitch` is what proves those conduct.
+    step = project.run_range(directory, "RCX", "drc", log, progress=True)
+    typer.echo(f"signoff recorded as {step.state} after {step.seconds:.0f} s")
+    if not step.ok:
+        raise typer.Exit(code=1)
+    toprun.restore_seam_nets(project.final_def(directory, toprun.TOP_MODULE), withheld)
+    typer.echo(f"{len(withheld)} seam nets restored to the final DEF, unrouted")
 
 
 @app.command()

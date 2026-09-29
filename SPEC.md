@@ -19,6 +19,7 @@ has `E_IO`.
 | seam crossings | 26098, all conduct | 31760, all conduct |
 | tiles with DRC | `E_BRAM` at 45 | none |
 | hard macro | one per two rows | none |
+| hardened `eFPGA_top` | not run | 999.0 × 912.6 um, 91.2%, DRC 0 |
 
 The no-BRAM variant carries no hard macro, so it has no vendor dependency and no
 tile above zero DRC. Ten logic columns is the last count that fits: eleven would
@@ -247,19 +248,53 @@ from.
 
 ## Top-level integration
 
-The array is stitched from hardened tiles, not built flat, and `eFPGA_top` wraps
-it with one `eFPGA_Config`, one `Frame_Data_Reg` per core row and one
-`Frame_Select` per column. The 11,123 um² budgeted above is the fourteen-row
-block hardened standalone at 0.85, used here as a ceiling: at ten rows four
-`Frame_Data_Reg` come out, 1,160 um² of cells less, against one `Frame_Select`
-added for the eleventh column. A further 20,000 um² on top of that is reserved
-for the routing channel between the configuration logic and the array edge and
-for the PDN straps over it, and **that reserve is a placeholder rather than a
-measurement**, since no top-level floorplan has been run. Nothing in `flow/`
-targets `eFPGA_top` today: `TOP_MODULE` is `"eFPGA"` in both `flow/cli.py` and
-`flow/topdesign.py`, so the flow stops at the tile array.
+`flow/topwrap.py` writes `eFPGA_top` from the variant's own `eFPGA.v`, so the
+frame loader is sized by the grid it drives. The loader is `fabric_config` from
+fabulous-fabrics, fed by `config_frontend`, which takes the bitstream over UART,
+bitbang, SPI or the parallel `SelfWriteData` port. `flow cli integrate` hardens
+that top in one ECC run: the 151 tiles as fixed macros, the loader and the
+front-ends placed in a channel west of the array and a strip south of it.
 
-That leaves 124,070 um² spare against the budget, 12.4%.
+Measured on `nobram`, the only variant this has been run on:
+
+| | |
+|---|---|
+| die | 999.0 × 912.6 um, 911,687 um², 91.2% of 1 mm² |
+| array | 947.0 × 884.8 um at (50.0, 24.6) um |
+| channel, west | 48.0 um |
+| strip, south | 22.4 um, then one 1.4 um row left empty below the array |
+| loader and front-ends | 3,105 cells, 8,852 um² after synthesis |
+| overhead over the array | 73,781 um², 7.4% of 1 mm² |
+| DRC | 0 |
+| LVS, signal | 166 IO, 16,890 instances and 3,165 nets match, 0 open, 0 short |
+| LVS, power | 139 tiles open, all fed by abutment |
+| runtime | 4 min to filler, 58 min of signoff, almost all STA |
+
+The strip holds each column's 20 FrameStrobe gates under the column and the
+channel each row's 32 FrameData flops beside the row. Global placement puts
+them there, and it has to: legalising from one corner left every cell there, and
+the 260 FrameStrobe nets then needed 260 horizontal tracks through a strip that
+has 224. The empty row keeps the strip's top MET1 rail clear of the tiles, whose
+abstracts reserve all of MET1.
+
+The 139 power opens are the tiles not in the west column. They take VDD and VSS
+from their neighbours' stripes across the seam, which the LVS cannot see and
+`flow.stitch` proves conducts. The 32,404 seam nets are withheld from the router,
+which has no notion of an abutted pin pair, and restored to the final DEF
+unrouted.
+
+**The configuration clock does not close at 100 MHz on the slow corners.**
+With the CTS tree propagated, setup fails by 5.50 ns at `ss_1p08_125` Cworst and
+by 3.73 ns at the -40 °C worst-case corner, and passes by 4.63 ns at typical.
+Every failing path lies within the loader and the front-ends: the worst runs from
+the SPI sampler through the bitbang and UART muxes into `frame_select`, and 11.4
+ns of its 15.4 ns data path is one `AOI21X0P7` driving 14 loads spread along the
+channel and the `NOR3X0P5` taking its slew. The flow neither buffers nor resizes
+after placement. Hold closes at every corner,
+by 0.051 ns at the tightest.
+
+The block-RAM variant has not been integrated. Its array is 7.8 um wider, so
+the same channel and strip would put its die at 1006.8 um, over the axis.
 
 ## Three alternatives
 

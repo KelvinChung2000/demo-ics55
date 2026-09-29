@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from flow.fabric import Fabric
+from flow.topdesign import Netlist
 from flow.variant import Paths
 
 # The header word carries the column in its top five bits, as `bit_gen` writes it.
@@ -63,32 +64,93 @@ def read_externals(text: str) -> dict[str, list[External]]:
     return buses
 
 
-def render(fabric: Fabric, text: str, source: str) -> str:
-    """Return the top-level Verilog for one variant's generated `eFPGA.v`."""
+def _frame_parameters(text: str, source: str) -> tuple[int, int]:
     parameters = dict(PARAMETER_RE.findall(text))
     if parameters.keys() != {"MaxFramesPerCol", "FrameBitsPerRow"}:
         raise ValueError(f"{source} does not declare MaxFramesPerCol and FrameBitsPerRow")
-    frames, frame_bits = int(parameters["MaxFramesPerCol"]), int(parameters["FrameBitsPerRow"])
+    return int(parameters["MaxFramesPerCol"]), int(parameters["FrameBitsPerRow"])
+
+
+def bindings(text: str) -> dict[str, str]:
+    """Map every external tile scalar to the top-level expression it connects to."""
+    bound = {}
+    externals = read_externals(text)
+    for port in sorted(externals, key=lambda name: (name == CONFIGURED_PORT, name)):
+        for index, bit in enumerate(externals[port]):
+            bound[bit.scalar] = "configured" if port == CONFIGURED_PORT else f"{port}[{index}]"
+    return bound
+
+
+def _rtl_body(text: str) -> str:
+    connections = [f"        .{scalar}({net})," for scalar, net in bindings(text).items()]
+    return f"""    eFPGA #(
+        .MaxFramesPerCol(MAX_FRAMES_PER_COL),
+        .FrameBitsPerRow(FRAME_BITS_PER_ROW)
+    ) fabric (
+{chr(10).join(connections)}
+        .FrameData(frame_data),
+        .FrameStrobe(frame_strobe)
+    );
+"""
+
+
+def _hard_body(text: str, netlist: Netlist, frame_bits: int, frames: int) -> str:
+    """Instantiate every macro under its own name, the frame bits wired to the loader.
+
+    The macros keep the names `eFPGA.v` gives them, so the placements the plan
+    derived for the fabric-level run bind here unchanged. A frame bit reaches the
+    fabric as one scalar per row or column in the macro netlist, and is wired to
+    the bit of `frame_data` or `frame_strobe` `eFPGA.v` slices it from.
+    """
+    bound = bindings(text)
+    frame_re = re.compile(r"^Row_Y(\d+)_FrameData_(\d+)$|^Column_X(\d+)_FrameStrobe_(\d+)$")
+
+    def net_of(name: str) -> str:
+        if name in bound:
+            return bound[name]
+        frame = frame_re.match(name)
+        if frame is None:
+            return name
+        row, bit, column, strobe = frame.groups()
+        if row is not None:
+            return f"frame_data[{int(row) * frame_bits + int(bit)}]"
+        return f"frame_strobe[{int(column) * frames + int(strobe)}]"
+
+    unbound = sorted(set(netlist.inputs) | set(netlist.outputs))
+    unbound = [name for name in unbound if net_of(name) == name]
+    if unbound:
+        raise ValueError(
+            f"{len(unbound)} fabric boundary scalars bind to no top-level signal: {unbound[:4]}"
+        )
+    lines = [f"    wire {name};" for name in netlist.wires]
+    for instance in netlist.instances:
+        pins = ",\n".join(f"        .{pin}({net_of(net)})" for pin, net in instance.pins)
+        # Kept, since a tile whose outputs the top never reads, such as NE_term,
+        # is otherwise swept away and its placement then names nothing.
+        lines.append(f"    (* keep *) {instance.tile_type} {instance.name} (\n{pins}\n    );")
+    return "\n".join(lines) + "\n"
+
+
+def render(fabric: Fabric, text: str, source: str, netlist: Netlist | None = None) -> str:
+    """Return the top for one variant's `eFPGA.v`.
+
+    Without `netlist` the fabric is one `eFPGA` instance, for simulation. With
+    it, the fabric is the macro netlist `flow.topdesign` flattens `eFPGA.v` to,
+    which is what the top-level ECC run synthesises around.
+    """
+    frames, frame_bits = _frame_parameters(text, source)
     if fabric.columns > 1 << FRAME_SELECT_WIDTH:
         raise ValueError(
             f"{fabric.columns} columns do not fit the {FRAME_SELECT_WIDTH}-bit column "
             "field of a frame header"
         )
     buses = read_externals(text)
-    pins = {port: scalars for port, scalars in buses.items() if port != CONFIGURED_PORT}
-
     ports = [
         f"    {scalars[0].direction} wire [{len(scalars) - 1}:0] {port},"
-        for port, scalars in sorted(pins.items())
+        for port, scalars in sorted(buses.items())
+        if port != CONFIGURED_PORT
     ]
-    connections = [
-        f"        .{bit.scalar}({port}[{index}]),"
-        for port, scalars in sorted(pins.items())
-        for index, bit in enumerate(scalars)
-    ] + [
-        f"        .{bit.scalar}(configured),"
-        for bit in buses.get(CONFIGURED_PORT, [])
-    ]
+    body = _rtl_body(text) if netlist is None else _hard_body(text, netlist, frame_bits, frames)
     return f"""// Written by flow/topwrap.py from {source}; regenerate with `flow gen-top`.
 `default_nettype none
 
@@ -158,15 +220,7 @@ module eFPGA_top (
         .frame_strobe_o(frame_strobe)
     );
 
-    eFPGA #(
-        .MaxFramesPerCol(MAX_FRAMES_PER_COL),
-        .FrameBitsPerRow(FRAME_BITS_PER_ROW)
-    ) fabric (
-{chr(10).join(connections)}
-        .FrameData(frame_data),
-        .FrameStrobe(frame_strobe)
-    );
-endmodule
+{body}endmodule
 
 `default_nettype wire
 """

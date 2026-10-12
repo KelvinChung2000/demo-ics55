@@ -17,6 +17,12 @@ module my_buf (input A, output X);
   BUFX1H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
 endmodule
 
+// Only MACC_8x8_20 instantiates this, to drive its 56 registers, about 0.12 pF.
+// The tile flow's CTS builds no tree, so this cell is the whole clock driver.
+module clk_buf (input A, output X);
+  BUFX4H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
+endmodule
+
 // ABC reaches most of these on its own but not all of them, and it pays for
 // the ones it misses twice: a 4:1 built from three MUX2X1 costs 8.4 um^2
 // against MUX4X1's 6.44, and the select complements stay live because the

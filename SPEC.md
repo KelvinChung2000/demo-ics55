@@ -290,8 +290,37 @@ Every failing path lies within the loader and the front-ends: the worst runs fro
 the SPI sampler through the bitbang and UART muxes into `frame_select`, and 11.4
 ns of its 15.4 ns data path is one `AOI21X0P7` driving 14 loads spread along the
 channel and the `NOR3X0P5` taking its slew. The flow neither buffers nor resizes
-after placement. Hold closes at every corner,
-by 0.051 ns at the tightest.
+after placement. Hold closes on the loader's own flop-to-flop paths at every
+corner, by 0.051 ns at the tightest. That check sees each tile as its extracted
+`.lib`, which carries one setup arc, no hold arc and a model at the `MAX` corner
+only, so it says nothing about hold inside or between tiles.
+
+**Full-chip hold closes on every register-to-register path at all seven corners
+run.** OpenSTA 2.7 linked all 151 routed tile netlists under the top, with each
+tile's iRCX SPEF read per instance and the 32,404 abutted seam nets connected,
+one user clock on GBUF A and every switch-matrix arc enabled. The bound mode
+stands for any bitstream. The tightest endpoints are MACC at 0.092 ns, LUT at
+0.110 ns and IO at 0.553 ns, all at `ff_rcbest_1p32_m40` with Cbest parasitics.
+MACC used to fail everywhere, by 0.637 ns at that corner and by 3.046 ns on all
+280 registers at `ss_cworst_1p08_m40`. `CLK_INV ? !CLK : CLK` had synthesised
+to an `AOI21X0P5` driving all 56 registers, 1.405 ns behind the fabric's other
+flops, because the tile flow's CTS traces no clock net and builds no tree.
+`MACC_8x8_20` now drives the registers through `clk_buf`, which
+`techmap/ics55_models.v` maps to `BUFX4H7L`. The rebuilt MACC keeps the same
+die and pins, with DRC 0 and LVS clean. Hold still reports negative, down to
+-1.464 ns, only on paths that start at the GBUF A source and reach the LC
+set/reset through `GSR_BEG`. The bound mode lets one GBUF line be both the clock
+and the reset of the same flops, which no bitstream does. Writes into
+the configuration latches keep 1.08 ns before the latch's own hold time at 10
+ns, set by FrameStrobe falling at the far MACC latch 9.88 ns after the clock at
+`ss_rcworst_1p08_125` with Cworst parasitics. Because `fabric_config` changes
+FrameData no sooner than one cycle after the strobe falls, the configuration
+clock period must exceed 8.92 ns for that write to hold. The same buffer cleared the MACC's minimum pulse width failures.
+No flow step repairs design rules, and the checks show it. The four GBUF nets carry 3.1 ns slew at the fast corner and 6.5 ns at the slow ones.
+Every LC output `MUX2X0P5` drives about 0.11 pF against a 0.024 to 0.064 pF
+limit. The loader's FrameStrobe and FrameData drivers reach 8.7 ns of slew.
+OpenSTA counts 40,235 slew and capacitance violations at
+`ff_rcbest_1p32_m40` and 57,968 at `ss_rcworst_1p08_125` with Cworst parasitics.
 
 The block-RAM variant has not been integrated. Its array is 7.8 um wider, so
 the same channel and strip would put its die at 1006.8 um, over the axis.

@@ -52,9 +52,12 @@ module MACC_8x8_20 #(
     assign ACC_OUT = ConfigBits[5];
     assign CLK_INV = ConfigBits[6];
 
-    // Clock inversion
-    wire clk;
-    assign clk = CLK_INV ? !CLK : CLK;
+    // Clock inversion, then one buffer for all 56 registers. Left to ABC the
+    // inversion drives them itself from an AOI21X0P5, 1.4 ns late against the
+    // fabric's other flops, which fails hold on every path into this BEL.
+    wire clk_sel, clk;
+    assign clk_sel = CLK_INV ? !CLK : CLK;
+    clk_buf clk_drive (.A(clk_sel), .X(clk));
 
     // Registers the inputs
     logic [7:0] A_q, B_q;

@@ -406,7 +406,7 @@ def _section(table: dict[str, object], name: str, source: Path) -> dict[str, obj
     return value
 
 
-def _fabric(table: dict[str, object], source: Path) -> FabricSettings:
+def _fabric(table: dict[str, object], source: Path, root: Path) -> FabricSettings:
     """Read the fabric-wide settings, naming every one the file gets wrong at once.
 
     A config file is edited by hand, so one read reporting every missing and
@@ -435,14 +435,21 @@ def _fabric(table: dict[str, object], source: Path) -> FabricSettings:
         clock_port=text(design, "design", "clock_port"),
         frequency_mhz=number(design, "design", "frequency_mhz"),
         pdk_name=text(pdk, "pdk", "name"),
-        pdk_root=Path(text(pdk, "pdk", "root")).expanduser(),
+        # A relative root is taken from the repository, where the `pdk` submodule sits.
+        pdk_root=root / Path(text(pdk, "pdk", "root")).expanduser(),
         core_margin_micron=number(fabric, "fabric", "core_margin_micron"),
         stripe_pitch_micron=number(fabric, "fabric", "stripe_pitch_micron"),
     )
     if problems:
         raise ValueError(f"{source}: " + "; ".join(problems))
-    if not settings.pdk_root.is_dir():
-        raise ValueError(f"{source}: pdk.root {settings.pdk_root} is not a directory")
+    # An uninitialised submodule is an empty directory, and upstream gitignores
+    # the liberty that `make unzip` fetches, so a bare directory test passes both.
+    stdcell = settings.pdk_root / "IP" / "STD_cell" / "ics55_LLSC_H7C_V1p10C100"
+    if not any(stdcell.glob("*/liberty")):
+        raise ValueError(
+            f"{source}: pdk.root {settings.pdk_root} has no standard-cell liberty under "
+            f"{stdcell}. Run `git submodule update --init pdk` then `make -C pdk unzip`."
+        )
     return settings
 
 
@@ -496,7 +503,7 @@ def load_config(paths: Paths, tile_types: tuple[str, ...] = ()) -> Config:
         strategies[tile_type] = _synthesis(table.get("synthesis"), path)
     for tile_type, die in _variant_dies(paths.dies, tile_types).items():
         dies[tile_type] = _merge_die(dies.get(tile_type, TileDie()), die, tile_type, paths.dies)
-    settings = _fabric(fabric_table, fabric_path)
+    settings = _fabric(table=fabric_table, source=fabric_path, root=paths.root)
     # `flow.plan` places every pin and sizes every die against its own margin
     # constant, so a config that disagrees with it would move the pins without
     # moving the cores they have to reach.

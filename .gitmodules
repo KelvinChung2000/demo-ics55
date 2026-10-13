@@ -1,0 +1,3 @@
+[submodule "pdk"]
+	path = pdk
+	url = https://github.com/openecos-projects/icsprout55-pdk.git

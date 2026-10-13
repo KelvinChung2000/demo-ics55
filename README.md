@@ -26,6 +26,13 @@ environment for the scripts under `sweep/`.
 
 ## Running the build
 
+The ICS55 PDK is the `pdk` submodule. Upstream gitignores the liberty and GDS
+and publishes them as a GitHub release, so a fresh checkout needs both steps
+before `flow.config` will load:
+
+    git submodule update --init pdk
+    make -C pdk unzip
+
 The whole build is `task efpga`, aliased to `task build` and to bare `task`,
 which runs the five stages below in order and stops at the first that fails.
 Hardening twelve tile types takes about half an hour at three concurrent jobs,

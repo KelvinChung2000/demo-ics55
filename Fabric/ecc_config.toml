@@ -34,7 +34,7 @@ frequency_mhz = 100.0
 
 [pdk]
 name = "ics55"
-root = "/home/kelvin/side-project/ecc-spike/pdk"
+root = "pdk"
 
 [fabric]
 core_margin_micron = 2

@@ -32,9 +32,7 @@ BUILD = Paths.from_environment().build
 SWEEP = PROJECT / "sweep"
 SCRATCH = Path(os.environ.get("TMPDIR", "/tmp")) / "strategysweep"
 TECHMAP = PROJECT / "techmap" / "ics55_models.v"
-LIBERTY = Path(
-    "/home/kelvin/side-project/ecc-spike/pdk/IP/STD_cell/ics55_LLSC_H7C_V1p10C100"
-)
+LIBERTY = PROJECT / "pdk" / "IP" / "STD_cell" / "ics55_LLSC_H7C_V1p10C100"
 # The script validates the index and exits 1 past the end of a family, so the
 # ranges are the counts in `yosys_synthesis.tcl` and an overrun records nothing.
 STRATEGIES = (

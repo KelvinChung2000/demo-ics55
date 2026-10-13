@@ -17,10 +17,19 @@ module my_buf (input A, output X);
   BUFX1H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
 endmodule
 
-// Only MACC_8x8_20 instantiates this, to drive its 56 registers, about 0.12 pF.
-// The tile flow's CTS builds no tree, so this cell is the whole clock driver.
+// The tile flow's CTS builds no tree, so these two are the whole clock network.
+// ICS55 has no dedicated clock buffer, and ECC's own CTS list for it starts at
+// BUFX8H7L. MACC_8x8_20 drives its 56 registers through clk_buf, 0.111 pF once
+// routed, past BUFX4H7L's 0.097 pF max_capacitance.
 module clk_buf (input A, output X);
-  BUFX4H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
+  BUFX8H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
+endmodule
+
+// flow/project.py puts one on every GBUF feedthrough, so each hop drives one
+// tile, about 0.003 pF against BUFX3H7L's 0.073 pF. BUFX3 costs what BUFX2 does
+// and 0.56 um^2 less than BUFX4, which SW_term at 0.989 placeable needs.
+module clk_hop (input A, output X);
+  BUFX3H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
 endmodule
 
 // ABC reaches most of these on its own but not all of them, and it pays for

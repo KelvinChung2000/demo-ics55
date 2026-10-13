@@ -22,6 +22,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import tomllib
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -42,6 +43,9 @@ QUIET_EDITABLE_REBUILD = {"SKBUILD_EDITABLE_VERBOSE": "0"}
 TECHMAP = Path(__file__).resolve().parent.parent / "techmap" / "ics55_models.v"
 TECHMAP_ENV = {"YOSYS_TECHMAP_FILES": str(TECHMAP)}
 WORKSPACE = "default"
+# FABulous names every switch matrix this way, and only a switch matrix carries
+# the global-buffer network's feedthroughs.
+SWITCH_MATRIX_SUFFIX = "_switch_matrix"
 # `build_harden_flow`'s step list, which the workspace only receives if the
 # project was created with that preset. It is written in after synthesis
 # instead, because a plain `ecc run` is the only call that creates a workspace
@@ -297,6 +301,34 @@ def write_ecc_toml(
     (directory / "ecc.toml").write_text("\n".join(sections))
 
 
+def buffer_global_clock(source: Path) -> bytes:
+    """Return a switch matrix's Verilog with every GBUF feedthrough driven by a `clk_hop`.
+
+    FABulous writes each hop of the global-buffer network as `assign
+    N_GBUF_BEG0 = N_GBUF_END0`, so once the tiles abut, each GBUF line is one
+    unbuffered net from the SW_term root to the far corner. `insbuf` puts a cell
+    on every such assignment, and on nothing else, since a multiplexer drives
+    every other switch-matrix output. Raises `CalledProcessError` if Yosys
+    cannot read the file.
+    """
+    with tempfile.TemporaryDirectory() as scratch:
+        rewritten = Path(scratch) / source.name
+        # `-noblackbox` keeps a switch matrix with no logic, such as NE_term's,
+        # which Yosys would otherwise mark a blackbox and leave out of the write.
+        subprocess.run(
+            [
+                "yosys",
+                "-q",
+                "-p",
+                f"read_verilog -noblackbox {source}; "
+                "insbuf -buf clk_hop A X w:*GBUF_BEG*; "
+                f"write_verilog -noattr {rewritten}",
+            ],
+            check=True,
+        )
+        return rewritten.read_bytes()
+
+
 def create_project(
     *,
     directory: Path,
@@ -310,6 +342,8 @@ def create_project(
 ) -> None:
     """Lay out an ECC project for one tile, copying its Verilog into `rtl/`.
 
+    A switch matrix is copied through `buffer_global_clock`, every other file as is.
+
     `stripe_pitch_micron` is the pitch the plan settled on, not the one the
     fabric configuration asked for. `flow.plan` pulls the asked-for pitch onto
     a whole division of the row height, and its pin offsets dodge stripes at
@@ -321,13 +355,18 @@ def create_project(
     names = []
     for source in sources:
         target = rtl / source.name
-        content = source.read_bytes()
+        content = (
+            buffer_global_clock(source)
+            if source.stem.endswith(SWITCH_MATRIX_SUFFIX)
+            else source.read_bytes()
+        )
         # Only write on a real change, and carry the source's timestamp over, so
         # that a copy's mtime still says whether a netlist built from it is
         # stale. Rewriting an identical file with a fresh timestamp made a valid
         # netlist look older than the sources it came from.
         if not target.exists() or target.read_bytes() != content:
-            shutil.copy2(source, target)
+            target.write_bytes(content)
+            shutil.copystat(source, target)
         names.append(f"rtl/{source.name}")
     (directory / "filelist.f").write_text("\n".join(names) + "\n")
     write_ecc_toml(

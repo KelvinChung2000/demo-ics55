@@ -31,7 +31,7 @@ This spec sizes a FABulous fabric to a one square millimetre budget on the ICS55
 55 nm process, delivered through the OpenECOS MPC shared die. It fixes the grid,
 names the memory macro and states which figures are measured and which are not.
 Every tile geometry it uses is frozen in `Tile/<type>/ecc_config.toml` and every
-cell area comes from `sweep/results.tsv`, except the block-RAM column, which is
+cell area comes from `sweep/results.tsv` at 93bf29a, except the block-RAM column, which is
 sized from vendor LEFs and one estimate that the text marks.
 
 The fabric is logic, hard multiply accumulate and block RAM. It carries no

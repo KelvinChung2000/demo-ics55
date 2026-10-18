@@ -22,7 +22,7 @@ to the root, where both variants share them with `Fabric/ecc_config.toml` and
 the configuration RTL. A variant builds into `build/<variant>/`, so the two
 never share a workspace, and the flow refuses to start until one is chosen,
 with `VARIANT=` to `task`, `--variant` to `flow.cli` or `FLOW_VARIANT` in the
-environment for the scripts under `sweep/`.
+environment for scripts that run outside `flow.cli`.
 
 ## Running the build
 
@@ -124,8 +124,8 @@ writes a fabric-level project under `build/<variant>/fabric`.
 `synth` serves the ABC strategy sweep rather than the abutted flow and leaves a
 synthesis-only workspace at `build/<variant>/tiles/<type>_nl`, beside the hardened tile but
 never sharing a directory with it, so comparing strategies cannot discard a
-forty-minute run. `sweep/tile_strategies.py` reads those workspaces for the cell
-area each strategy gives. The duplicate synthesis is what buys the separation.
+forty-minute run. `sweep/tile_strategies.py`, removed after 93bf29a, read those
+workspaces for the cell area each strategy gives. The duplicate synthesis is what buys the separation.
 
 ## Where the ECC settings live
 

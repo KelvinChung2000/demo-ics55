@@ -550,8 +550,8 @@ def pilot(
 def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
     """Synthesise tile types and stop, which is all a strategy sweep needs from them.
 
-    `sweep/tile_strategies.py` reads the `_nl` workspaces this writes to compare
-    a tile's cell area across ABC strategies, and none of the hardening that
+    `sweep/tile_strategies.py` at 93bf29a read the `_nl` workspaces this writes
+    to compare a tile's cell area across ABC strategies, and none of the hardening that
     follows synthesis changes that number. Each build goes to its own
     `<type>_nl` directory rather than the hardened tile's, so a sweep cannot
     discard a hardened run.

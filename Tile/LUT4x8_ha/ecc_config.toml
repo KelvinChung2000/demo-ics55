@@ -25,7 +25,7 @@ target_density = 0.95
 
 [synthesis]
 # Measured across all 46 ABC strategies with the mux techmap in place, in
-# `sweep/strategies_LUT4x8_ha.tsv`. AREA 5 gives the least cell area, 5817.0 um^2
+# `sweep/strategies_LUT4x8_ha.tsv` at 93bf29a. AREA 5 gives the least cell area, 5817.0 um^2
 # against DELAY 4's 5882.0, and that difference is what decides the die: at
 # anchor 82.8 it routes clean in 2 detailed-routing iterations where DELAY 4
 # still has 30 violations after 9. Cell area, not instance count, ordered every

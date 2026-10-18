@@ -912,9 +912,12 @@ def integrate(
     if not step.ok:
         raise typer.Exit(code=1)
     # Signed off on the database the router wrote, which lacks the seam nets;
-    # `flow.stitch` is what proves those conduct.
-    step = project.run_range(directory, "RCX", "drc", log, progress=True)
-    typer.echo(f"signoff recorded as {step.state} after {step.seconds:.0f} s")
+    # `flow.stitch` is what proves those conduct. Harden writes the eFPGA_top
+    # LEF, .lib and pin/OBS GDS abstract; the routed layout is drc_ecc's GDS.
+    step = project.run_range(directory, "RCX", "Harden", log, progress=True)
+    typer.echo(
+        f"signoff and harden recorded as {step.state} after {step.seconds:.0f} s"
+    )
     if not step.ok:
         raise typer.Exit(code=1)
     toprun.restore_seam_nets(project.final_def(directory, toprun.TOP_MODULE), withheld)

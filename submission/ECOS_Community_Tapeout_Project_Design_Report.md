@@ -26,7 +26,7 @@ The hardened top level `eFPGA_top` places the array with the configuration contr
 
 Each tile type is hardened standalone by ECC from synthesis to a routed macro with abstract LEF and extracted Liberty. The array is then assembled by abutment rather than by a flat place and route: the 32,404 nets that join one tile to the next are connected by coincident pins and are withheld from the router. Before any fabric-level run, `task check` proves that every link `Fabric/eFPGA.v` declares across a tile seam meets at one coordinate on both tiles. The `eFPGA_top` run then routes only the 2,748 nets of the controller, the IO and the configuration buses.
 
-Completed for this tapeout are the RTL, the 12 hardened tile types (all DRC 0 and iLVS 0), the abutment plan with every seam link checked, the hardened `eFPGA_top` with DRC 0, signal iLVS exact and setup and hold closed at 100 MHz on the configuration clock in all six full-chip STA corners. Not yet done are a mask-ready GDS (the ECC GDS holds every tile and standard cell as an abstract), a pad ring and seal ring for the MPW die, a functional simulation against this commit and a timed user design. Block RAM is excluded from this variant and exists only in the `bram` variant.
+Completed for this tapeout are the RTL, the 12 hardened tile types (all DRC 0 and iLVS 0), the abutment plan with every seam link checked, the hardened `eFPGA_top` with DRC 0, signal iLVS exact and setup and hold closed at 100 MHz on the configuration clock in all six full-chip STA corners. Not yet done are a mask-ready GDS (the ECC GDS holds every tile and standard cell as an abstract), a pad ring and seal ring for the MPW die and a timed user design. A bitstream simulation of the current RTL loads a counter design into `eFPGA_top` and matches a reference on all 40 IO bits for 100 cycles (Section 5.3). Block RAM is excluded from this variant and exists only in the `bram` variant.
 
 ### 1.2 Main Features
 
@@ -50,7 +50,7 @@ Measured on one `LUT4x8_ha` 614 configuration latches take 39.6% of the die and 
 
 **Figure 1-1. Application scenario.**
 
-> Figure to draw: `eFPGA_top` on the MPW die inside its pad ring, with the 40 user IO on bidirectional pads and the configuration port loaded from a host over SPI, UART or bitbang.
+Figure 1-1 shows `eFPGA_top` on the MPW die. A Raspberry Pi Pico loads the bitstream over SPI, with UART and bitbang as alternatives, drives `resetn` and a user clock into a `W_IO` input, and reads `ConfigBusy` and `Configured`. The 40 user IO bits reach 40 bidirectional pads. The pad ring and the `CLK` source are drawn dashed because both wait on the MPW rules and board.
 
 ## 2. Design Description
 
@@ -78,7 +78,7 @@ The boundary of this design is `eFPGA_top`. No third-party IP is instantiated be
 
 **Figure 2-1. System architecture.**
 
-> Figure to draw: `eFPGA_top` with the four loaders into `config_frontend`, `fabric_config` driving 384 `FrameData` and 260 `FrameStrobe` bits, and the 13 × 12 tile grid of the table above.
+Figure 2-1 shows the configuration path inside `eFPGA_top`. The four loaders feed `config_frontend`, which passes one word stream to `fabric_config` on `bitstream_data` and `bitstream_valid`. `fabric_config` drives the 384 `FrameData` bits into the west edge of the array and the 260 `FrameStrobe` bits into its south edge. The grid is drawn not to scale.
 
 ### 2.2 Operation
 
@@ -96,7 +96,7 @@ Cycle counts depend on the user circuit and are not a property of the fabric.
 
 **Figure 2-2. Data processing flow for a representative operation.**
 
-> Figure to draw: bitstream through a loader, `config_frontend` and `fabric_config` into tile latches, then the user clock path `W_IO` to `SW_term` `GBUF` to `N_GBUF`/`E_GBUF`.
+Figure 2-2 shows the two phases. In configuration, each header word selects one column and one frame, the 12 data words that follow fill that frame row by row, and the `FrameStrobe` pulse writes the tile latches. In user mode, the user clock enters on a `W_IO` pad, is routed down column 0 to the `SW_term` GBUFs, runs along the bottom row on `E_GBUF` and up every column on `N_GBUF`, with one clock buffer per tile hop.
 
 ### 2.3 Interface and Port Definitions
 
@@ -131,7 +131,7 @@ The pad order of the 40 IO bits is bits 0 to 9 on `S_IO` X1 to X11, bits 10 to 2
 
 **Figure 2-3. Timing of key interfaces.**
 
-> Figure to draw: one SPI configuration word on `spi_sck`/`spi_mosi`, and `ConfigBusy`/`Configured` over a full load.
+Figure 2-3 shows the SPI loader in mode 0, MSB first, from the passing cocotb SPI case with `CLK` at 25 MHz. A 7-bit fragment ended by `spi_cs_n` produces no word, and the next 32 `spi_sck` rising edges produce one `bitstream_valid` pulse carrying `0x00AAFF01`, the first word of a FABulous `.bit` file. `ConfigBusy` and `Configured` over a full load are in Figure 2-4.
 
 ### 2.4 Register or Command Definitions (Optional)
 
@@ -163,7 +163,7 @@ Minimum reset duration, reset release requirements and power-up sequencing are n
 
 **Figure 2-4. Clock and reset timing requirements.**
 
-> Figure to draw: `resetn` release, configuration load on `CLK` with `ConfigBusy` and `Configured`, then user mode on the `GBUF` clock.
+Figure 2-4 shows the bitstream simulation from reset to user mode. `resetn` is held low for two `CLK` edges, `ConfigBusy` rises with the start word at 44.5 µs, and both `ConfigBusy` and `Configured` change at the desync header at 16,949.5 µs. The testbench writes 4,096 words, the bitstream padded to `MAX_BITBYTES`, at one word per five cycles of a 1 MHz simulation clock; the words after the desync header are ignored. The counter's enable and reset inputs are then driven and `A_IN_top` starts counting.
 
 ### 2.6 Device Programming
 
@@ -176,7 +176,7 @@ Parts expected to carry over unchanged are the per-design `Makefile` flow, the b
 Parts that have to be replaced with this fabric's versions:
 
 1. The nextpnr model and bitstream specification, taken from this build's `fabrics/nobram/.FABulous/` (`pips.txt`, `bel.v3.txt`, `bitStreamSpec.bin`).
-2. The IO constraint file and `top_wrapper.v`, rewritten for this fabric's 40 `IOBUF` BELs; the gf180 wrapper targets four IO per `W_IO` tile.
+2. The IO constraints. This fabric's are in place: `fabrics/nobram/user_design/pads.pcf` places a design's ports on the 40 `IOBUF` BELs, with `iobuf_map.v` mapping the `-iopad` cells onto `IOBUF`, and the counter built this way passes the bitstream simulation of Section 5.3. The gf180 constraints target four IO per `W_IO` tile and do not carry over.
 3. The techmaps, without the register-file and SRAM mappings this fabric has no tiles for.
 4. The Pico upload routine. The gf180 chip is loaded over SPI with `FPGA_MODE`, `FPGA_BUSY`, `CS_N`, `SCLK` and `MOSI`. This fabric's SPI loader takes `spi_cs_n`, `spi_sck` and `spi_mosi`, and `ConfigBusy` and `Configured` take the place of the busy flag, so the routine changes in its pin set rather than its protocol. Bitbang and UART remain fallbacks; UART needs `ComRate` matched to `CLK` (Section 2.5).
 5. The Pico pin assignment, which depends on the MPW test board.
@@ -192,8 +192,8 @@ Parts that have to be replaced with this fabric's versions:
 | User IO | 40 | 40 | RTL: `A_*_top[39:0]` on `eFPGA_top` |
 | Global clocks | 4 | 4 | RTL: `GBUF_A` to `GBUF_D` in `SW_term` |
 | Seam connectivity | all declared links meet | 31,760 of 31,760 links meet at one coordinate, over 282 seams | Plan: `task check` on `build/nobram/fabric_plan.json`. The `eFPGA_top` netlist has 32,404 tile-to-tile nets, all withheld from routing and restored unrouted; the two counts are not yet reconciled. |
-| Configuration reaches every row | all 12 rows | 384 of 384 `FrameData` and 260 of 260 `FrameStrobe` bits wired and routed | Physical: routed `eFPGA_top` DEF; terminator rows confirmed by simulation for `S_IO` and the `SW_term` GBUF only |
-| User design on the fabric | runs a test design | Passed on 2026-09-28, before the MACC and GBUF clock buffers | Section 5.3 |
+| Configuration reaches every row | all 12 rows | 384 of 384 `FrameData` and 260 of 260 `FrameStrobe` bits wired and routed | Physical: routed `eFPGA_top` DEF. Simulation: the bitstream load enables the outputs of all 10 `N_IO` pads (row 0) and of the 8 `S_IO` pads (row 11) the design drives as outputs, leaving its 2 input pads disabled, and the user clock reaches the fabric through the `SW_term` GBUF (Section 5.3) |
+| User design on the fabric | runs a test design | Passed on 2026-10-18 on the current RTL: 100 of 100 cycles match on all 40 IO bits | Section 5.3 |
 
 ### 3.2 Performance, Resource, and Power Metrics
 
@@ -281,19 +281,21 @@ The build runs as five stages in order, each stopping at the first failure:
 
 Hardening all 12 tile types took [time] on 2026-10-17. The integrate run took about 64 minutes, 57 of them in ECC's 13-corner STA. Both should run detached under `setsid nohup`, with logs in `build/nobram/logs/`. Full-chip OpenSTA takes about 8.5 minutes and 2.7 GB per corner.
 
-Four steps cannot be reproduced from a clean checkout today:
+Six steps cannot be reproduced from a clean checkout today:
 
 1. ECC `main` at `14be467` needs two uncommitted working-tree edits, a Nix flake override for boost and a `YOSYS_TECHMAP_FILES` block in `yosys_synthesis.tcl`. The second is requested upstream as ecc#302.
 2. Regenerating RTL and pin orders needs the two FABulous checkouts in Section 4.2.
 3. The PDK's liberty and GDS directories are fetched by `make` in `pdk/` from a GitHub release, not by `git submodule update`.
 4. The full-chip STA scripts live under the gitignored `build/`, and `top_full.v` needs `$` renamed to `_DOL_` after `write_v.tcl`, because iRCX writes `$` unescaped and OpenSTA rejects it.
+5. The bitstream simulation needs Yosys 0.62, because the flow calls the 0.68 `synth_fabulous` without the mapping options it now requires (Section 5.1).
+6. The nextpnr model and bitstream specification in `fabrics/nobram/.FABulous/` (`pips.txt`, `bel.v2.txt`, `bitStreamSpec.bin`) are gitignored. They are regenerated with FABulous `c0ca476` running `load_fabric`, `gen_model_npnr` and `gen_bitStream_spec`, which leaves the committed RTL untouched.
 
 ### 4.7 Reuse Acceptance Criteria
 
 | Acceptance item | Passing criteria | Result |
 |---|---|---|
 | Environment reproducibility | The applicable build, verification, or export flow completes in the specified environment, and all versions and dependencies are traceable | Pending verification: the four gaps in Section 4.6 |
-| Functional verification | Basic tests and regression tests pass | Pending verification: the last bitstream simulation predates `da6c072` and `c0c9e2c` |
+| Functional verification | Basic tests and regression tests pass | Pass for basic tests: the bitstream simulation and 4 of 4 cocotb loader tests pass on the current RTL (Section 5.3). No regression suite beyond these exists. |
 | Timing closure | The target frequency is met; otherwise, the failing paths and their impact are documented | Configuration clock: pass at 100 MHz in all six full-chip corners. User clock: Fmax unmeasured. 38,744 to 48,386 slew and capacitance violations per corner remain (Section 6.3). |
 | Physical verification/signoff | DRC, LVS, antenna, and PDN checks meet the project requirements; all remaining violations and approved waivers are documented | Per tile: pass (DRC 0, iLVS 0 on all 12 types). `eFPGA_top`: DRC 0; iLVS 0 signal opens and 0 shorts, 278 power opens on the tiles' abutment-fed supply pins; antenna not run. All on ECC abstracts, not on mask GDS. |
 | Physical interface conformance | Dimensions, pin locations, metal layers, coordinates, and PDN match the baseline specification | Pass: the `eFPGA_top` DEF has all 151 tiles fixed at their planned coordinates, and every tile reports all of its pins held at their planned position |
@@ -306,26 +308,26 @@ The current version is v2.0 at `92674fb` on `master`. Any change to a tile die, 
 
 The known issues are listed in Section 11.1. Maintainer: King Lok (Kelvin) Chung.
 
-Planned work is a mask-ready GDS with the pad ring and seal ring, a bitstream simulation of this commit, a demonstration of partial reconfiguration in simulation, and a routed and timed reference design.
+Planned work is a mask-ready GDS with the pad ring and seal ring, a demonstration of partial reconfiguration in simulation, and a routed and timed reference design.
 
 ## 5. Design Verification
 
 ### 5.1 Verification Environment
 
-Verification of this commit is structural, physical and timing-based; its functional simulation predates two clock changes. Six checks run:
+Verification covers structure, physical signoff, timing and RTL function. Six checks run:
 
 1. `task check` tests the fabric plan against `Fabric/eFPGA.v`. Every link that `eFPGA.v` declares across a seam has to meet at one coordinate on both tiles. No EDA tool is involved.
 2. Per-tile signoff runs inside ECC: iEDA DRC on the routed layout, iLVS comparing the routed DEF connectivity with the synthesised netlist, and 13-corner iSTA.
 3. The `eFPGA_top` run refuses a tile whose LEF pins differ from the ports the netlist expects, fixes all 151 tiles at their planned coordinates, then runs the same DRC, iLVS and 13-corner iSTA on the top.
 4. Full-chip OpenSTA reads the `eFPGA_top` netlist written from the filler DEF (the only view carrying the 32,404 tile-to-tile nets), the 12 tile netlists and the per-instance tile SPEF, and times the configuration clock and the user clock at six corners.
-5. A bitstream simulation (Yosys, nextpnr-generic and Icarus Verilog) loads `sequential_16bit_en` into `eFPGA_top` through the parallel port and compares all 40 IO bits against a reference counter.
-6. A cocotb test (`Test/config/test_config_frontend.py`) is parametrised over the UART, bitbang, SPI and parallel loaders.
+5. A bitstream simulation loads `sequential_16bit_en` into the `eFPGA_top` RTL through the parallel port and compares all 40 IO bits against the same design simulated directly. The design is synthesised by Yosys 0.62 `synth_fabulous`, placed and routed by `nextpnr-generic --uarch fabulous`, encoded by FABulous `bit_gen` and simulated in Icarus Verilog. Yosys 0.62 is required because the 0.68 `synth_fabulous` maps LUTs and flip-flops only when `-lut`, `-ff` and `-cells-map` are passed, and the flow passes none. The command is `task VARIANT=nobram WAVEFORM_TYPE=vcd YOSYS_PATH=<yosys 0.62> build-test-design run-simulation` in `Test/`.
+6. A cocotb test (`Test/config/test_config_frontend.py`, cocotb 2.0.1 on Icarus) is parametrised over the UART, bitbang, SPI and parallel loaders. Each case streams the words of a bitstream file through one loader into `config_frontend` and checks that they arrive in order. The SPI case also sends a 7-bit fragment ended by `spi_cs_n` and checks that it yields no word.
 
 ![Verification environment](images/verification_environment.png)
 
 **Figure 5-1. Verification environment.**
 
-> Figure to draw: RTL through `task check`, ECC per-tile and top signoff and full-chip OpenSTA; separately the bitstream simulation and the cocotb loader tests.
+Figure 5-1 shows the two verification branches from the same RTL. The physical branch runs from `task plan` through per-tile and `eFPGA_top` signoff to full-chip OpenSTA. The functional branch runs the bitstream simulation and the cocotb loader tests, whose results are in Section 5.3.
 
 ### 5.2 Verification Scope and Methods
 
@@ -344,14 +346,14 @@ There are no random, formal, gate-level or FPGA-prototype tests.
 | `eFPGA_top` iLVS | 2,748 nets, 15,935 instances | 2,748 | 0 | 166 of 166 IO, instances and nets match with 0 difference, 0 opens and 0 shorts on routing. 139 VDD and 139 VSS opens, one pair per tile instance that iLVS cannot see fed by abutment. The 32,404 tile-to-tile nets are outside this check. |
 | Full-chip STA (OpenSTA) | 6 corners | 6 | 0 | Setup and hold met on both clocks; 0 minimum pulse-width violations (Section 6.3) |
 | Antenna | 0 | 0 | 0 | Not run; the ECC flow reports no antenna result |
-| Bitstream simulation | 1 design, 100 compared cycles | 1 | 0 | Passed on 2026-09-28 (`Configured` rose, no compare error, read from the VCD; no log was kept). It predates `da6c072` (MACC clock buffer) and `c0c9e2c` (GBUF hop buffers), so it does not cover this commit. `N_IO` pads were only checked disabled, so row 0 configuration is not confirmed. |
-| cocotb loader tests | 4 loaders | [n] | [n] | No result is on record |
+| Bitstream simulation | 1 design, 100 compared cycles | 1 | 0 | Passed on 2026-10-18 on RTL identical to `92674fb`: `Configured` rose at 16,949.5 µs and the testbench reached `$finish` with no compare error. The design uses 30 of 800 `FABULOUS_LC`, 40 of 40 `IOBUF` and 1 of 4 `GBUF`. `A_EN_top[39:30]` on the 10 `N_IO` tiles goes from 0 to 1 as their frames load, which shows row 0 is configured. Log in `submission/sim/results/bitstream_sim.log`. |
+| cocotb loader tests | 4 loaders | 4 | 0 | UART, bitbang, SPI and parallel each deliver every bitstream word in order (`pytest Test/config/test_config_frontend.py`, 166 s, 2026-10-18) |
 
 ![Key simulation waveform](images/simulation_waveform.png)
 
 **Figure 5-2. Key functional simulation waveform.**
 
-> Figure pending: rerun the bitstream simulation on `92674fb` and capture the load and the counter.
+Figure 5-2 shows the first user-mode cycles after configuration. The user clock enters on pad 16 and reaches the fabric through the `SW_term` GBUF. Reset (`pad_in[1:0]` = 3) holds the counter at 0, and after release (`pad_in[1:0]` = 2) the fabric's `A_IN_top[15:0]` counts in step with the reference design, which the testbench compares on every falling edge, with `A_EN_top` equal to the reference's `0xFFFFFEFFFC`. The figure is drawn from the simulation VCD by `submission/images/waveforms.py`.
 
 ## 6. Synthesis and Physical Implementation Results
 
@@ -420,7 +422,7 @@ Per tile type (physical, filler step):
 
 **Figure 6-1. Floorplan and major module placement.**
 
-> Figure source: `build/nobram/top/default/filler_ecc/output/eFPGA_top_filler.png`, the hardened `eFPGA_top` with 151 tile macros, the west channel and the south strip.
+Figure 6-1 shows every tile at its planned coordinate in `build/nobram/fabric_plan.json`, offset to the array origin (50.0, 24.6) µm in the `eFPGA_top` die. The 100 `LUT4x8_ha` tiles fill ten columns around the `MACC` column, and the configuration logic occupies the west channel and the south strip. The figure is drawn by `submission/images/floorplan.py`.
 
 ### 6.3 Signoff Results
 
@@ -437,7 +439,7 @@ Per-tile and `eFPGA_top` signoff from ECC `14be467`, and full-chip OpenSTA from 
 | Slew and capacitance (OpenSTA) | Fail | 38,744 to 48,386 per corner | No step repairs design-rule violations in tiles or top; not yet triaged |
 | DRC | Pass | 0 per tile; 0 on `eFPGA_top` | iEDA DRC on abstracts |
 | LVS | Pass on signal, power opens on top | 0 per tile; 278 on `eFPGA_top` | Per tile, iLVS compares routed DEF connectivity against the netlist. On `eFPGA_top`, 2,748 of 2,748 nets connect with 0 shorts; the 278 opens are 139 VDD and 139 VSS, the `vdd_stripe_generate` and `vss_stripe_generate` pins of tiles fed by abutment. Neither check is a GDS-extracted LVS. |
-| Antenna checks | Not run | [n] | The ECC flow reports no antenna result |
+| Antenna checks | Not run | N/A | The ECC flow reports no antenna result |
 | Other checks | Pass, plan level | 0 | `task check`: 31,760 of 31,760 seam links meet at one coordinate |
 
 Full-chip OpenSTA, slack in ns. `CLK` is the configuration clock at 10 ns. The user clock starts at the `SW_term` GBUF XOR output, also at 10 ns, with the MACC clock-inversion bit set to 0; its setup is not timed because it depends on the configured design.
@@ -463,7 +465,13 @@ ECC also writes a GDS for each tile and for `eFPGA_top`, but in both the standar
 
 **Figure 7-1. Final routed layout of FABulous eFPGA.**
 
-> Figure source: `build/nobram/top/default/filler_ecc/output/eFPGA_top_filler.png`. Close-up candidate: `build/nobram/tiles/LUT4x8_ha/default/sta_ecc/output/LUT4x8_ha_sta.png`.
+Figure 7-1 is ECC's render of the routed `eFPGA_top` after filler insertion (`build/nobram/top/default/filler_ecc/output/eFPGA_top_filler.png`). The 151 tiles appear as their LEF abstracts, and the routing of the configuration logic fills the west channel and the south strip. Figure 7-2 shows the routed interior of one `LUT4x8_ha` tile.
+
+![LUT4x8_ha routed layout](images/lut4x8_ha_layout.png)
+
+**Figure 7-2. Routed `LUT4x8_ha` tile, 82.6 × 84.0 µm.**
+
+Figure 7-2 is ECC's render of the routed `LUT4x8_ha` at the STA step (`build/nobram/tiles/LUT4x8_ha/default/sta_ecc/output/LUT4x8_ha_sta.png`). The MET4 vertical and MET5 horizontal PDN stripes reach the die edge, where they join the neighbouring tiles by abutment.
 
 ## 8. Post-Silicon Test Plan
 
@@ -476,6 +484,8 @@ The test setup is the current plan; package and test-board information for the M
 ![Post-silicon test setup](images/silicon_test_setup.png)
 
 **Figure 8-1. Post-silicon test setup and connections.**
+
+Figure 8-1 shows the planned bring-up chain, with a host PC building bitstreams, a Pico driving the configuration and clock pins and sampling the IO bits, and the packaged die on an MPW test board. The board, the `CLK` source and the power supplies are drawn dashed because their specifications are pending.
 
 ### 8.2 Test Procedures and Expected Results
 
@@ -557,14 +567,15 @@ Per-tile STA cannot see the global clock. Every tile passed the `GBUF` clock thr
 
 ### 10.3 Planned Improvements
 
-The next revision should produce a mask-ready GDS with the pad ring and seal ring, rerun the bitstream simulation on this commit, demonstrate partial reconfiguration in simulation, match `ComRate` to the 100 MHz `CLK` and time a routed user design across the tiles' extracted Liberty. It should also repair slew and capacitance violations, commit the full-chip STA scripts to the repository, and fix the ECC build so it needs no uncommitted edits.
+The next revision should produce a mask-ready GDS with the pad ring and seal ring, demonstrate partial reconfiguration in simulation, match `ComRate` to the 100 MHz `CLK` and time a routed user design across the tiles' extracted Liberty. It should also repair slew and capacitance violations, commit the full-chip STA scripts to the repository, and fix the ECC build so it needs no uncommitted edits.
 
 ## 11. Additional Information
 
 ### 11.1 Known Limitations
 
 - User-mode Fmax is unmeasured; the only tile-level figure (`sta_frequency_mhz` 23 on `LUT4x8_ha`) is a switch-matrix feedthrough, not a user clock.
-- The last bitstream simulation passed on 2026-09-28, before the MACC clock buffer and the GBUF hop buffers; this commit has not been simulated. Row 0 (`N_IO`) configuration has not been shown to work.
+- Of the four global clocks, only `GBUF` A is shown to work. A counter clocked through `GBUF` C stays X in RTL simulation although nextpnr routes the clock to every flip-flop, and `GBUF` B and D are untested; the cause is not established.
+- Functional simulation is RTL only. No gate-level simulation of the hardened tiles or `eFPGA_top` has been run, and partial reconfiguration has not been simulated.
 - `ComRate` is 217, which gives 115,200 baud at 25 MHz but 458,716 baud at the 100 MHz `CLK` the top is constrained for. SPI, bitbang and the parallel port are unaffected.
 - No mask-ready GDS: every ECC GDS holds standard cells and tile macros as LEF abstracts. DRC and LVS are iEDA's on abstracts and DEF connectivity, not GDS extraction, and the PDK's Calibre decks have not been run.
 - No pad ring and no seal ring. With the parallel port on pads, about 86 signal pads plus power set the die edge; without it about 53.
@@ -592,17 +603,22 @@ The next revision should produce a mask-ready GDS with the pad ring and seal rin
 
 ### 11.3 Attachments and Deliverables
 
+The `submission/` directory of the repository is the appendix to this report. It holds the report, its figures and a snapshot of every artefact the report cites, so an external reader needs no other part of the repository. `submission/collect.py` rebuilds the snapshot from the working tree and `build/nobram/`, and it takes the RTL set as the module closure of `eFPGA_top` that Yosys resolves, so primitives this variant does not instantiate are left out. Paths in the table are relative to `submission/`; paths elsewhere in this report are relative to the repository root.
+
 | File/Directory | Revision or commit | Purpose | Submitted? |
 |---|---|---|---|
-| `fabrics/nobram/`, `Fabric/`, `Tile/`, `primitives/` | `92674fb` | RTL | Yes |
-| `flow/`, `Taskfile.yml`, `*/ecc_config.toml`, `techmap/` | `92674fb` | Build flow and configuration | Yes |
-| `build/nobram/top/default/filler_ecc/output/eFPGA_top_filler.def.gz` | built from `92674fb` | `eFPGA_top` layout of record | Yes |
-| `build/nobram/top/default/RCX_ecc/output/` | built from `92674fb` | `eFPGA_top` SPEF at nine RC corners | Yes |
-| `build/nobram/top/macros/<type>/` | built from `92674fb` | Per-tile LEF, Liberty, routed DEF and netlist as used by the top | Yes |
-| `build/nobram/tiles/` | built from `92674fb` | Per-tile ECC projects | Yes |
-| `build/nobram/fabric_plan.json` | built from `92674fb` | Dies, pin offsets, seams | Yes |
-| `build/nobram/fullsta/` | built from `92674fb` | Full-chip STA scripts and reports | Yes |
-| `README.md`, `SPEC.md` | `92674fb` | Documentation | Yes |
+| `ECOS_Community_Tapeout_Project_Design_Report.md`, `images/` | this report | Report, figures, the `.drawio` sources and the scripts that draw the timing and floorplan figures | Yes |
+| `rtl/` with `rtl/filelist.f` | `92674fb` | The 51 source files of `eFPGA_top`, in the order Icarus compiles them | Yes |
+| `rtl/config/` | `92674fb` | `fabric.csv`, `dies.toml`, each tile's `io_pin_order.yaml` and `ecc_config.toml` | Yes |
+| `sim/` | RTL identical to `92674fb` | Counter design, testbench, prebuilt bitstream, the simulation log of Section 5.3, and the nextpnr model and bitstream specification. The cocotb loader tests stay in the repository at `Test/config/`, where they find the loader RTL. | Yes |
+| `physical/eFPGA_top/` | built from `92674fb` | Layout of record: filler DEF, netlist and ECC GDS, SPEF at nine RC corners, and the Harden abstract LEF, Liberty and GDS | Yes |
+| `physical/tiles/<type>/` | built from `92674fb` | Per tile: filler DEF, netlist and ECC GDS, SPEF at nine RC corners, abstract LEF and extracted Liberty as used by the top | Yes |
+| `physical/fabric_plan.json` | built from `92674fb` | Dies, pin offsets, seams | Yes |
+| `signoff/<block>/` | built from `92674fb` | ECC DRC, iLVS and iSTA summary reports for `eFPGA_top` and each tile type | Yes |
+| `sta/` | built from `92674fb` | Full-chip OpenSTA scripts, per-corner logs, hold, pulse-width and slew/capacitance reports, and `summary.txt` behind the table in Section 6.3 | Yes |
+| `gl/` | built from `92674fb` | `top_full.v` with all 32,404 seam nets and the 12 routed tile netlists, the inputs to a gate-level simulation not yet run | Yes |
+
+Every GDS in the appendix is ECC's, so standard cells and tile macros are LEF abstracts in it (Section 7). The build flow itself (`flow/`, `Taskfile.yml`, `techmap/`) and the documentation (`README.md`, `SPEC.md`) stay in the repository at `92674fb`.
 
 ## Pre-Submission Checklist
 

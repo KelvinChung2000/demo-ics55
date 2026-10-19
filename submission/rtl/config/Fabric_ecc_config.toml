@@ -1,0 +1,45 @@
+# The ECC settings shared by every project this flow writes: the twelve tile
+# runs and the fabric-level run the hardened tiles are placed into.
+# `flow.config` reads this file; `flow.project.create_project` renders each
+# project's `ecc.toml` from it.
+#
+# `[fabric]` holds the two values that are not ECC parameters at all. Both reach
+# a run through `runs/default/config/fp_default_config.json`, which
+# `flow.project.patch_floorplan` writes after synthesis, and both are fabric-wide
+# rather than per-tile: the stripe pitch has to divide every row height or a
+# supertile's stripes miss those of the single-height tiles beside it, and the
+# core margin decides where two abutted cores meet.
+#
+# No die size appears here or in any tile file. `flow.plan` derives every die
+# from eFPGA_geometry.csv and the anchor width, and `flow.verify` proves the
+# seams meet on that derivation.
+
+[design]
+# Every tile overrides this: the classic tile library has no UserCLK, so a tile
+# meets the global-buffer network on N_GBUF_END, E_GBUF_END or W_GBUF_FEED_END
+# depending on where it sits, and `flow.cli._tile_settings` puts its own port in.
+#
+# The value here stands for the fabric-level run alone, and it is a macro pin
+# rather than a port because `eFPGA.v` has no clock port to name. Under
+# `DisableUserCLK` the clock arrives on a `W_IO` `IOBUF`, is routed down the west
+# column into `SW_term`'s `S_GBUF_FEED_END`, and leaves its four `GBUF` BELs on
+# `N_GBUF_BEG` and `E_GBUF_BEG`, which is where the fabric's clock network
+# begins. `GBUF_A` drives `N_GBUF_BEG0` and `E_GBUF_BEG0` from one output, so the
+# pin below is the root of the first of the four global clocks. The other three
+# are not constrained: the parent run floorplans and routes abutted macros and
+# skips RCX, STA and Harden, so one definition is enough to stop ECC writing an
+# SDC of its own, and a second would give iSTA overlapping trees if it ever ran.
+clock_port = "Tile_X0Y11_SW_term/N_GBUF_BEG_0"
+frequency_mhz = 100.0
+
+[pdk]
+name = "ics55"
+root = "pdk"
+
+[fabric]
+core_margin_micron = 2
+stripe_pitch_micron = 16.0
+
+# `[params.<section>]` here applies to the fabric-level run alone, which places
+# 122 hardened macros and no standard cell. Its die is set outright from the
+# plan, so it takes no utilisation and currently overrides nothing.

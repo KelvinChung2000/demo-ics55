@@ -1,0 +1,9 @@
+# This tile's frozen die. The width is its fabric column's, which every type in
+# that column is built to, and the height its row's; both are repeated on the
+# other types sharing them so `flow.plan._claim` checks the pair agrees.
+# Bound by SW_term: at 28.8 x 22.4 um it fills 0.7688 of its core and
+# 0.946 of the area DreamPlace places into, and routes 3 -> 0
+# with 0 DRC. Round r3, 2026-09-21.
+[die]
+width_micron = 28.8
+height_micron = 84.0   # rows 1 to 14, the height the 82.5 anchor scaled them to

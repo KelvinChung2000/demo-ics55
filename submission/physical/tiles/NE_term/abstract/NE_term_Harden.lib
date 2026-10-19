@@ -1,0 +1,1054 @@
+library (NE_term) {
+  comment                        : "";
+  delay_model                    : table_lookup;
+  simulation                     : false;
+  capacitive_load_unit (1,pF);
+  leakage_power_unit             : 1nW;
+  current_unit                   : "1mA";
+  pulling_resistance_unit        : "1kohm";
+  time_unit                      : "1ns";
+  voltage_unit                   : "1V";
+  library_features(report_delay_calculation);
+  input_threshold_pct_rise       : 50;
+  input_threshold_pct_fall       : 50;
+  output_threshold_pct_rise      : 50;
+  output_threshold_pct_fall      : 50;
+  slew_lower_threshold_pct_rise  : 30;
+  slew_lower_threshold_pct_fall  : 30;
+  slew_upper_threshold_pct_rise  : 70;
+  slew_upper_threshold_pct_fall  : 70;
+  slew_derate_from_library       : 0.5;
+  nom_process                    : 1;
+  nom_temperature                : 125;
+  nom_voltage                    : 1.08;
+
+  cell (NE_term) {
+    area : 170.24000000;
+    is_macro_cell : true;
+   pin("FrameData_0") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_1") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_10") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_11") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_12") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_13") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_14") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_15") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_16") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_17") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_18") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_19") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_2") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_20") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_21") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_22") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_23") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_24") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_25") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_26") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_27") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_28") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_29") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_3") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_30") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_31") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_4") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_5") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_6") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_7") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_8") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_9") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameData_O_0") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_0";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18317830");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_1") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_1";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17489310");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_10") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_10";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18537131");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_11") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_11";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18235643");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_12") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_12";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17716597");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_13") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_13";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17038686");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_14") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_14";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17823439");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_15") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_15";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18311064");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_16") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_16";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18844792");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_17") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_17";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17709491");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_18") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_18";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17495297");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_19") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_19";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18812390");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_2") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_2";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.19100103");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_20") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_20";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17922777");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_21") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_21";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.19681999");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_22") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_22";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18061651");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_23") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_23";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18800013");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_24") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_24";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17984202");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_25") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_25";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17412182");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_26") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_26";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18930638");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_27") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_27";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17260174");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_28") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_28";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18548845");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_29") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_29";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17712674");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_3") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_3";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18894603");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_30") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_30";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18900376");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_31") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_31";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18290387");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_4") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_4";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18834255");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_5") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_5";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17982976");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_6") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_6";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.19122875");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_7") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_7";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17385298");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_8") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_8";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18076393");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameData_O_9") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameData_9";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.19155781");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_0") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_1") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_10") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_11") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_12") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_13") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_14") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_15") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_16") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_17") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_18") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_19") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_2") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_3") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_4") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_5") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_6") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_7") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_8") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_9") {
+     direction               : input;
+     capacitance             : 0.00080999;
+   }
+   pin("FrameStrobe_O_0") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_0";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18530200");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_1") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_1";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18228344");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_10") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_10";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18671739");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_11") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_11";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.19022290");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_12") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_12";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17208586");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_13") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_13";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17898576");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_14") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_14";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18368860");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_15") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_15";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18599669");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_16") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_16";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17915668");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_17") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_17";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18270271");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_18") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_18";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.16839359");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_19") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_19";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18168318");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_2") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_2";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18187265");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_3") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_3";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18540441");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_4") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_4";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17942322");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_5") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_5";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.17136499");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_6") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_6";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18548536");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_7") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_7";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18035715");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_8") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_8";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.18621330");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("FrameStrobe_O_9") {
+     direction               : output;
+     capacitance             : 0.00000000;
+                timing () {
+                       related_pin        : "FrameStrobe_9";
+                       timing_sense        : positive_unate;
+                       timing_type        : combinational;
+                        cell_fall(scalar) {
+                                values ("0.19373376");
+                       }
+                        fall_transition(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("N_GBUF_END_0") {
+     direction               : input;
+     clock                   : true;
+     capacitance             : 0.00000000;
+                timing () {
+                       timing_sense        : positive_unate;
+                       timing_type        : min_clock_tree_path;
+                        cell_fall(scalar) {
+                                values ("0.00000000");
+                       }
+                        cell_rise(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+                timing () {
+                       timing_sense        : positive_unate;
+                       timing_type        : max_clock_tree_path;
+                        cell_fall(scalar) {
+                                values ("0.00000000");
+                       }
+                        cell_rise(scalar) {
+                                values ("0.00000000");
+                       }
+                }
+   }
+   pin("N_GBUF_END_1") {
+     direction               : input;
+     capacitance             : 0.00000000;
+   }
+   pin("N_GBUF_END_2") {
+     direction               : input;
+     capacitance             : 0.00000000;
+   }
+   pin("N_GBUF_END_3") {
+     direction               : input;
+     capacitance             : 0.00000000;
+   }
+  }
+}

@@ -1,0 +1,49 @@
+# What this tile type takes instead of the shared defaults in
+# Tile/include/ecc_config.toml. Every key has to be one `ecc param list` prints;
+# flow.config refuses anything else before a run starts.
+#
+# `floorplan.core_util` is deliberately absent. An abutted tile runs
+# die_builder.mode = die_size because its die is the fabric pitch, so the
+# utilisation is recorded from the finished floorplan rather than reached; the
+# die itself is the [die] table at the end of this file.
+# `place.cell_padding_x` is absent for a different reason: DreamPlace reduces it
+# to 0 whenever the padded cells would pass 0.99 of the placeable area, which
+# this tile does at every width it has been built at.
+
+[params.place]
+# Inert at this tile's utilisation and kept only to pin the request. DreamPlace
+# overwrites it with min(utilisation + 0.05, 1.0) whenever that is larger
+# (macroPlaceDB.py:1449), so anything asked for above 0.90 never survives, and
+# `Final PPA['density']` reports the overwritten value rather than a measurement.
+target_density = 0.95
+
+# `enable_fillers = 0` is not usable here. With no filler nodes the routability
+# area-adjust op indexes pos.data[num_nodes - 0:], an empty slice it then tries
+# to match against all 2247 nodes, and placement dies in
+# adjust_node_area.py:352. Turning fillers off would need routability_opt = 0
+# too, which is the wrong trade at this utilisation.
+
+[synthesis]
+# Measured across all 46 ABC strategies with the mux techmap in place, in
+# `sweep/strategies_LUT4x8_ha.tsv` at 93bf29a. AREA 5 gives the least cell area, 5817.0 um^2
+# against DELAY 4's 5882.0, and that difference is what decides the die: at
+# anchor 82.8 it routes clean in 2 detailed-routing iterations where DELAY 4
+# still has 30 violations after 9. Cell area, not instance count, ordered every
+# strategy tried there.
+strategy = "AREA 5"
+
+# The anchor, written down. Kelvin fixed this tile at 82.5 um on 2026-09-21 and
+# every other die in the fabric was measured around it, but 82.5 reached the
+# build only as `--anchor-micron` on a command line and `flow.plan._edge` refuses
+# it outright as 82500 DBU against the 200 DBU `core7` site, 412.5 sites wide.
+# 82.6 is the quantised width the fabric was built and stitched at, and 84.0 the
+# row height that anchor scaled to. With every column and row claimed the anchor
+# no longer sets any edge.
+#
+# This width is the only statement of it in the fabric. N_IO and S_IO share these
+# six columns and state no width of their own, so editing the number below and
+# running `task harden-one` is the whole loop; `flow.plan.stale_dies` refuses a
+# harden against a plan older than this file.
+[die]
+width_micron = 82.6  # columns 1, 2, 4, 5, 7 and 8
+height_micron = 84.0 # rows 1 to 14

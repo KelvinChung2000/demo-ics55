@@ -205,7 +205,7 @@ Parts that have to be replaced with this fabric's versions:
 | Throughput | Not applicable | Not applicable | Set by the configured user design |
 | Standard-cell count/area | ≤ 1 mm² footprint | 911,687 µm² `eFPGA_top`. Synthesis: 179,728 cells and 685,830 µm², of which the 151 tiles hold 177,187 cells and 676,845 µm² and the configuration logic 2,541 cells and 8,985 µm². Routed: 237,316 tile instances, plus 2,586 configuration-logic cells of 9,128 µm² among 15,935 top-level instances | Tiles summed over the grid; configuration logic from the `eFPGA_top` run (Section 6.1) |
 | SRAM/ROM/macro resources | none | none | No hard macro in this variant |
-| Power | [Target] | 1.160 mW leakage, 5.80 mW dynamic (synthesis estimate) | ECC synthesis-step power analysis on each synthesised netlist, summed over 151 tiles plus the top's 0.12 µW leakage and 2.5 µW dynamic, tool-default switching activity, not a user design |
+| Power | Not applicable | Not reported | Not assessed for this submission |
 
 ## 4. IP Reuse and Standardization
 

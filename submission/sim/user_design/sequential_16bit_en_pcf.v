@@ -4,16 +4,19 @@
 // sequential_16bit_en_pcf.pcf instead of IOBUF instances in a wrapper. pad[i]
 // is the bit eFPGA_top exposes as A_*_top[i], so the same testbench applies.
 module sequential_16bit_en_pcf (
-    inout wire [39:0] pad
+    inout wire [9:0] pad
 );
-    wire [39:0] io_out, io_oeb;
-    wire clk;
+    wire [9:0] io_out, io_oeb;
+    wire clk_pad, clk;
 
-    // The clock enters on pad 16 and reaches the fabric only through a GBUF.
-    // GBUF A is pinned because a counter clocked through GBUF C stays X in
-    // simulation; the other GBUFs are untested.
+    // The clock enters on the SYS_RESET pad, whose only fabric connection is
+    // the SW_term global buffers. GBUF A is pinned because a counter clocked
+    // through GBUF C stays X in simulation; the other GBUFs are untested.
+    (* keep, BEL="X0Y11.E" *) SYS_RESET clk_pad_i (
+        .RESET(clk_pad)
+    );
     (* keep, BEL="X0Y11.A" *) GBUF clk_buf_i (
-        .IN (pad[16]),
+        .IN (clk_pad),
         .OUT(clk)
     );
 
@@ -25,7 +28,7 @@ module sequential_16bit_en_pcf (
     );
 
     genvar i;
-    for (i = 0; i < 40; i = i + 1) begin : g_pad
+    for (i = 0; i < 10; i = i + 1) begin : g_pad
         assign pad[i] = io_oeb[i] ? 1'bz : io_out[i];
     end
 endmodule

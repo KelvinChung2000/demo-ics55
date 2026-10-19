@@ -27,7 +27,7 @@ VARIANT = ROOT / "fabrics" / "nobram"
 BUILD = ROOT / "build" / "nobram"
 TOP = BUILD / "top" / "default"
 FULLSTA = BUILD / "fullsta"
-SIM_BUILD = ROOT / "Test" / "build-93bf29a"
+SIM_BUILD = ROOT / "Test" / "build"
 GENERATED = ("rtl", "sim", "physical", "signoff", "sta", "gl")
 RC_CORNERS = (
     "Cbest_125C", "Cbest_m40C", "Cworst_125C", "Cworst_m40C", "RCbest_125C",
@@ -144,10 +144,12 @@ def collect_rtl(tiles: list[str]) -> None:
 def collect_sim() -> None:
     out = OUT / "sim"
     for f in (VARIANT / "user_design").iterdir():
-        copy(f, out / "user_design" / f.name)
+        # Hidden entries are editor or sandbox state, not design sources.
+        if not f.name.startswith("."):
+            copy(f, out / "user_design" / f.name)
     for ext in ("bin", "hex", "fasm"):
         copy(SIM_BUILD / f"sequential_16bit_en.{ext}", out / "bitstream" / f"sequential_16bit_en.{ext}")
-    copy(SIM_BUILD / "sim.log", out / "results" / "bitstream_sim.log")
+    copy(SIM_BUILD / "bitstream_sim.log", out / "results" / "bitstream_sim.log")
     model = VARIANT / ".FABulous"
     for name in ("pips.txt", "bel.txt", "bel.v2.txt", "bel.v3.txt", "bitStreamSpec.bin"):
         copy_gz(model / name, out / "fabulous_model")

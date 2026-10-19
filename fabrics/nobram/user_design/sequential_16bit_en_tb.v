@@ -69,6 +69,7 @@ module sequential_16bit_en_tb ();
 
     reg [2047:0] bitstream_hex_arg  ; // 256 bytes for characters
     reg [2047:0] output_waveform_arg; // 256 bytes for characters
+    integer      waveform_depth     ;
 
     // Gate-level only: the hardened fabric powers up X-pessimistic. The
     // generated force_block.vh deposits 0 onto every fabric net and pulses the
@@ -86,9 +87,12 @@ module sequential_16bit_en_tb ();
 
     initial begin
 
+        // +waveform_depth=1 keeps the dump to this scope; a whole-fabric dump
+        // of the SPI load runs to tens of GB.
+        if (!$value$plusargs("waveform_depth=%d", waveform_depth)) waveform_depth = 0;
         if ($value$plusargs("output_waveform=%s", output_waveform_arg)) begin
             $dumpfile(output_waveform_arg);
-            $dumpvars(0, sequential_16bit_en_tb);
+            $dumpvars(waveform_depth, sequential_16bit_en_tb);
             $display("Output waveform set to %s", output_waveform_arg);
         end
 

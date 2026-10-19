@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Tile netlists and SPEFs from the 2026-10-13 harden, `$` renamed because iRCX
+# Tile netlists and SPEFs from the hardened tiles, `$` renamed because iRCX
 # writes it unescaped and OpenSTA rejects it.
 set -euo pipefail
 cd "$(dirname "$0")"

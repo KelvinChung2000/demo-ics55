@@ -23,7 +23,7 @@ library (eFPGA_top) {
   nom_voltage                    : 1.08;
 
   cell (eFPGA_top) {
-    area : 740148.64000004;
+    area : 736637.72000004;
     is_macro_cell : true;
    pin("A_EN_top_0") {
      direction               : output;
@@ -33,131 +33,11 @@ library (eFPGA_top) {
      direction               : output;
      capacitance             : 0.00000000;
    }
-   pin("A_EN_top_10") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_11") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_12") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_13") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_14") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_15") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_16") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_17") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_18") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_19") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
    pin("A_EN_top_2") {
      direction               : output;
      capacitance             : 0.00000000;
    }
-   pin("A_EN_top_20") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_21") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_22") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_23") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_24") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_25") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_26") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_27") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_28") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_29") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
    pin("A_EN_top_3") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_30") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_31") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_32") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_33") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_34") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_35") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_36") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_37") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_38") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_EN_top_39") {
      direction               : output;
      capacitance             : 0.00000000;
    }
@@ -193,131 +73,11 @@ library (eFPGA_top) {
      direction               : output;
      capacitance             : 0.00000000;
    }
-   pin("A_IN_top_10") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_11") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_12") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_13") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_14") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_15") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_16") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_17") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_18") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_19") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
    pin("A_IN_top_2") {
      direction               : output;
      capacitance             : 0.00000000;
    }
-   pin("A_IN_top_20") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_21") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_22") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_23") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_24") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_25") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_26") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_27") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_28") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_29") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
    pin("A_IN_top_3") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_30") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_31") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_32") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_33") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_34") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_35") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_36") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_37") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_38") {
-     direction               : output;
-     capacitance             : 0.00000000;
-   }
-   pin("A_IN_top_39") {
      direction               : output;
      capacitance             : 0.00000000;
    }
@@ -353,131 +113,11 @@ library (eFPGA_top) {
      direction               : input;
      capacitance             : 0.00000132;
    }
-   pin("A_OUT_top_10") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_11") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_12") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_13") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_14") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_15") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_16") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_17") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_18") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_19") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
    pin("A_OUT_top_2") {
      direction               : input;
      capacitance             : 0.00000132;
    }
-   pin("A_OUT_top_20") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_21") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_22") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_23") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_24") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_25") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_26") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_27") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_28") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_29") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
    pin("A_OUT_top_3") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_30") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_31") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_32") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_33") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_34") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_35") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_36") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_37") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_38") {
-     direction               : input;
-     capacitance             : 0.00000132;
-   }
-   pin("A_OUT_top_39") {
      direction               : input;
      capacitance             : 0.00000132;
    }
@@ -508,7 +148,7 @@ library (eFPGA_top) {
    pin("CLK") {
      direction               : input;
      clock                   : true;
-     capacitance             : 0.00177283;
+     capacitance             : 0.00399340;
                 timing () {
                        timing_sense        : positive_unate;
                        timing_type        : min_clock_tree_path;
@@ -532,7 +172,7 @@ library (eFPGA_top) {
    }
    pin("ComActive") {
      direction               : output;
-     capacitance             : 0.00188530;
+     capacitance             : 0.00106413;
    }
    pin("ConfigBusy") {
      direction               : output;
@@ -554,141 +194,9 @@ library (eFPGA_top) {
      direction               : input;
      capacitance             : 0.00000261;
    }
-   pin("SelfWriteData_0") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_1") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_10") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_11") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_12") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_13") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_14") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_15") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_16") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_17") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_18") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_19") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_2") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_20") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_21") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_22") {
-     direction               : input;
-     capacitance             : 0.00067583;
-   }
-   pin("SelfWriteData_23") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_24") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_25") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_26") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_27") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_28") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_29") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_3") {
-     direction               : input;
-     capacitance             : 0.00070711;
-   }
-   pin("SelfWriteData_30") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_31") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_4") {
-     direction               : input;
-     capacitance             : 0.00069883;
-   }
-   pin("SelfWriteData_5") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_6") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_7") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteData_8") {
-     direction               : input;
-     capacitance             : 0.00067583;
-   }
-   pin("SelfWriteData_9") {
-     direction               : input;
-     capacitance             : 0.00066420;
-   }
-   pin("SelfWriteStrobe") {
-     direction               : input;
-     capacitance             : 0.00088713;
-   }
    pin("resetn") {
      direction               : input;
-     capacitance             : 0.50041925;
+     capacitance             : 0.49994180;
    }
    pin("s_clk") {
      direction               : input;

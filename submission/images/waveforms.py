@@ -1,12 +1,12 @@
 """Render the report's timing figures from the simulation VCDs.
 
-The bitstream simulation VCD is 1 GB, so the reader streams it once and keeps
-only the top-scope signals each figure names.
+The reader streams each VCD once and keeps only the top-scope signals each
+figure names, so a whole-fabric dump works as well as a top-scope one.
 
     python3 submission/images/waveforms.py <bitstream.vcd> <spi.vcd> <out_dir>
 
-<bitstream.vcd> comes from `task VARIANT=nobram WAVEFORM_TYPE=vcd
-build-test-design run-simulation` in Test/; <spi.vcd> from the cocotb
+<bitstream.vcd> comes from the Test/ bitstream simulation run with
+`+output_waveform=<file>.vcd +waveform_depth=1`; <spi.vcd> from the cocotb
 `test_stream/port=SPI` case run with waves and converted by fst2vcd.
 """
 
@@ -148,6 +148,7 @@ def plot(
     ax.set_yticks([])
     ax.set_xlabel(unit_name, fontsize=9, color=INK)
     ax.tick_params(axis="x", labelsize=8, colors=INK)
+    ax.ticklabel_format(axis="x", style="plain", useOffset=False)
     for side in ("top", "right", "left"):
         ax.spines[side].set_visible(False)
     ax.spines["bottom"].set_color(GRID)
@@ -182,7 +183,7 @@ def last_fall(tr: Trace) -> int:
 def main(bit_vcd: Path, spi_vcd: Path, out: Path) -> None:
     us = 1_000_000  # ps per µs
     s = read_vcd(bit_vcd, "sequential_16bit_en_tb", {
-        "CLK", "resetn", "self_write_strobe", "self_write_data", "config_busy",
+        "CLK", "resetn", "spi_cs_n", "config_busy",
         "configured", "pad_in", "A_IN_top", "A_IN_top_gold", "A_EN_top",
     })
     busy_on = first_rise(s["config_busy"])
@@ -195,23 +196,23 @@ def main(bit_vcd: Path, spi_vcd: Path, out: Path) -> None:
     # Figure 2-4: reset release, the whole load, then user mode.
     plot(rows=[
         ("resetn", s["resetn"], ACCENT, None),
-        ("SelfWriteStrobe (4,096 words)", s["self_write_strobe"], ACCENT, None),
+        ("spi_cs_n (4,096 words over SPI)", s["spi_cs_n"], ACCENT, None),
         ("ConfigBusy", s["config_busy"], ACCENT, None),
         ("Configured", s["configured"], ACCENT, None),
         ("pad_in[1:0] (en, rst)", s["pad_in"], USER, 0b11),
-        ("A_IN_top[15:0]", s["A_IN_top"], USER, 0xFFFF),
+        ("A_IN_top[9:0]", s["A_IN_top"], USER, None),
     ], t0=0, t1=end, unit=us * 1000, unit_name="time (ms), CLK = 1 MHz in simulation",
         out=out / "clock_reset_timing.png",
-        title="resetn release, parallel-port configuration load and user mode",
+        title="resetn release, SPI configuration load and user mode",
         marks=[(busy_on, "load starts"), (cfg_on, "Configured")])
 
     # Figure 5-2: user mode, fabric against the reference design.
     u0 = first_change(s["pad_in"], after=cfg_on) - 3 * us
     plot(rows=[
-        ("CLK (user clock on pad 16)", s["CLK"], INK, None),
+        ("CLK (user clock on the SYS_RESET pad)", s["CLK"], INK, None),
         ("pad_in[1:0] (en, rst)", s["pad_in"], USER, 0b11),
-        ("fabric A_IN_top[15:0]", s["A_IN_top"], USER, 0xFFFF),
-        ("gold A_IN_top[15:0]", s["A_IN_top_gold"], INK, 0xFFFF),
+        ("fabric A_IN_top[9:0]", s["A_IN_top"], USER, None),
+        ("gold A_IN_top[9:0]", s["A_IN_top_gold"], INK, None),
         ("fabric A_EN_top", s["A_EN_top"], USER, None),
     ], t0=u0, t1=u0 + 24 * us, unit=us, unit_name="time (µs)",
         out=out / "simulation_waveform.png",

@@ -1,7 +1,7 @@
 # Full-chip STA of eFPGA_top: hierarchical tile netlists with per-instance SPEF.
 # env: LIBC (liberty corner), RC (SPEF corner), PERIOD (config clock ns)
 set L /home/kelvin/side-project/demo-ics55/pdk/IP/STD_cell/ics55_LLSC_H7C_V1p10C100
-set TOPSPEF /home/kelvin/side-project/demo-ics55/build/nobram/top/default/RCX_ecc/output
+set TOPSPEF /home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/build/nobram/top/default/RCX_ecc/output
 set libc $::env(LIBC); set rc $::env(RC); set T $::env(PERIOD)
 read_liberty $L/ics55_LLSC_H7CR/liberty/ics55_LLSC_H7CR_${libc}_nldm.lib
 read_liberty $L/ics55_LLSC_H7CL/liberty/ics55_LLSC_H7CL_${libc}_nldm.lib

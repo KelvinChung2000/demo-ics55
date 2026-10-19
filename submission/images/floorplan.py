@@ -27,10 +27,10 @@ CONTROL = "#e4e3df"
 CLASSES = {
     "LUT4x8_ha": ("logic, LUT4x8_ha", "#2a78d6"),
     "MACC": ("multiply-accumulate, MACC", "#eb6834"),
-    "IO": ("IO, W/E/N/S_IO", "#1baf7a"),
+    "IO": ("IO, E_IO", "#1baf7a"),
     "term": ("terminator", "#eda100"),
 }
-LABEL = {"LUT4x8_ha": "LUT", "MACC": "MACC", "W_IO": "W", "E_IO": "E", "N_IO": "N", "S_IO": "S"}
+LABEL = {"LUT4x8_ha": "LUT", "MACC": "MACC", "E_IO": "E"}
 
 
 def tile_class(tile_type: str) -> str:

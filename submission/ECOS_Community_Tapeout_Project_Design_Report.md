@@ -38,7 +38,7 @@ Completed for this tapeout are the RTL, the 12 hardened tile types (all DRC 0 an
 | Global clock network | 4 `GBUF` global clocks driven from `SW_term`, fed from any `W_IO` input under configuration, buffered at every tile hop | Yes |
 | Frame-based configuration | 70,226 configuration latches (synthesis count) organised as frames of 32 bits per tile row, up to 20 frames per column, 13 columns, 12 rows. A frame address selects one frame in one column, and only that frame's latches are written. | Yes, all 12 rows including the two terminator rows |
 | Full and partial reconfiguration | A full bitstream writes every frame; a partial bitstream writes any subset. Latches in frames not addressed hold their values, and the user clock is independent of the configuration clock `CLK`. | Yes by construction of the frame addressing; not yet demonstrated in simulation |
-| Configuration controller | `fabric_config` (fabulous-fabrics `7223ee9`) behind `config_frontend`, which merges UART, bitbang, SPI and parallel loaders | Yes, hardened in `eFPGA_top` |
+| Configuration controller | `fabric_config` (fabulous-fabrics `7223ee9`) behind `config_frontend`, which merges UART, bitbang, SPI and parallel loaders. Together 2,541 standard cells, 8,985 µm² and 782 flip-flops after synthesis (Section 6.1). | Yes, hardened in `eFPGA_top` |
 
 ### 1.3 Design Highlights and Use Cases (Optional)
 
@@ -203,7 +203,7 @@ Parts that have to be replaced with this fabric's versions:
 | User-mode operating frequency | [Target] | Pending, unmeasured | No routed user design has been timed. Tile STA uses a 10 ns clock with zero IO delay and so times switch-matrix feedthroughs rather than a user clock (Section 6.3). |
 | Processing latency | Not applicable | Not applicable | Set by the configured user design |
 | Throughput | Not applicable | Not applicable | Set by the configured user design |
-| Standard-cell count/area | ≤ 1 mm² footprint | 911,687 µm² `eFPGA_top`; 179,728 cells and 685,830 µm² (synthesis); 237,316 instances in the routed tiles plus 15,935 at top level (physical) | Synthesis: tiles summed over 151 instances plus the top's 2,541 synthesised standard cells (Section 6.1) |
+| Standard-cell count/area | ≤ 1 mm² footprint | 911,687 µm² `eFPGA_top`. Synthesis: 179,728 cells and 685,830 µm², of which the 151 tiles hold 177,187 cells and 676,845 µm² and the configuration logic 2,541 cells and 8,985 µm². Routed: 237,316 tile instances, plus 2,586 configuration-logic cells of 9,128 µm² among 15,935 top-level instances | Tiles summed over the grid; configuration logic from the `eFPGA_top` run (Section 6.1) |
 | SRAM/ROM/macro resources | none | none | No hard macro in this variant |
 | Power | [Target] | 1.160 mW leakage, 5.80 mW dynamic (synthesis estimate) | ECC synthesis-step power analysis on each synthesised netlist, summed over 151 tiles plus the top's 0.12 µW leakage and 2.5 µW dynamic, tool-default switching activity, not a user design |
 
@@ -359,15 +359,15 @@ Figure 5-2 shows the first user-mode cycles after configuration. The user clock 
 
 ### 6.1 Synthesis Results
 
-Tile rows are sums over the 151 tiles of each tile type's synthesis result times its count in the grid; the top rows count the configuration logic and front-ends synthesised in the `eFPGA_top` run. Tool is Yosys 0.68 (`38e001a`) inside ECC `14be467`; conditions are `ss_rcworst_1p08_125` liberty, the mux and buffer techmap `techmap/ics55_models.v`, and ABC strategy `AREA 5` on `LUT4x8_ha`.
+Tile figures are sums over the 151 tiles of each tile type's synthesis result times its count in the grid. Top figures count the configuration logic, `config_frontend` and `fabric_config`, synthesised flat in the `eFPGA_top` run; the 151 tile macros are black boxes there. Tool is Yosys 0.68 (`38e001a`) inside ECC `14be467`; conditions are `ss_rcworst_1p08_125` liberty, the mux and buffer techmap `techmap/ics55_models.v`, and ABC strategy `AREA 5` on `LUT4x8_ha`.
 
 | Item | Result | Tool/Version | Conditions |
 |---|---:|---|---|
-| Standard-cell count | 177,187 in tiles, 2,541 at top | Yosys 0.68 / ECC `14be467` | As above |
-| Combinational cell count | 105,761 in tiles | Yosys 0.68 / ECC `14be467` | Tile total minus flip-flops and latches |
-| Sequential cell count | 71,426 in tiles | Yosys 0.68 / ECC `14be467` | 1,200 flip-flops and 70,226 configuration latches |
+| Standard-cell count | 179,728: 177,187 in tiles, 2,541 at top | Yosys 0.68 / ECC `14be467` | As above |
+| Combinational cell count | 107,520: 105,761 in tiles, 1,759 at top | Yosys 0.68 / ECC `14be467` | Total minus flip-flops and latches |
+| Sequential cell count | 72,208: 71,426 in tiles, 782 at top | Yosys 0.68 / ECC `14be467` | Tiles: 1,200 flip-flops and 70,226 configuration latches. Top: 782 flip-flops, no latches |
 | Macro count | 151 tile macros at top, 0 hard IP | Yosys 0.68 / ECC `14be467` | No hard macro |
-| Synthesized area | 676,845 µm² in tiles, 8,985 µm² at top | Yosys 0.68 / ECC `14be467` | Cell area only |
+| Synthesized area | 685,830 µm²: 676,845 in tiles, 8,985 at top | Yosys 0.68 / ECC `14be467` | Cell area only; the configuration logic is 1.3% of it |
 | Post-synthesis timing | `LUT4x8_ha`: see Section 6.3 | ECC STA | Tile constraints time switch-matrix feedthroughs, not a user clock |
 
 Per tile type (synthesis):
@@ -386,6 +386,26 @@ Per tile type (synthesis):
 | `NE_term` | 1 | 104 | 116.5 | 0 | 0 |
 | `SW_term` | 1 | 157 | 358.4 | 0 | 20 |
 | `SE_term` | 1 | 118 | 153.4 | 0 | 4 |
+| Configuration logic (`eFPGA_top`) | 1 | 2,541 | 8,985.5 | 782 | 0 |
+| Total | | 179,728 | 685,830 | 1,982 | 70,226 |
+
+The total area is summed from unrounded per-tile figures, so it differs from the sum of the rounded rows by 2.5 µm².
+
+Configuration logic in `eFPGA_top`, by block (synthesis). Synthesis flattens the top, so each cell is assigned by the hierarchical prefix Yosys gave its name; `fabric_config`'s output registers and strobe decode carry the names of the top-level nets `frame_data` and `frame_strobe` they drive.
+
+| Module | Block | Cells | Area (µm²) | Flip-flops |
+|---|---|---:|---:|---:|
+| `config_frontend` | `config_UART` loader | 763 | 2,531.8 | 192 |
+| `config_frontend` | `config_spi` loader | 172 | 865.2 | 81 |
+| `config_frontend` | `bitbang` loader | 112 | 599.8 | 58 |
+| `config_frontend` | Priority multiplexer over the four loaders | 235 | 661.9 | 34 |
+| `fabric_config` | Frame FSM, header decode, row, frame and column select | 193 | 448.3 | 31 |
+| `fabric_config` | `FrameData` register, 384 bits | 770 | 3,442.6 | 384 |
+| `fabric_config` | `FrameStrobe` decode, 260 bits | 260 | 364.0 | 0 |
+| `eFPGA_top` | Cells named after top-level ports (`Configured` 24, `ComActive` 5, `SelfWriteStrobe` 4, `ReceiveLED` 2, `ConfigBusy` 1) | 36 | 72.0 | 2 |
+| | Total | 2,541 | 8,985.5 | 782 |
+
+`config_frontend` is 1,282 cells and 4,658.6 µm², 52% of the configuration logic, and the UART alone is 28%. `fabric_config` is 1,223 cells and 4,254.9 µm², of which the 384-bit `FrameData` register is 81%. Routing adds 45 CTS buffers (142.8 µm²), so the routed configuration logic is 2,586 cells and 9,128.3 µm².
 
 ### 6.2 Physical Implementation Results
 
@@ -417,6 +437,9 @@ Per tile type (physical, filler step):
 | `NE_term` | 21.4 × 22.4 | 282 | 0.37 | 1,247 | 302 |
 | `SW_term` | 28.8 × 22.4 | 217 | 0.79 | 2,368 | 708 |
 | `SE_term` | 21.4 × 22.4 | 304 | 0.48 | 1,459 | 374 |
+| `eFPGA_top` configuration logic | 999.0 × 912.6 | 2,586 | 0.12 | 197,639 | 22,359 |
+
+The `eFPGA_top` row counts the configuration logic's standard cells; the run's 15,935 instances also hold the 151 tile macros, 3,748 tap cells, 2,700 decap cells and 6,750 fillers. Its utilisation is the 9,128.3 µm² of routed logic over the 73,782 µm² of die outside the array, the west channel and the south strip. Wire and vias are the whole top-level route, which carries only configuration, IO and clock nets.
 
 ![Floorplan and placement results](images/floorplan.png)
 

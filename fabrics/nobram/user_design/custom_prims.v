@@ -29,3 +29,12 @@ module GBUF (
 );
     parameter INVERT = 0;
 endmodule
+
+// RESET_top is the SYS_RESET pad; a wrapper takes the pad through RESET only.
+(* blackbox, keep *)
+module SYS_RESET (
+    output RESET,
+    (* iopad_external_pin *)
+    input RESET_top
+);
+endmodule

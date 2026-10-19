@@ -4,127 +4,37 @@ module eFPGA
         parameter FrameBitsPerRow=32
     )
     (
-        input  Tile_X1Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X1Y0_A_IN_top, //EXTERNAL
-        output  Tile_X1Y0_A_EN_top, //EXTERNAL
-        input  Tile_X2Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X2Y0_A_IN_top, //EXTERNAL
-        output  Tile_X2Y0_A_EN_top, //EXTERNAL
-        input  Tile_X3Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X3Y0_A_IN_top, //EXTERNAL
-        output  Tile_X3Y0_A_EN_top, //EXTERNAL
-        input  Tile_X4Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X4Y0_A_IN_top, //EXTERNAL
-        output  Tile_X4Y0_A_EN_top, //EXTERNAL
-        input  Tile_X5Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X5Y0_A_IN_top, //EXTERNAL
-        output  Tile_X5Y0_A_EN_top, //EXTERNAL
-        input  Tile_X7Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X7Y0_A_IN_top, //EXTERNAL
-        output  Tile_X7Y0_A_EN_top, //EXTERNAL
-        input  Tile_X8Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X8Y0_A_IN_top, //EXTERNAL
-        output  Tile_X8Y0_A_EN_top, //EXTERNAL
-        input  Tile_X9Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X9Y0_A_IN_top, //EXTERNAL
-        output  Tile_X9Y0_A_EN_top, //EXTERNAL
-        input  Tile_X10Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X10Y0_A_IN_top, //EXTERNAL
-        output  Tile_X10Y0_A_EN_top, //EXTERNAL
-        input  Tile_X11Y0_A_OUT_top, //EXTERNAL
-        output  Tile_X11Y0_A_IN_top, //EXTERNAL
-        output  Tile_X11Y0_A_EN_top, //EXTERNAL
-        input  Tile_X0Y1_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y1_A_IN_top, //EXTERNAL
-        output  Tile_X0Y1_A_EN_top, //EXTERNAL
         input  Tile_X12Y1_A_OUT_top, //EXTERNAL
         output  Tile_X12Y1_A_IN_top, //EXTERNAL
         output  Tile_X12Y1_A_EN_top, //EXTERNAL
-        input  Tile_X0Y2_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y2_A_IN_top, //EXTERNAL
-        output  Tile_X0Y2_A_EN_top, //EXTERNAL
         input  Tile_X12Y2_A_OUT_top, //EXTERNAL
         output  Tile_X12Y2_A_IN_top, //EXTERNAL
         output  Tile_X12Y2_A_EN_top, //EXTERNAL
-        input  Tile_X0Y3_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y3_A_IN_top, //EXTERNAL
-        output  Tile_X0Y3_A_EN_top, //EXTERNAL
         input  Tile_X12Y3_A_OUT_top, //EXTERNAL
         output  Tile_X12Y3_A_IN_top, //EXTERNAL
         output  Tile_X12Y3_A_EN_top, //EXTERNAL
-        input  Tile_X0Y4_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y4_A_IN_top, //EXTERNAL
-        output  Tile_X0Y4_A_EN_top, //EXTERNAL
         input  Tile_X12Y4_A_OUT_top, //EXTERNAL
         output  Tile_X12Y4_A_IN_top, //EXTERNAL
         output  Tile_X12Y4_A_EN_top, //EXTERNAL
-        input  Tile_X0Y5_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y5_A_IN_top, //EXTERNAL
-        output  Tile_X0Y5_A_EN_top, //EXTERNAL
         input  Tile_X12Y5_A_OUT_top, //EXTERNAL
         output  Tile_X12Y5_A_IN_top, //EXTERNAL
         output  Tile_X12Y5_A_EN_top, //EXTERNAL
-        input  Tile_X0Y6_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y6_A_IN_top, //EXTERNAL
-        output  Tile_X0Y6_A_EN_top, //EXTERNAL
         input  Tile_X12Y6_A_OUT_top, //EXTERNAL
         output  Tile_X12Y6_A_IN_top, //EXTERNAL
         output  Tile_X12Y6_A_EN_top, //EXTERNAL
-        input  Tile_X0Y7_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y7_A_IN_top, //EXTERNAL
-        output  Tile_X0Y7_A_EN_top, //EXTERNAL
         input  Tile_X12Y7_A_OUT_top, //EXTERNAL
         output  Tile_X12Y7_A_IN_top, //EXTERNAL
         output  Tile_X12Y7_A_EN_top, //EXTERNAL
-        input  Tile_X0Y8_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y8_A_IN_top, //EXTERNAL
-        output  Tile_X0Y8_A_EN_top, //EXTERNAL
         input  Tile_X12Y8_A_OUT_top, //EXTERNAL
         output  Tile_X12Y8_A_IN_top, //EXTERNAL
         output  Tile_X12Y8_A_EN_top, //EXTERNAL
-        input  Tile_X0Y9_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y9_A_IN_top, //EXTERNAL
-        output  Tile_X0Y9_A_EN_top, //EXTERNAL
         input  Tile_X12Y9_A_OUT_top, //EXTERNAL
         output  Tile_X12Y9_A_IN_top, //EXTERNAL
         output  Tile_X12Y9_A_EN_top, //EXTERNAL
-        input  Tile_X0Y10_A_OUT_top, //EXTERNAL
-        output  Tile_X0Y10_A_IN_top, //EXTERNAL
-        output  Tile_X0Y10_A_EN_top, //EXTERNAL
         input  Tile_X12Y10_A_OUT_top, //EXTERNAL
         output  Tile_X12Y10_A_IN_top, //EXTERNAL
         output  Tile_X12Y10_A_EN_top, //EXTERNAL
         input  Tile_X0Y11_SYS_RESET_RESET_top, //EXTERNAL
-        input  Tile_X1Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X1Y11_A_IN_top, //EXTERNAL
-        output  Tile_X1Y11_A_EN_top, //EXTERNAL
-        input  Tile_X2Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X2Y11_A_IN_top, //EXTERNAL
-        output  Tile_X2Y11_A_EN_top, //EXTERNAL
-        input  Tile_X3Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X3Y11_A_IN_top, //EXTERNAL
-        output  Tile_X3Y11_A_EN_top, //EXTERNAL
-        input  Tile_X4Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X4Y11_A_IN_top, //EXTERNAL
-        output  Tile_X4Y11_A_EN_top, //EXTERNAL
-        input  Tile_X5Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X5Y11_A_IN_top, //EXTERNAL
-        output  Tile_X5Y11_A_EN_top, //EXTERNAL
-        input  Tile_X7Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X7Y11_A_IN_top, //EXTERNAL
-        output  Tile_X7Y11_A_EN_top, //EXTERNAL
-        input  Tile_X8Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X8Y11_A_IN_top, //EXTERNAL
-        output  Tile_X8Y11_A_EN_top, //EXTERNAL
-        input  Tile_X9Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X9Y11_A_IN_top, //EXTERNAL
-        output  Tile_X9Y11_A_EN_top, //EXTERNAL
-        input  Tile_X10Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X10Y11_A_IN_top, //EXTERNAL
-        output  Tile_X10Y11_A_EN_top, //EXTERNAL
-        input  Tile_X11Y11_A_OUT_top, //EXTERNAL
-        output  Tile_X11Y11_A_IN_top, //EXTERNAL
-        output  Tile_X11Y11_A_EN_top, //EXTERNAL
         input  [(FrameBitsPerRow*12)-1:0] FrameData, //CONFIG_PORT
         input  [(MaxFramesPerCol*13)-1:0] FrameStrobe //CONFIG_PORT
 );
@@ -3242,7 +3152,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X1Y0_N_IO (
+(* keep *) N_term Tile_X1Y0_N_term (
     .N_GBUF_END(Tile_X1Y1_N_GBUF_BEG),
     .N1END(Tile_X1Y1_N1BEG),
     .N2MID(Tile_X1Y1_N2BEG),
@@ -3255,9 +3165,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X1Y0_S2BEGb),
     .S4BEG(Tile_X1Y0_S4BEG),
     .SS4BEG(Tile_X1Y0_SS4BEG),
-    .A_OUT_top(Tile_X1Y0_A_OUT_top),
-    .A_IN_top(Tile_X1Y0_A_IN_top),
-    .A_EN_top(Tile_X1Y0_A_EN_top),
     .FrameData(Tile_X0Y0_FrameData_O),
     .FrameData_O(Tile_X1Y0_FrameData_O),
     .FrameStrobe(Tile_X1Y1_FrameStrobe_O),
@@ -3266,7 +3173,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X2Y0_N_IO (
+(* keep *) N_term Tile_X2Y0_N_term (
     .N_GBUF_END(Tile_X2Y1_N_GBUF_BEG),
     .N1END(Tile_X2Y1_N1BEG),
     .N2MID(Tile_X2Y1_N2BEG),
@@ -3279,9 +3186,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X2Y0_S2BEGb),
     .S4BEG(Tile_X2Y0_S4BEG),
     .SS4BEG(Tile_X2Y0_SS4BEG),
-    .A_OUT_top(Tile_X2Y0_A_OUT_top),
-    .A_IN_top(Tile_X2Y0_A_IN_top),
-    .A_EN_top(Tile_X2Y0_A_EN_top),
     .FrameData(Tile_X1Y0_FrameData_O),
     .FrameData_O(Tile_X2Y0_FrameData_O),
     .FrameStrobe(Tile_X2Y1_FrameStrobe_O),
@@ -3290,7 +3194,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X3Y0_N_IO (
+(* keep *) N_term Tile_X3Y0_N_term (
     .N_GBUF_END(Tile_X3Y1_N_GBUF_BEG),
     .N1END(Tile_X3Y1_N1BEG),
     .N2MID(Tile_X3Y1_N2BEG),
@@ -3303,9 +3207,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X3Y0_S2BEGb),
     .S4BEG(Tile_X3Y0_S4BEG),
     .SS4BEG(Tile_X3Y0_SS4BEG),
-    .A_OUT_top(Tile_X3Y0_A_OUT_top),
-    .A_IN_top(Tile_X3Y0_A_IN_top),
-    .A_EN_top(Tile_X3Y0_A_EN_top),
     .FrameData(Tile_X2Y0_FrameData_O),
     .FrameData_O(Tile_X3Y0_FrameData_O),
     .FrameStrobe(Tile_X3Y1_FrameStrobe_O),
@@ -3314,7 +3215,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X4Y0_N_IO (
+(* keep *) N_term Tile_X4Y0_N_term (
     .N_GBUF_END(Tile_X4Y1_N_GBUF_BEG),
     .N1END(Tile_X4Y1_N1BEG),
     .N2MID(Tile_X4Y1_N2BEG),
@@ -3327,9 +3228,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X4Y0_S2BEGb),
     .S4BEG(Tile_X4Y0_S4BEG),
     .SS4BEG(Tile_X4Y0_SS4BEG),
-    .A_OUT_top(Tile_X4Y0_A_OUT_top),
-    .A_IN_top(Tile_X4Y0_A_IN_top),
-    .A_EN_top(Tile_X4Y0_A_EN_top),
     .FrameData(Tile_X3Y0_FrameData_O),
     .FrameData_O(Tile_X4Y0_FrameData_O),
     .FrameStrobe(Tile_X4Y1_FrameStrobe_O),
@@ -3338,7 +3236,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X5Y0_N_IO (
+(* keep *) N_term Tile_X5Y0_N_term (
     .N_GBUF_END(Tile_X5Y1_N_GBUF_BEG),
     .N1END(Tile_X5Y1_N1BEG),
     .N2MID(Tile_X5Y1_N2BEG),
@@ -3351,9 +3249,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X5Y0_S2BEGb),
     .S4BEG(Tile_X5Y0_S4BEG),
     .SS4BEG(Tile_X5Y0_SS4BEG),
-    .A_OUT_top(Tile_X5Y0_A_OUT_top),
-    .A_IN_top(Tile_X5Y0_A_IN_top),
-    .A_EN_top(Tile_X5Y0_A_EN_top),
     .FrameData(Tile_X4Y0_FrameData_O),
     .FrameData_O(Tile_X5Y0_FrameData_O),
     .FrameStrobe(Tile_X5Y1_FrameStrobe_O),
@@ -3383,7 +3278,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X7Y0_N_IO (
+(* keep *) N_term Tile_X7Y0_N_term (
     .N_GBUF_END(Tile_X7Y1_N_GBUF_BEG),
     .N1END(Tile_X7Y1_N1BEG),
     .N2MID(Tile_X7Y1_N2BEG),
@@ -3396,9 +3291,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X7Y0_S2BEGb),
     .S4BEG(Tile_X7Y0_S4BEG),
     .SS4BEG(Tile_X7Y0_SS4BEG),
-    .A_OUT_top(Tile_X7Y0_A_OUT_top),
-    .A_IN_top(Tile_X7Y0_A_IN_top),
-    .A_EN_top(Tile_X7Y0_A_EN_top),
     .FrameData(Tile_X6Y0_FrameData_O),
     .FrameData_O(Tile_X7Y0_FrameData_O),
     .FrameStrobe(Tile_X7Y1_FrameStrobe_O),
@@ -3407,7 +3299,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X8Y0_N_IO (
+(* keep *) N_term Tile_X8Y0_N_term (
     .N_GBUF_END(Tile_X8Y1_N_GBUF_BEG),
     .N1END(Tile_X8Y1_N1BEG),
     .N2MID(Tile_X8Y1_N2BEG),
@@ -3420,9 +3312,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X8Y0_S2BEGb),
     .S4BEG(Tile_X8Y0_S4BEG),
     .SS4BEG(Tile_X8Y0_SS4BEG),
-    .A_OUT_top(Tile_X8Y0_A_OUT_top),
-    .A_IN_top(Tile_X8Y0_A_IN_top),
-    .A_EN_top(Tile_X8Y0_A_EN_top),
     .FrameData(Tile_X7Y0_FrameData_O),
     .FrameData_O(Tile_X8Y0_FrameData_O),
     .FrameStrobe(Tile_X8Y1_FrameStrobe_O),
@@ -3431,7 +3320,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X9Y0_N_IO (
+(* keep *) N_term Tile_X9Y0_N_term (
     .N_GBUF_END(Tile_X9Y1_N_GBUF_BEG),
     .N1END(Tile_X9Y1_N1BEG),
     .N2MID(Tile_X9Y1_N2BEG),
@@ -3444,9 +3333,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X9Y0_S2BEGb),
     .S4BEG(Tile_X9Y0_S4BEG),
     .SS4BEG(Tile_X9Y0_SS4BEG),
-    .A_OUT_top(Tile_X9Y0_A_OUT_top),
-    .A_IN_top(Tile_X9Y0_A_IN_top),
-    .A_EN_top(Tile_X9Y0_A_EN_top),
     .FrameData(Tile_X8Y0_FrameData_O),
     .FrameData_O(Tile_X9Y0_FrameData_O),
     .FrameStrobe(Tile_X9Y1_FrameStrobe_O),
@@ -3455,7 +3341,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X10Y0_N_IO (
+(* keep *) N_term Tile_X10Y0_N_term (
     .N_GBUF_END(Tile_X10Y1_N_GBUF_BEG),
     .N1END(Tile_X10Y1_N1BEG),
     .N2MID(Tile_X10Y1_N2BEG),
@@ -3468,9 +3354,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X10Y0_S2BEGb),
     .S4BEG(Tile_X10Y0_S4BEG),
     .SS4BEG(Tile_X10Y0_SS4BEG),
-    .A_OUT_top(Tile_X10Y0_A_OUT_top),
-    .A_IN_top(Tile_X10Y0_A_IN_top),
-    .A_EN_top(Tile_X10Y0_A_EN_top),
     .FrameData(Tile_X9Y0_FrameData_O),
     .FrameData_O(Tile_X10Y0_FrameData_O),
     .FrameStrobe(Tile_X10Y1_FrameStrobe_O),
@@ -3479,7 +3362,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) N_IO Tile_X11Y0_N_IO (
+(* keep *) N_term Tile_X11Y0_N_term (
     .N_GBUF_END(Tile_X11Y1_N_GBUF_BEG),
     .N1END(Tile_X11Y1_N1BEG),
     .N2MID(Tile_X11Y1_N2BEG),
@@ -3492,9 +3375,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .S2BEGb(Tile_X11Y0_S2BEGb),
     .S4BEG(Tile_X11Y0_S4BEG),
     .SS4BEG(Tile_X11Y0_SS4BEG),
-    .A_OUT_top(Tile_X11Y0_A_OUT_top),
-    .A_IN_top(Tile_X11Y0_A_IN_top),
-    .A_EN_top(Tile_X11Y0_A_EN_top),
     .FrameData(Tile_X10Y0_FrameData_O),
     .FrameData_O(Tile_X11Y0_FrameData_O),
     .FrameStrobe(Tile_X11Y1_FrameStrobe_O),
@@ -3513,13 +3393,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y1_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y1_W_IO
+    Tile_X0Y1_W_term
     (
     .N_GBUF_END(Tile_X0Y2_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y0_S_GBUF_FEED_BEG),
@@ -3535,9 +3415,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y1_E2BEGb),
     .EE4BEG(Tile_X0Y1_EE4BEG),
     .E6BEG(Tile_X0Y1_E6BEG),
-    .A_OUT_top(Tile_X0Y1_A_OUT_top),
-    .A_IN_top(Tile_X0Y1_A_IN_top),
-    .A_EN_top(Tile_X0Y1_A_EN_top),
     .FrameData(Row_Y1_FrameData),
     .FrameData_O(Tile_X0Y1_FrameData_O),
     .FrameStrobe(Tile_X0Y2_FrameStrobe_O),
@@ -4260,13 +4137,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y2_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y2_W_IO
+    Tile_X0Y2_W_term
     (
     .N_GBUF_END(Tile_X0Y3_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y1_S_GBUF_FEED_BEG),
@@ -4282,9 +4159,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y2_E2BEGb),
     .EE4BEG(Tile_X0Y2_EE4BEG),
     .E6BEG(Tile_X0Y2_E6BEG),
-    .A_OUT_top(Tile_X0Y2_A_OUT_top),
-    .A_IN_top(Tile_X0Y2_A_IN_top),
-    .A_EN_top(Tile_X0Y2_A_EN_top),
     .FrameData(Row_Y2_FrameData),
     .FrameData_O(Tile_X0Y2_FrameData_O),
     .FrameStrobe(Tile_X0Y3_FrameStrobe_O),
@@ -4924,13 +4798,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y3_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y3_W_IO
+    Tile_X0Y3_W_term
     (
     .N_GBUF_END(Tile_X0Y4_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y2_S_GBUF_FEED_BEG),
@@ -4946,9 +4820,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y3_E2BEGb),
     .EE4BEG(Tile_X0Y3_EE4BEG),
     .E6BEG(Tile_X0Y3_E6BEG),
-    .A_OUT_top(Tile_X0Y3_A_OUT_top),
-    .A_IN_top(Tile_X0Y3_A_IN_top),
-    .A_EN_top(Tile_X0Y3_A_EN_top),
     .FrameData(Row_Y3_FrameData),
     .FrameData_O(Tile_X0Y3_FrameData_O),
     .FrameStrobe(Tile_X0Y4_FrameStrobe_O),
@@ -5671,13 +5542,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y4_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y4_W_IO
+    Tile_X0Y4_W_term
     (
     .N_GBUF_END(Tile_X0Y5_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y3_S_GBUF_FEED_BEG),
@@ -5693,9 +5564,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y4_E2BEGb),
     .EE4BEG(Tile_X0Y4_EE4BEG),
     .E6BEG(Tile_X0Y4_E6BEG),
-    .A_OUT_top(Tile_X0Y4_A_OUT_top),
-    .A_IN_top(Tile_X0Y4_A_IN_top),
-    .A_EN_top(Tile_X0Y4_A_EN_top),
     .FrameData(Row_Y4_FrameData),
     .FrameData_O(Tile_X0Y4_FrameData_O),
     .FrameStrobe(Tile_X0Y5_FrameStrobe_O),
@@ -6335,13 +6203,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y5_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y5_W_IO
+    Tile_X0Y5_W_term
     (
     .N_GBUF_END(Tile_X0Y6_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y4_S_GBUF_FEED_BEG),
@@ -6357,9 +6225,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y5_E2BEGb),
     .EE4BEG(Tile_X0Y5_EE4BEG),
     .E6BEG(Tile_X0Y5_E6BEG),
-    .A_OUT_top(Tile_X0Y5_A_OUT_top),
-    .A_IN_top(Tile_X0Y5_A_IN_top),
-    .A_EN_top(Tile_X0Y5_A_EN_top),
     .FrameData(Row_Y5_FrameData),
     .FrameData_O(Tile_X0Y5_FrameData_O),
     .FrameStrobe(Tile_X0Y6_FrameStrobe_O),
@@ -7082,13 +6947,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y6_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y6_W_IO
+    Tile_X0Y6_W_term
     (
     .N_GBUF_END(Tile_X0Y7_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y5_S_GBUF_FEED_BEG),
@@ -7104,9 +6969,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y6_E2BEGb),
     .EE4BEG(Tile_X0Y6_EE4BEG),
     .E6BEG(Tile_X0Y6_E6BEG),
-    .A_OUT_top(Tile_X0Y6_A_OUT_top),
-    .A_IN_top(Tile_X0Y6_A_IN_top),
-    .A_EN_top(Tile_X0Y6_A_EN_top),
     .FrameData(Row_Y6_FrameData),
     .FrameData_O(Tile_X0Y6_FrameData_O),
     .FrameStrobe(Tile_X0Y7_FrameStrobe_O),
@@ -7746,13 +7608,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y7_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y7_W_IO
+    Tile_X0Y7_W_term
     (
     .N_GBUF_END(Tile_X0Y8_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y6_S_GBUF_FEED_BEG),
@@ -7768,9 +7630,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y7_E2BEGb),
     .EE4BEG(Tile_X0Y7_EE4BEG),
     .E6BEG(Tile_X0Y7_E6BEG),
-    .A_OUT_top(Tile_X0Y7_A_OUT_top),
-    .A_IN_top(Tile_X0Y7_A_IN_top),
-    .A_EN_top(Tile_X0Y7_A_EN_top),
     .FrameData(Row_Y7_FrameData),
     .FrameData_O(Tile_X0Y7_FrameData_O),
     .FrameStrobe(Tile_X0Y8_FrameStrobe_O),
@@ -8493,13 +8352,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y8_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y8_W_IO
+    Tile_X0Y8_W_term
     (
     .N_GBUF_END(Tile_X0Y9_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y7_S_GBUF_FEED_BEG),
@@ -8515,9 +8374,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y8_E2BEGb),
     .EE4BEG(Tile_X0Y8_EE4BEG),
     .E6BEG(Tile_X0Y8_E6BEG),
-    .A_OUT_top(Tile_X0Y8_A_OUT_top),
-    .A_IN_top(Tile_X0Y8_A_IN_top),
-    .A_EN_top(Tile_X0Y8_A_EN_top),
     .FrameData(Row_Y8_FrameData),
     .FrameData_O(Tile_X0Y8_FrameData_O),
     .FrameStrobe(Tile_X0Y9_FrameStrobe_O),
@@ -9157,13 +9013,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y9_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y9_W_IO
+    Tile_X0Y9_W_term
     (
     .N_GBUF_END(Tile_X0Y10_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y8_S_GBUF_FEED_BEG),
@@ -9179,9 +9035,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y9_E2BEGb),
     .EE4BEG(Tile_X0Y9_EE4BEG),
     .E6BEG(Tile_X0Y9_E6BEG),
-    .A_OUT_top(Tile_X0Y9_A_OUT_top),
-    .A_IN_top(Tile_X0Y9_A_IN_top),
-    .A_EN_top(Tile_X0Y9_A_EN_top),
     .FrameData(Row_Y9_FrameData),
     .FrameData_O(Tile_X0Y9_FrameData_O),
     .FrameStrobe(Tile_X0Y10_FrameStrobe_O),
@@ -9904,13 +9757,13 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) W_IO
+(* keep *) W_term
 `ifdef EMULATION
     #(
     .Emulate_Bitstream(`Tile_X0Y10_Emulate_Bitstream)
     )
 `endif
-    Tile_X0Y10_W_IO
+    Tile_X0Y10_W_term
     (
     .N_GBUF_END(Tile_X0Y11_N_GBUF_BEG),
     .S_GBUF_FEED_END(Tile_X0Y9_S_GBUF_FEED_BEG),
@@ -9926,9 +9779,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .E2BEGb(Tile_X0Y10_E2BEGb),
     .EE4BEG(Tile_X0Y10_EE4BEG),
     .E6BEG(Tile_X0Y10_E6BEG),
-    .A_OUT_top(Tile_X0Y10_A_OUT_top),
-    .A_IN_top(Tile_X0Y10_A_IN_top),
-    .A_EN_top(Tile_X0Y10_A_EN_top),
     .FrameData(Row_Y10_FrameData),
     .FrameData_O(Tile_X0Y10_FrameData_O),
     .FrameStrobe(Tile_X0Y11_FrameStrobe_O),
@@ -10582,7 +10432,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X1Y11_S_IO (
+(* keep *) S_term Tile_X1Y11_S_term (
     .E_GBUF_END(Tile_X0Y11_E_GBUF_BEG),
     .S1END(Tile_X1Y10_S1BEG),
     .S2MID(Tile_X1Y10_S2BEG),
@@ -10599,9 +10449,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X1Y11_N4BEG),
     .NN4BEG(Tile_X1Y11_NN4BEG),
     .Co(Tile_X1Y11_Co),
-    .A_OUT_top(Tile_X1Y11_A_OUT_top),
-    .A_IN_top(Tile_X1Y11_A_IN_top),
-    .A_EN_top(Tile_X1Y11_A_EN_top),
     .FrameData(Tile_X0Y11_FrameData_O),
     .FrameData_O(Tile_X1Y11_FrameData_O),
     .FrameStrobe(Column_X1_FrameStrobe),
@@ -10610,7 +10457,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X2Y11_S_IO (
+(* keep *) S_term Tile_X2Y11_S_term (
     .E_GBUF_END(Tile_X1Y11_E_GBUF_BEG),
     .S1END(Tile_X2Y10_S1BEG),
     .S2MID(Tile_X2Y10_S2BEG),
@@ -10627,9 +10474,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X2Y11_N4BEG),
     .NN4BEG(Tile_X2Y11_NN4BEG),
     .Co(Tile_X2Y11_Co),
-    .A_OUT_top(Tile_X2Y11_A_OUT_top),
-    .A_IN_top(Tile_X2Y11_A_IN_top),
-    .A_EN_top(Tile_X2Y11_A_EN_top),
     .FrameData(Tile_X1Y11_FrameData_O),
     .FrameData_O(Tile_X2Y11_FrameData_O),
     .FrameStrobe(Column_X2_FrameStrobe),
@@ -10638,7 +10482,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X3Y11_S_IO (
+(* keep *) S_term Tile_X3Y11_S_term (
     .E_GBUF_END(Tile_X2Y11_E_GBUF_BEG),
     .S1END(Tile_X3Y10_S1BEG),
     .S2MID(Tile_X3Y10_S2BEG),
@@ -10655,9 +10499,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X3Y11_N4BEG),
     .NN4BEG(Tile_X3Y11_NN4BEG),
     .Co(Tile_X3Y11_Co),
-    .A_OUT_top(Tile_X3Y11_A_OUT_top),
-    .A_IN_top(Tile_X3Y11_A_IN_top),
-    .A_EN_top(Tile_X3Y11_A_EN_top),
     .FrameData(Tile_X2Y11_FrameData_O),
     .FrameData_O(Tile_X3Y11_FrameData_O),
     .FrameStrobe(Column_X3_FrameStrobe),
@@ -10666,7 +10507,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X4Y11_S_IO (
+(* keep *) S_term Tile_X4Y11_S_term (
     .E_GBUF_END(Tile_X3Y11_E_GBUF_BEG),
     .S1END(Tile_X4Y10_S1BEG),
     .S2MID(Tile_X4Y10_S2BEG),
@@ -10683,9 +10524,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X4Y11_N4BEG),
     .NN4BEG(Tile_X4Y11_NN4BEG),
     .Co(Tile_X4Y11_Co),
-    .A_OUT_top(Tile_X4Y11_A_OUT_top),
-    .A_IN_top(Tile_X4Y11_A_IN_top),
-    .A_EN_top(Tile_X4Y11_A_EN_top),
     .FrameData(Tile_X3Y11_FrameData_O),
     .FrameData_O(Tile_X4Y11_FrameData_O),
     .FrameStrobe(Column_X4_FrameStrobe),
@@ -10694,7 +10532,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X5Y11_S_IO (
+(* keep *) S_term Tile_X5Y11_S_term (
     .E_GBUF_END(Tile_X4Y11_E_GBUF_BEG),
     .S1END(Tile_X5Y10_S1BEG),
     .S2MID(Tile_X5Y10_S2BEG),
@@ -10711,9 +10549,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X5Y11_N4BEG),
     .NN4BEG(Tile_X5Y11_NN4BEG),
     .Co(Tile_X5Y11_Co),
-    .A_OUT_top(Tile_X5Y11_A_OUT_top),
-    .A_IN_top(Tile_X5Y11_A_IN_top),
-    .A_EN_top(Tile_X5Y11_A_EN_top),
     .FrameData(Tile_X4Y11_FrameData_O),
     .FrameData_O(Tile_X5Y11_FrameData_O),
     .FrameStrobe(Column_X5_FrameStrobe),
@@ -10747,7 +10582,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X7Y11_S_IO (
+(* keep *) S_term Tile_X7Y11_S_term (
     .E_GBUF_END(Tile_X6Y11_E_GBUF_BEG),
     .S1END(Tile_X7Y10_S1BEG),
     .S2MID(Tile_X7Y10_S2BEG),
@@ -10764,9 +10599,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X7Y11_N4BEG),
     .NN4BEG(Tile_X7Y11_NN4BEG),
     .Co(Tile_X7Y11_Co),
-    .A_OUT_top(Tile_X7Y11_A_OUT_top),
-    .A_IN_top(Tile_X7Y11_A_IN_top),
-    .A_EN_top(Tile_X7Y11_A_EN_top),
     .FrameData(Tile_X6Y11_FrameData_O),
     .FrameData_O(Tile_X7Y11_FrameData_O),
     .FrameStrobe(Column_X7_FrameStrobe),
@@ -10775,7 +10607,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X8Y11_S_IO (
+(* keep *) S_term Tile_X8Y11_S_term (
     .E_GBUF_END(Tile_X7Y11_E_GBUF_BEG),
     .S1END(Tile_X8Y10_S1BEG),
     .S2MID(Tile_X8Y10_S2BEG),
@@ -10792,9 +10624,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X8Y11_N4BEG),
     .NN4BEG(Tile_X8Y11_NN4BEG),
     .Co(Tile_X8Y11_Co),
-    .A_OUT_top(Tile_X8Y11_A_OUT_top),
-    .A_IN_top(Tile_X8Y11_A_IN_top),
-    .A_EN_top(Tile_X8Y11_A_EN_top),
     .FrameData(Tile_X7Y11_FrameData_O),
     .FrameData_O(Tile_X8Y11_FrameData_O),
     .FrameStrobe(Column_X8_FrameStrobe),
@@ -10803,7 +10632,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X9Y11_S_IO (
+(* keep *) S_term Tile_X9Y11_S_term (
     .E_GBUF_END(Tile_X8Y11_E_GBUF_BEG),
     .S1END(Tile_X9Y10_S1BEG),
     .S2MID(Tile_X9Y10_S2BEG),
@@ -10820,9 +10649,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X9Y11_N4BEG),
     .NN4BEG(Tile_X9Y11_NN4BEG),
     .Co(Tile_X9Y11_Co),
-    .A_OUT_top(Tile_X9Y11_A_OUT_top),
-    .A_IN_top(Tile_X9Y11_A_IN_top),
-    .A_EN_top(Tile_X9Y11_A_EN_top),
     .FrameData(Tile_X8Y11_FrameData_O),
     .FrameData_O(Tile_X9Y11_FrameData_O),
     .FrameStrobe(Column_X9_FrameStrobe),
@@ -10831,7 +10657,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X10Y11_S_IO (
+(* keep *) S_term Tile_X10Y11_S_term (
     .E_GBUF_END(Tile_X9Y11_E_GBUF_BEG),
     .S1END(Tile_X10Y10_S1BEG),
     .S2MID(Tile_X10Y10_S2BEG),
@@ -10848,9 +10674,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X10Y11_N4BEG),
     .NN4BEG(Tile_X10Y11_NN4BEG),
     .Co(Tile_X10Y11_Co),
-    .A_OUT_top(Tile_X10Y11_A_OUT_top),
-    .A_IN_top(Tile_X10Y11_A_IN_top),
-    .A_EN_top(Tile_X10Y11_A_EN_top),
     .FrameData(Tile_X9Y11_FrameData_O),
     .FrameData_O(Tile_X10Y11_FrameData_O),
     .FrameStrobe(Column_X10_FrameStrobe),
@@ -10859,7 +10682,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
 
 
  //tile IO port will get directly connected to top-level tile module
-(* keep *) S_IO Tile_X11Y11_S_IO (
+(* keep *) S_term Tile_X11Y11_S_term (
     .E_GBUF_END(Tile_X10Y11_E_GBUF_BEG),
     .S1END(Tile_X11Y10_S1BEG),
     .S2MID(Tile_X11Y10_S2BEG),
@@ -10876,9 +10699,6 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N4BEG(Tile_X11Y11_N4BEG),
     .NN4BEG(Tile_X11Y11_NN4BEG),
     .Co(Tile_X11Y11_Co),
-    .A_OUT_top(Tile_X11Y11_A_OUT_top),
-    .A_IN_top(Tile_X11Y11_A_IN_top),
-    .A_EN_top(Tile_X11Y11_A_EN_top),
     .FrameData(Tile_X10Y11_FrameData_O),
     .FrameData_O(Tile_X11Y11_FrameData_O),
     .FrameStrobe(Column_X11_FrameStrobe),

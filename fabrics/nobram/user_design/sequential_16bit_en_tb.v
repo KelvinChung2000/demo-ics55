@@ -3,18 +3,16 @@
 `default_nettype none
 
 module sequential_16bit_en_tb ();
-    // Pad 16 carries the fabric clock (see user_design/top_wrapper.v).
-    localparam integer CLK_PAD = 16;
-
-    wire [39:0] A_IN_top ;
-    wire [39:0] A_EN_top ;
-    reg  [39:0] pad_in = 0;
-    wire [39:0] A_OUT_top;
+    wire [9:0] A_IN_top ;
+    wire [9:0] A_EN_top ;
+    reg  [9:0] pad_in = 0;
+    wire [9:0] A_OUT_top;
 
     reg         CLK                 = 1'b0 ;
     reg         resetn              = 1'b1 ;
-    reg         self_write_strobe   = 1'b0 ;
-    reg  [31:0] self_write_data     = 32'b0;
+    reg         spi_sck             = 1'b0 ;
+    reg         spi_cs_n            = 1'b1 ;
+    reg         spi_mosi            = 1'b0 ;
     reg         rx                  = 1'b1 ;
     wire        com_active                 ;
     wire        receive_led                ;
@@ -24,32 +22,31 @@ module sequential_16bit_en_tb ();
     wire        config_busy                ;
     wire        configured                 ;
 
-    assign A_OUT_top = {pad_in[39:CLK_PAD+1], CLK, pad_in[CLK_PAD-1:0]};
+    assign A_OUT_top = pad_in;
 
     // Instantiate both the fabric and the reference DUT
     eFPGA_top top_i (
         .A_EN_top           (A_EN_top         ),
         .A_IN_top           (A_IN_top         ),
         .A_OUT_top          (A_OUT_top        ),
-        .SYS_RESET_RESET_top(1'b0             ),
+        // The SYS_RESET pad carries the fabric clock (see user_design/top_wrapper.v).
+        .SYS_RESET_RESET_top(CLK              ),
         .CLK                (CLK              ),
         .resetn             (resetn           ),
-        .SelfWriteStrobe    (self_write_strobe),
-        .SelfWriteData      (self_write_data  ),
         .Rx                 (rx               ),
         .ComActive          (com_active       ),
         .ReceiveLED         (receive_led      ),
         .s_clk              (s_clk            ),
         .s_data             (s_data           ),
-        .spi_sck            (1'b0             ),
-        .spi_cs_n           (1'b1             ),
-        .spi_mosi           (1'b0             ),
+        .spi_sck            (spi_sck          ),
+        .spi_cs_n           (spi_cs_n         ),
+        .spi_mosi           (spi_mosi         ),
         .ConfigBusy         (config_busy      ),
         .Configured         (configured       )
     );
 
 
-    wire [39:0] A_IN_top_gold, oeb_gold, A_EN_top_gold;
+    wire [9:0] A_IN_top_gold, oeb_gold, A_EN_top_gold;
     sequential_16bit_en dut_i (
         .clk   (CLK          ),
         .io_out(A_IN_top_gold),
@@ -66,6 +63,8 @@ module sequential_16bit_en_tb ();
     always #500000 CLK = (CLK === 1'b0);
 
     integer i                 ;
+    integer b                 ;
+    reg     [31:0] word       ;
     reg     have_errors = 1'b0;
 
     reg [2047:0] bitstream_hex_arg  ; // 256 bytes for characters
@@ -112,14 +111,24 @@ module sequential_16bit_en_tb ();
         #10000;
         repeat (20) @(posedge CLK);
         #2500;
+        // SPI mode 0, MSB first, at the f_clk = 4 f_sck config_spi.v asks for:
+        // SCK low and high two CLK periods each, every change on a falling edge.
+        @(negedge CLK);
+        spi_cs_n = 1'b0;
+        repeat (4) @(negedge CLK);
         for (i = 0; i < MAX_BITBYTES; i = i + 4) begin
-            self_write_data <= {bitstream[i], bitstream[i+1], bitstream[i+2], bitstream[i+3]};
-            repeat (2) @(posedge CLK);
-            self_write_strobe <= 1'b1;
-            @(posedge CLK);
-            self_write_strobe <= 1'b0;
-            repeat (2) @(posedge CLK);
+            word = {bitstream[i], bitstream[i+1], bitstream[i+2], bitstream[i+3]};
+            for (b = 31; b >= 0; b = b - 1) begin
+                spi_mosi = word[b];
+                repeat (2) @(negedge CLK);
+                spi_sck = 1'b1;
+                repeat (2) @(negedge CLK);
+                spi_sck = 1'b0;
+            end
         end
+        repeat (4) @(negedge CLK);
+        spi_cs_n = 1'b1;
+        repeat (8) @(posedge CLK);
         if (configured !== 1'b1) begin
             $display("Error: the bitstream finished loading but Configured is %b", configured);
             $fatal;

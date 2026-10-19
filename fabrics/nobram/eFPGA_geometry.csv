@@ -3,37 +3,37 @@ GeneratorVersion,1.0.0
 Name,eFPGA
 Rows,12
 Columns,13
-Width,3967
+Width,3935
 Height,3566
-Lines,98662
+Lines,98542
 
 FABRIC_DEF
-NW_term,N_IO,N_IO,N_IO,N_IO,N_IO,N_term_MACC,N_IO,N_IO,N_IO,N_IO,N_IO,NE_term
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-W_IO,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
-SW_term,S_IO,S_IO,S_IO,S_IO,S_IO,S_term_MACC,S_IO,S_IO,S_IO,S_IO,S_IO,SE_term
+NW_term,N_term,N_term,N_term,N_term,N_term,N_term_MACC,N_term,N_term,N_term,N_term,N_term,NE_term
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_top,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+W_term,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,MACC_bot,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,LUT4x8_ha,E_IO
+SW_term,S_term,S_term,S_term,S_term,S_term,S_term_MACC,S_term,S_term,S_term,S_term,S_term,SE_term
 
 FABRIC_LOCS
-0/0,184/0,509/0,834/0,1159/0,1484/0,1809/0,2162/0,2487/0,2812/0,3137/0,3462/0,3787/0
-0/149,184/149,509/149,834/149,1159/149,1484/149,1809/149,2162/149,2487/149,2812/149,3137/149,3462/149,3787/149
-0/475,184/475,509/475,834/475,1159/475,1484/475,1809/475,2162/475,2487/475,2812/475,3137/475,3462/475,3787/475
-0/801,184/801,509/801,834/801,1159/801,1484/801,1809/801,2162/801,2487/801,2812/801,3137/801,3462/801,3787/801
-0/1127,184/1127,509/1127,834/1127,1159/1127,1484/1127,1809/1127,2162/1127,2487/1127,2812/1127,3137/1127,3462/1127,3787/1127
-0/1453,184/1453,509/1453,834/1453,1159/1453,1484/1453,1809/1453,2162/1453,2487/1453,2812/1453,3137/1453,3462/1453,3787/1453
-0/1779,184/1779,509/1779,834/1779,1159/1779,1484/1779,1809/1779,2162/1779,2487/1779,2812/1779,3137/1779,3462/1779,3787/1779
-0/2105,184/2105,509/2105,834/2105,1159/2105,1484/2105,1809/2105,2162/2105,2487/2105,2812/2105,3137/2105,3462/2105,3787/2105
-0/2431,184/2431,509/2431,834/2431,1159/2431,1484/2431,1809/2431,2162/2431,2487/2431,2812/2431,3137/2431,3462/2431,3787/2431
-0/2757,184/2757,509/2757,834/2757,1159/2757,1484/2757,1809/2757,2162/2757,2487/2757,2812/2757,3137/2757,3462/2757,3787/2757
-0/3083,184/3083,509/3083,834/3083,1159/3083,1484/3083,1809/3083,2162/3083,2487/3083,2812/3083,3137/3083,3462/3083,3787/3083
-0/3409,184/3409,509/3409,834/3409,1159/3409,1484/3409,1809/3409,2162/3409,2487/3409,2812/3409,3137/3409,3462/3409,3787/3409
+0/0,152/0,477/0,802/0,1127/0,1452/0,1777/0,2130/0,2455/0,2780/0,3105/0,3430/0,3755/0
+0/149,152/149,477/149,802/149,1127/149,1452/149,1777/149,2130/149,2455/149,2780/149,3105/149,3430/149,3755/149
+0/475,152/475,477/475,802/475,1127/475,1452/475,1777/475,2130/475,2455/475,2780/475,3105/475,3430/475,3755/475
+0/801,152/801,477/801,802/801,1127/801,1452/801,1777/801,2130/801,2455/801,2780/801,3105/801,3430/801,3755/801
+0/1127,152/1127,477/1127,802/1127,1127/1127,1452/1127,1777/1127,2130/1127,2455/1127,2780/1127,3105/1127,3430/1127,3755/1127
+0/1453,152/1453,477/1453,802/1453,1127/1453,1452/1453,1777/1453,2130/1453,2455/1453,2780/1453,3105/1453,3430/1453,3755/1453
+0/1779,152/1779,477/1779,802/1779,1127/1779,1452/1779,1777/1779,2130/1779,2455/1779,2780/1779,3105/1779,3430/1779,3755/1779
+0/2105,152/2105,477/2105,802/2105,1127/2105,1452/2105,1777/2105,2130/2105,2455/2105,2780/2105,3105/2105,3430/2105,3755/2105
+0/2431,152/2431,477/2431,802/2431,1127/2431,1452/2431,1777/2431,2130/2431,2455/2431,2780/2431,3105/2431,3430/2431,3755/2431
+0/2757,152/2757,477/2757,802/2757,1127/2757,1452/2757,1777/2757,2130/2757,2455/2757,2780/2757,3105/2757,3430/2757,3755/2757
+0/3083,152/3083,477/3083,802/3083,1127/3083,1452/3083,1777/3083,2130/3083,2455/3083,2780/3083,3105/3083,3430/3083,3755/3083
+0/3409,152/3409,477/3409,802/3409,1127/3409,1452/3409,1777/3409,2130/3409,2455/3409,2780/3409,3105/3409,3430/3409,3755/3409
 
 
 TILE
@@ -43,8 +43,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,E_IO_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/E_IO/E_IO_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/E_IO/E_IO_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/E_IO/E_IO_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/E_IO/E_IO_switch_matrix.list
 RelX,20
 RelY,182
 Width,112
@@ -932,7 +932,7 @@ RelY,11
 
 BEL
 Name,IOBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/E_IO/../../primitives/IOBUF/fabulous/IOBUF.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/E_IO/../../primitives/IOBUF/fabulous/IOBUF.v
 RelX,140
 RelY,186
 Width,32
@@ -1965,8 +1965,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,LUT4x8_ha_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.list
 RelX,125
 RelY,34
 Width,152
@@ -5246,7 +5246,7 @@ RelY,171
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,38
 Width,32
@@ -5334,7 +5334,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,60
 Width,32
@@ -5422,7 +5422,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,82
 Width,32
@@ -5510,7 +5510,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,104
 Width,32
@@ -5598,7 +5598,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,126
 Width,32
@@ -5686,7 +5686,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,148
 Width,32
@@ -5774,7 +5774,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,170
 Width,32
@@ -5862,7 +5862,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,192
 Width,32
@@ -9561,8 +9561,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,MACC_bot_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -12874,7 +12874,7 @@ RelY,68
 
 BEL
 Name,MACC_8x8_20
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v
 RelX,313
 RelY,12
 Width,32
@@ -17100,8 +17100,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,MACC_top_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -23228,8 +23228,8 @@ Height,149
 
 SWITCH_MATRIX
 Name,NE_term_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/NE_term/NE_term_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/NE_term/NE_term_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NE_term/NE_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NE_term/NE_term_switch_matrix.list
 RelX,20
 RelY,113
 Width,112
@@ -23305,13 +23305,13 @@ RelY,149
 
 TILE
 Name,NW_term
-Width,184
+Width,152
 Height,149
 
 SWITCH_MATRIX
 Name,NW_term_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/NW_term/NW_term_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/NW_term/NW_term_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NW_term/NW_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NW_term/NW_term_switch_matrix.list
 RelX,24
 RelY,109
 Width,112
@@ -23470,14 +23470,14 @@ RelX,9
 RelY,149
 
 TILE
-Name,N_IO
+Name,N_term
 Width,325
 Height,149
 
 SWITCH_MATRIX
-Name,N_IO_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/N_IO/N_IO_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/N_IO/N_IO_switch_matrix.list
+Name,N_term_switch_matrix
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term/N_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term/N_term_switch_matrix.list
 RelX,125
 RelY,8
 Width,152
@@ -24370,130 +24370,6 @@ Dest,NN4END15
 IO,INPUT
 RelX,0
 RelY,9
-
-PORT
-Name,A_CLK
-Source,A_CLK
-Dest,A_CLK
-IO,OUTPUT
-RelX,152
-RelY,8
-
-PORT
-Name,A_IN
-Source,A_IN
-Dest,A_IN
-IO,OUTPUT
-RelX,152
-RelY,9
-
-PORT
-Name,A_EN
-Source,A_EN
-Dest,A_EN
-IO,OUTPUT
-RelX,152
-RelY,10
-
-PORT
-Name,A_OUT
-Source,A_OUT
-Dest,A_OUT
-IO,INPUT
-RelX,152
-RelY,11
-
-BEL
-Name,IOBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/N_IO/../../primitives/IOBUF/fabulous/IOBUF.v
-RelX,285
-RelY,12
-Width,32
-Height,12
-
-BEL_PORT
-Name,A_CLK
-Source,A_CLK
-Dest,A_CLK
-IO,INPUT
-RelX,0
-RelY,4
-
-BEL_PORT
-Name,A_IN
-Source,A_IN
-Dest,A_IN
-IO,INPUT
-RelX,0
-RelY,5
-
-BEL_PORT
-Name,A_EN
-Source,A_EN
-Dest,A_EN
-IO,INPUT
-RelX,0
-RelY,6
-
-BEL_PORT
-Name,A_OUT
-Source,A_OUT
-Dest,A_OUT
-IO,OUTPUT
-RelX,0
-RelY,7
-
-BEL_PORT
-Name,OUT_top
-Source,OUT_top
-Dest,OUT_top
-IO,INPUT
-RelX,32
-RelY,4
-
-BEL_PORT
-Name,IN_top
-Source,IN_top
-Dest,IN_top
-IO,OUTPUT
-RelX,32
-RelY,5
-
-BEL_PORT
-Name,EN_top
-Source,EN_top
-Dest,EN_top
-IO,OUTPUT
-RelX,32
-RelY,6
-
-WIRE
-Name,A_CLK ⟶ A_CLK
-RelX,285
-RelY,16
-RelX,277
-RelY,16
-
-WIRE
-Name,A_IN ⟶ A_IN
-RelX,285
-RelY,17
-RelX,277
-RelY,17
-
-WIRE
-Name,A_EN ⟶ A_EN
-RelX,285
-RelY,18
-RelX,277
-RelY,18
-
-WIRE
-Name,A_OUT ⟶ A_OUT
-RelX,285
-RelY,19
-RelX,277
-RelY,19
 
 WIRE
 Name,NULL0 ⟶ N_GBUF_END0
@@ -25483,8 +25359,8 @@ Height,149
 
 SWITCH_MATRIX
 Name,N_term_MACC_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -27350,8 +27226,8 @@ Height,157
 
 SWITCH_MATRIX
 Name,SE_term_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SE_term/SE_term_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SE_term/SE_term_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SE_term/SE_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SE_term/SE_term_switch_matrix.list
 RelX,20
 RelY,113
 Width,112
@@ -27579,13 +27455,13 @@ RelY,148
 
 TILE
 Name,SW_term
-Width,184
+Width,152
 Height,157
 
 SWITCH_MATRIX
 Name,SW_term_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/SW_term_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/SW_term_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/SW_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/SW_term_switch_matrix.list
 RelX,24
 RelY,60
 Width,112
@@ -27809,7 +27685,7 @@ RelY,64
 
 BEL
 Name,GBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
 RelY,64
 Width,32
@@ -27833,7 +27709,7 @@ RelY,5
 
 BEL
 Name,GBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
 RelY,78
 Width,32
@@ -27857,7 +27733,7 @@ RelY,5
 
 BEL
 Name,GBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
 RelY,92
 Width,32
@@ -27881,7 +27757,7 @@ RelY,5
 
 BEL
 Name,GBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
 RelY,106
 Width,32
@@ -27905,7 +27781,7 @@ RelY,5
 
 BEL
 Name,SYS_RESET
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v
 RelX,144
 RelY,120
 Width,32
@@ -28068,7 +27944,7 @@ RelX,40
 RelY,133
 RelX,40
 RelY,141
-RelX,184
+RelX,152
 RelY,141
 
 WIRE
@@ -28077,7 +27953,7 @@ RelX,39
 RelY,133
 RelX,39
 RelY,142
-RelX,184
+RelX,152
 RelY,142
 
 WIRE
@@ -28086,7 +27962,7 @@ RelX,38
 RelY,133
 RelX,38
 RelY,143
-RelX,184
+RelX,152
 RelY,143
 
 WIRE
@@ -28095,7 +27971,7 @@ RelX,37
 RelY,133
 RelX,37
 RelY,144
-RelX,184
+RelX,152
 RelY,144
 
 WIRE
@@ -28104,7 +27980,7 @@ RelX,36
 RelY,133
 RelX,36
 RelY,145
-RelX,184
+RelX,152
 RelY,145
 
 WIRE
@@ -28113,7 +27989,7 @@ RelX,35
 RelY,133
 RelX,35
 RelY,146
-RelX,184
+RelX,152
 RelY,146
 
 WIRE
@@ -28122,7 +27998,7 @@ RelX,34
 RelY,133
 RelX,34
 RelY,147
-RelX,184
+RelX,152
 RelY,147
 
 WIRE
@@ -28131,18 +28007,18 @@ RelX,33
 RelY,133
 RelX,33
 RelY,148
-RelX,184
+RelX,152
 RelY,148
 
 TILE
-Name,S_IO
+Name,S_term
 Width,325
 Height,157
 
 SWITCH_MATRIX
-Name,S_IO_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/S_IO/S_IO_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/S_IO/S_IO_switch_matrix.list
+Name,S_term_switch_matrix
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term/S_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term/S_term_switch_matrix.list
 RelX,125
 RelY,8
 Width,152
@@ -29163,130 +29039,6 @@ Dest,E_GBUF_END3
 IO,INPUT
 RelX,15
 RelY,125
-
-PORT
-Name,A_CLK
-Source,A_CLK
-Dest,A_CLK
-IO,OUTPUT
-RelX,152
-RelY,8
-
-PORT
-Name,A_IN
-Source,A_IN
-Dest,A_IN
-IO,OUTPUT
-RelX,152
-RelY,9
-
-PORT
-Name,A_EN
-Source,A_EN
-Dest,A_EN
-IO,OUTPUT
-RelX,152
-RelY,10
-
-PORT
-Name,A_OUT
-Source,A_OUT
-Dest,A_OUT
-IO,INPUT
-RelX,152
-RelY,11
-
-BEL
-Name,IOBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/S_IO/../../primitives/IOBUF/fabulous/IOBUF.v
-RelX,285
-RelY,12
-Width,32
-Height,12
-
-BEL_PORT
-Name,A_CLK
-Source,A_CLK
-Dest,A_CLK
-IO,INPUT
-RelX,0
-RelY,4
-
-BEL_PORT
-Name,A_IN
-Source,A_IN
-Dest,A_IN
-IO,INPUT
-RelX,0
-RelY,5
-
-BEL_PORT
-Name,A_EN
-Source,A_EN
-Dest,A_EN
-IO,INPUT
-RelX,0
-RelY,6
-
-BEL_PORT
-Name,A_OUT
-Source,A_OUT
-Dest,A_OUT
-IO,OUTPUT
-RelX,0
-RelY,7
-
-BEL_PORT
-Name,OUT_top
-Source,OUT_top
-Dest,OUT_top
-IO,INPUT
-RelX,32
-RelY,4
-
-BEL_PORT
-Name,IN_top
-Source,IN_top
-Dest,IN_top
-IO,OUTPUT
-RelX,32
-RelY,5
-
-BEL_PORT
-Name,EN_top
-Source,EN_top
-Dest,EN_top
-IO,OUTPUT
-RelX,32
-RelY,6
-
-WIRE
-Name,A_CLK ⟶ A_CLK
-RelX,285
-RelY,16
-RelX,277
-RelY,16
-
-WIRE
-Name,A_IN ⟶ A_IN
-RelX,285
-RelY,17
-RelX,277
-RelY,17
-
-WIRE
-Name,A_EN ⟶ A_EN
-RelX,285
-RelY,18
-RelX,277
-RelY,18
-
-WIRE
-Name,A_OUT ⟶ A_OUT
-RelX,285
-RelY,19
-RelX,277
-RelY,19
 
 WIRE
 Name,N_GBUF_BEG0 ⟶ NULL0
@@ -30420,8 +30172,8 @@ Height,157
 
 SWITCH_MATRIX
 Name,S_term_MACC_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.list
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -32569,14 +32321,14 @@ RelX,0
 RelY,148
 
 TILE
-Name,W_IO
-Width,184
+Name,W_term
+Width,152
 Height,326
 
 SWITCH_MATRIX
-Name,W_IO_switch_matrix
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/W_IO/W_IO_switch_matrix.v
-Csv,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/W_IO/W_IO_switch_matrix.list
+Name,W_term_switch_matrix
+Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/W_term/W_term_switch_matrix.v
+Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/W_term/W_term_switch_matrix.list
 RelX,24
 RelY,174
 Width,112
@@ -33494,130 +33246,6 @@ IO,INPUT
 RelX,9
 RelY,40
 
-PORT
-Name,A_CLK
-Source,A_CLK
-Dest,A_CLK
-IO,OUTPUT
-RelX,112
-RelY,8
-
-PORT
-Name,A_IN
-Source,A_IN
-Dest,A_IN
-IO,OUTPUT
-RelX,112
-RelY,9
-
-PORT
-Name,A_EN
-Source,A_EN
-Dest,A_EN
-IO,OUTPUT
-RelX,112
-RelY,10
-
-PORT
-Name,A_OUT
-Source,A_OUT
-Dest,A_OUT
-IO,INPUT
-RelX,112
-RelY,11
-
-BEL
-Name,IOBUF
-Src,/home/kelvin/side-project/demo-ics55/.worktrees/nobram/Tile/W_IO/../../primitives/IOBUF/fabulous/IOBUF.v
-RelX,144
-RelY,178
-Width,32
-Height,12
-
-BEL_PORT
-Name,A_CLK
-Source,A_CLK
-Dest,A_CLK
-IO,INPUT
-RelX,0
-RelY,4
-
-BEL_PORT
-Name,A_IN
-Source,A_IN
-Dest,A_IN
-IO,INPUT
-RelX,0
-RelY,5
-
-BEL_PORT
-Name,A_EN
-Source,A_EN
-Dest,A_EN
-IO,INPUT
-RelX,0
-RelY,6
-
-BEL_PORT
-Name,A_OUT
-Source,A_OUT
-Dest,A_OUT
-IO,OUTPUT
-RelX,0
-RelY,7
-
-BEL_PORT
-Name,OUT_top
-Source,OUT_top
-Dest,OUT_top
-IO,INPUT
-RelX,32
-RelY,4
-
-BEL_PORT
-Name,IN_top
-Source,IN_top
-Dest,IN_top
-IO,OUTPUT
-RelX,32
-RelY,5
-
-BEL_PORT
-Name,EN_top
-Source,EN_top
-Dest,EN_top
-IO,OUTPUT
-RelX,32
-RelY,6
-
-WIRE
-Name,A_CLK ⟶ A_CLK
-RelX,144
-RelY,182
-RelX,136
-RelY,182
-
-WIRE
-Name,A_IN ⟶ A_IN
-RelX,144
-RelY,183
-RelX,136
-RelY,183
-
-WIRE
-Name,A_EN ⟶ A_EN
-RelX,144
-RelY,184
-RelX,136
-RelY,184
-
-WIRE
-Name,A_OUT ⟶ A_OUT
-RelX,144
-RelY,185
-RelX,136
-RelY,185
-
 WIRE
 Name,S_GBUF_FEED_BEG0 ⟶ S_GBUF_FEED_END0
 RelX,24
@@ -33768,7 +33396,7 @@ RelX,128
 RelY,214
 RelX,128
 RelY,222
-RelX,184
+RelX,152
 RelY,222
 
 WIRE
@@ -33777,7 +33405,7 @@ RelX,127
 RelY,214
 RelX,127
 RelY,223
-RelX,184
+RelX,152
 RelY,223
 
 WIRE
@@ -33786,7 +33414,7 @@ RelX,126
 RelY,214
 RelX,126
 RelY,224
-RelX,184
+RelX,152
 RelY,224
 
 WIRE
@@ -33795,7 +33423,7 @@ RelX,125
 RelY,214
 RelX,125
 RelY,225
-RelX,184
+RelX,152
 RelY,225
 
 WIRE
@@ -33804,7 +33432,7 @@ RelX,124
 RelY,214
 RelX,124
 RelY,226
-RelX,184
+RelX,152
 RelY,226
 
 WIRE
@@ -33813,7 +33441,7 @@ RelX,123
 RelY,214
 RelX,123
 RelY,227
-RelX,184
+RelX,152
 RelY,227
 
 WIRE
@@ -33822,7 +33450,7 @@ RelX,122
 RelY,214
 RelX,122
 RelY,228
-RelX,184
+RelX,152
 RelY,228
 
 WIRE
@@ -33831,7 +33459,7 @@ RelX,121
 RelY,214
 RelX,121
 RelY,229
-RelX,184
+RelX,152
 RelY,229
 
 WIRE
@@ -33840,7 +33468,7 @@ RelX,120
 RelY,214
 RelX,120
 RelY,230
-RelX,184
+RelX,152
 RelY,230
 
 WIRE
@@ -33849,7 +33477,7 @@ RelX,119
 RelY,214
 RelX,119
 RelY,231
-RelX,184
+RelX,152
 RelY,231
 
 WIRE
@@ -33858,7 +33486,7 @@ RelX,118
 RelY,214
 RelX,118
 RelY,232
-RelX,184
+RelX,152
 RelY,232
 
 WIRE
@@ -33867,7 +33495,7 @@ RelX,117
 RelY,214
 RelX,117
 RelY,233
-RelX,184
+RelX,152
 RelY,233
 
 WIRE
@@ -33876,7 +33504,7 @@ RelX,116
 RelY,214
 RelX,116
 RelY,234
-RelX,184
+RelX,152
 RelY,234
 
 WIRE
@@ -33885,7 +33513,7 @@ RelX,115
 RelY,214
 RelX,115
 RelY,235
-RelX,184
+RelX,152
 RelY,235
 
 WIRE
@@ -33894,7 +33522,7 @@ RelX,114
 RelY,214
 RelX,114
 RelY,236
-RelX,184
+RelX,152
 RelY,236
 
 WIRE
@@ -33903,7 +33531,7 @@ RelX,113
 RelY,214
 RelX,113
 RelY,237
-RelX,184
+RelX,152
 RelY,237
 
 WIRE
@@ -33912,7 +33540,7 @@ RelX,112
 RelY,214
 RelX,112
 RelY,238
-RelX,184
+RelX,152
 RelY,238
 
 WIRE
@@ -33921,7 +33549,7 @@ RelX,111
 RelY,214
 RelX,111
 RelY,239
-RelX,184
+RelX,152
 RelY,239
 
 WIRE
@@ -33930,7 +33558,7 @@ RelX,110
 RelY,214
 RelX,110
 RelY,240
-RelX,184
+RelX,152
 RelY,240
 
 WIRE
@@ -33939,7 +33567,7 @@ RelX,109
 RelY,214
 RelX,109
 RelY,241
-RelX,184
+RelX,152
 RelY,241
 
 WIRE
@@ -33948,7 +33576,7 @@ RelX,108
 RelY,214
 RelX,108
 RelY,242
-RelX,184
+RelX,152
 RelY,242
 
 WIRE
@@ -33957,7 +33585,7 @@ RelX,107
 RelY,214
 RelX,107
 RelY,243
-RelX,184
+RelX,152
 RelY,243
 
 WIRE
@@ -33966,7 +33594,7 @@ RelX,106
 RelY,214
 RelX,106
 RelY,244
-RelX,184
+RelX,152
 RelY,244
 
 WIRE
@@ -33975,7 +33603,7 @@ RelX,105
 RelY,214
 RelX,105
 RelY,245
-RelX,184
+RelX,152
 RelY,245
 
 WIRE
@@ -33984,7 +33612,7 @@ RelX,104
 RelY,214
 RelX,104
 RelY,246
-RelX,184
+RelX,152
 RelY,246
 
 WIRE
@@ -33993,7 +33621,7 @@ RelX,103
 RelY,214
 RelX,103
 RelY,247
-RelX,184
+RelX,152
 RelY,247
 
 WIRE
@@ -34002,7 +33630,7 @@ RelX,102
 RelY,214
 RelX,102
 RelY,248
-RelX,184
+RelX,152
 RelY,248
 
 WIRE
@@ -34011,7 +33639,7 @@ RelX,101
 RelY,214
 RelX,101
 RelY,249
-RelX,184
+RelX,152
 RelY,249
 
 WIRE
@@ -34020,7 +33648,7 @@ RelX,100
 RelY,214
 RelX,100
 RelY,250
-RelX,184
+RelX,152
 RelY,250
 
 WIRE
@@ -34029,7 +33657,7 @@ RelX,99
 RelY,214
 RelX,99
 RelY,251
-RelX,184
+RelX,152
 RelY,251
 
 WIRE
@@ -34038,7 +33666,7 @@ RelX,98
 RelY,214
 RelX,98
 RelY,252
-RelX,184
+RelX,152
 RelY,252
 
 WIRE
@@ -34047,7 +33675,7 @@ RelX,97
 RelY,214
 RelX,97
 RelY,253
-RelX,184
+RelX,152
 RelY,253
 
 WIRE
@@ -34056,7 +33684,7 @@ RelX,96
 RelY,214
 RelX,96
 RelY,254
-RelX,184
+RelX,152
 RelY,254
 
 WIRE
@@ -34065,7 +33693,7 @@ RelX,95
 RelY,214
 RelX,95
 RelY,255
-RelX,184
+RelX,152
 RelY,255
 
 WIRE
@@ -34074,7 +33702,7 @@ RelX,94
 RelY,214
 RelX,94
 RelY,256
-RelX,184
+RelX,152
 RelY,256
 
 WIRE
@@ -34083,7 +33711,7 @@ RelX,93
 RelY,214
 RelX,93
 RelY,257
-RelX,184
+RelX,152
 RelY,257
 
 WIRE
@@ -34092,7 +33720,7 @@ RelX,92
 RelY,214
 RelX,92
 RelY,258
-RelX,184
+RelX,152
 RelY,258
 
 WIRE
@@ -34101,7 +33729,7 @@ RelX,91
 RelY,214
 RelX,91
 RelY,259
-RelX,184
+RelX,152
 RelY,259
 
 WIRE
@@ -34110,7 +33738,7 @@ RelX,90
 RelY,214
 RelX,90
 RelY,260
-RelX,184
+RelX,152
 RelY,260
 
 WIRE
@@ -34119,7 +33747,7 @@ RelX,89
 RelY,214
 RelX,89
 RelY,261
-RelX,184
+RelX,152
 RelY,261
 
 WIRE
@@ -34128,7 +33756,7 @@ RelX,88
 RelY,214
 RelX,88
 RelY,262
-RelX,184
+RelX,152
 RelY,262
 
 WIRE
@@ -34137,7 +33765,7 @@ RelX,87
 RelY,214
 RelX,87
 RelY,263
-RelX,184
+RelX,152
 RelY,263
 
 WIRE
@@ -34146,7 +33774,7 @@ RelX,86
 RelY,214
 RelX,86
 RelY,264
-RelX,184
+RelX,152
 RelY,264
 
 WIRE
@@ -34155,7 +33783,7 @@ RelX,85
 RelY,214
 RelX,85
 RelY,265
-RelX,184
+RelX,152
 RelY,265
 
 WIRE
@@ -34164,7 +33792,7 @@ RelX,84
 RelY,214
 RelX,84
 RelY,266
-RelX,184
+RelX,152
 RelY,266
 
 WIRE
@@ -34173,7 +33801,7 @@ RelX,83
 RelY,214
 RelX,83
 RelY,267
-RelX,184
+RelX,152
 RelY,267
 
 WIRE
@@ -34182,7 +33810,7 @@ RelX,82
 RelY,214
 RelX,82
 RelY,268
-RelX,184
+RelX,152
 RelY,268
 
 WIRE
@@ -34191,7 +33819,7 @@ RelX,81
 RelY,214
 RelX,81
 RelY,269
-RelX,184
+RelX,152
 RelY,269
 
 WIRE
@@ -34200,7 +33828,7 @@ RelX,80
 RelY,214
 RelX,80
 RelY,270
-RelX,184
+RelX,152
 RelY,270
 
 WIRE
@@ -34209,7 +33837,7 @@ RelX,79
 RelY,214
 RelX,79
 RelY,271
-RelX,184
+RelX,152
 RelY,271
 
 WIRE
@@ -34218,7 +33846,7 @@ RelX,78
 RelY,214
 RelX,78
 RelY,272
-RelX,184
+RelX,152
 RelY,272
 
 WIRE
@@ -34227,7 +33855,7 @@ RelX,77
 RelY,214
 RelX,77
 RelY,273
-RelX,184
+RelX,152
 RelY,273
 
 WIRE
@@ -34236,7 +33864,7 @@ RelX,76
 RelY,214
 RelX,76
 RelY,274
-RelX,184
+RelX,152
 RelY,274
 
 WIRE
@@ -34245,7 +33873,7 @@ RelX,75
 RelY,214
 RelX,75
 RelY,275
-RelX,184
+RelX,152
 RelY,275
 
 WIRE
@@ -34254,7 +33882,7 @@ RelX,74
 RelY,214
 RelX,74
 RelY,276
-RelX,184
+RelX,152
 RelY,276
 
 WIRE
@@ -34263,7 +33891,7 @@ RelX,73
 RelY,214
 RelX,73
 RelY,277
-RelX,184
+RelX,152
 RelY,277
 
 WIRE
@@ -34272,7 +33900,7 @@ RelX,72
 RelY,214
 RelX,72
 RelY,278
-RelX,184
+RelX,152
 RelY,278
 
 WIRE
@@ -34281,7 +33909,7 @@ RelX,71
 RelY,214
 RelX,71
 RelY,279
-RelX,184
+RelX,152
 RelY,279
 
 WIRE
@@ -34290,7 +33918,7 @@ RelX,70
 RelY,214
 RelX,70
 RelY,280
-RelX,184
+RelX,152
 RelY,280
 
 WIRE
@@ -34299,7 +33927,7 @@ RelX,69
 RelY,214
 RelX,69
 RelY,281
-RelX,184
+RelX,152
 RelY,281
 
 WIRE
@@ -34308,7 +33936,7 @@ RelX,68
 RelY,214
 RelX,68
 RelY,282
-RelX,184
+RelX,152
 RelY,282
 
 WIRE
@@ -34317,7 +33945,7 @@ RelX,67
 RelY,214
 RelX,67
 RelY,283
-RelX,184
+RelX,152
 RelY,283
 
 WIRE
@@ -34326,7 +33954,7 @@ RelX,66
 RelY,214
 RelX,66
 RelY,284
-RelX,184
+RelX,152
 RelY,284
 
 WIRE
@@ -34335,7 +33963,7 @@ RelX,65
 RelY,214
 RelX,65
 RelY,285
-RelX,184
+RelX,152
 RelY,285
 
 WIRE
@@ -34344,7 +33972,7 @@ RelX,64
 RelY,214
 RelX,64
 RelY,286
-RelX,184
+RelX,152
 RelY,286
 
 WIRE
@@ -34353,7 +33981,7 @@ RelX,63
 RelY,214
 RelX,63
 RelY,287
-RelX,184
+RelX,152
 RelY,287
 
 WIRE
@@ -34362,7 +33990,7 @@ RelX,62
 RelY,214
 RelX,62
 RelY,288
-RelX,184
+RelX,152
 RelY,288
 
 WIRE
@@ -34371,7 +33999,7 @@ RelX,61
 RelY,214
 RelX,61
 RelY,289
-RelX,184
+RelX,152
 RelY,289
 
 WIRE
@@ -34380,7 +34008,7 @@ RelX,60
 RelY,214
 RelX,60
 RelY,290
-RelX,184
+RelX,152
 RelY,290
 
 WIRE
@@ -34389,7 +34017,7 @@ RelX,59
 RelY,214
 RelX,59
 RelY,291
-RelX,184
+RelX,152
 RelY,291
 
 WIRE
@@ -34398,7 +34026,7 @@ RelX,58
 RelY,214
 RelX,58
 RelY,292
-RelX,184
+RelX,152
 RelY,292
 
 WIRE
@@ -34407,7 +34035,7 @@ RelX,57
 RelY,214
 RelX,57
 RelY,293
-RelX,184
+RelX,152
 RelY,293
 
 WIRE
@@ -34416,7 +34044,7 @@ RelX,56
 RelY,214
 RelX,56
 RelY,294
-RelX,184
+RelX,152
 RelY,294
 
 WIRE
@@ -34425,7 +34053,7 @@ RelX,55
 RelY,214
 RelX,55
 RelY,295
-RelX,184
+RelX,152
 RelY,295
 
 WIRE
@@ -34434,7 +34062,7 @@ RelX,54
 RelY,214
 RelX,54
 RelY,296
-RelX,184
+RelX,152
 RelY,296
 
 WIRE
@@ -34443,7 +34071,7 @@ RelX,53
 RelY,214
 RelX,53
 RelY,297
-RelX,184
+RelX,152
 RelY,297
 
 WIRE
@@ -34452,7 +34080,7 @@ RelX,52
 RelY,214
 RelX,52
 RelY,298
-RelX,184
+RelX,152
 RelY,298
 
 WIRE
@@ -34461,7 +34089,7 @@ RelX,51
 RelY,214
 RelX,51
 RelY,299
-RelX,184
+RelX,152
 RelY,299
 
 WIRE
@@ -34470,7 +34098,7 @@ RelX,50
 RelY,214
 RelX,50
 RelY,300
-RelX,184
+RelX,152
 RelY,300
 
 WIRE
@@ -34479,7 +34107,7 @@ RelX,49
 RelY,214
 RelX,49
 RelY,301
-RelX,184
+RelX,152
 RelY,301
 
 WIRE
@@ -34488,7 +34116,7 @@ RelX,48
 RelY,214
 RelX,48
 RelY,302
-RelX,184
+RelX,152
 RelY,302
 
 WIRE
@@ -34497,7 +34125,7 @@ RelX,47
 RelY,214
 RelX,47
 RelY,303
-RelX,184
+RelX,152
 RelY,303
 
 WIRE
@@ -34506,7 +34134,7 @@ RelX,46
 RelY,214
 RelX,46
 RelY,304
-RelX,184
+RelX,152
 RelY,304
 
 WIRE
@@ -34515,7 +34143,7 @@ RelX,45
 RelY,214
 RelX,45
 RelY,305
-RelX,184
+RelX,152
 RelY,305
 
 WIRE
@@ -34524,7 +34152,7 @@ RelX,44
 RelY,214
 RelX,44
 RelY,306
-RelX,184
+RelX,152
 RelY,306
 
 WIRE
@@ -34533,7 +34161,7 @@ RelX,43
 RelY,214
 RelX,43
 RelY,307
-RelX,184
+RelX,152
 RelY,307
 
 WIRE
@@ -34542,7 +34170,7 @@ RelX,42
 RelY,214
 RelX,42
 RelY,308
-RelX,184
+RelX,152
 RelY,308
 
 WIRE
@@ -34551,7 +34179,7 @@ RelX,41
 RelY,214
 RelX,41
 RelY,309
-RelX,184
+RelX,152
 RelY,309
 
 WIRE
@@ -34560,7 +34188,7 @@ RelX,40
 RelY,214
 RelX,40
 RelY,310
-RelX,184
+RelX,152
 RelY,310
 
 WIRE
@@ -34569,7 +34197,7 @@ RelX,39
 RelY,214
 RelX,39
 RelY,311
-RelX,184
+RelX,152
 RelY,311
 
 WIRE
@@ -34578,7 +34206,7 @@ RelX,38
 RelY,214
 RelX,38
 RelY,312
-RelX,184
+RelX,152
 RelY,312
 
 WIRE
@@ -34587,7 +34215,7 @@ RelX,37
 RelY,214
 RelX,37
 RelY,313
-RelX,184
+RelX,152
 RelY,313
 
 WIRE
@@ -34596,7 +34224,7 @@ RelX,36
 RelY,214
 RelX,36
 RelY,314
-RelX,184
+RelX,152
 RelY,314
 
 WIRE
@@ -34605,7 +34233,7 @@ RelX,35
 RelY,214
 RelX,35
 RelY,315
-RelX,184
+RelX,152
 RelY,315
 
 WIRE
@@ -34614,7 +34242,7 @@ RelX,34
 RelY,214
 RelX,34
 RelY,316
-RelX,184
+RelX,152
 RelY,316
 
 WIRE
@@ -34623,6 +34251,6 @@ RelX,33
 RelY,214
 RelX,33
 RelY,317
-RelX,184
+RelX,152
 RelY,317
 

@@ -6,8 +6,8 @@ and that count goes stale while `bit_gen` keeps emitting one word per row, so
 every frame after the first loads misaligned. This top is written from the
 variant's own `eFPGA.v` instead. The loader is `fabric_config` from
 fabulous-fabrics, sized by the row and column counts the grid has, and the words
-it takes come from `config_frontend`, which serves UART, bitbang, SPI and the
-parallel port.
+it takes come from `config_frontend`, which serves UART, bitbang and SPI. Its
+32-bit parallel port is tied off, since 33 pads do not fit the MPW pad budget.
 
 A tile port `eFPGA.v` marks `//EXTERNAL` becomes one bit of a top-level bus
 named after the port, numbered the way FABulous numbers them: bottom row first,
@@ -168,8 +168,6 @@ module eFPGA_top (
     input wire spi_sck,
     input wire spi_cs_n,
     input wire spi_mosi,
-    input wire [31:0] SelfWriteData,
-    input wire SelfWriteStrobe,
     output wire ConfigBusy,
     output wire Configured
 );
@@ -197,8 +195,8 @@ module eFPGA_top (
         .spi_sck(spi_sck),
         .spi_cs_n(spi_cs_n),
         .spi_mosi(spi_mosi),
-        .SelfWriteData(SelfWriteData),
-        .SelfWriteStrobe(SelfWriteStrobe),
+        .SelfWriteData(32'b0),
+        .SelfWriteStrobe(1'b0),
         .bitstream_data(bitstream_data),
         .bitstream_valid(bitstream_valid)
     );

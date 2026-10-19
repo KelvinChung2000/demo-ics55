@@ -251,7 +251,7 @@ from.
 `flow/topwrap.py` writes `eFPGA_top` from the variant's own `eFPGA.v`, so the
 frame loader is sized by the grid it drives. The loader is `fabric_config` from
 fabulous-fabrics, fed by `config_frontend`, which takes the bitstream over UART,
-bitbang, SPI or the parallel `SelfWriteData` port. `flow cli integrate` hardens
+bitbang or SPI; the top ties off its parallel `SelfWriteData` port. `flow cli integrate` hardens
 that top in one ECC run: the 151 tiles as fixed macros, the loader and the
 front-ends placed in a channel west of the array and a strip south of it.
 

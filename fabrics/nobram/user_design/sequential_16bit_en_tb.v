@@ -139,7 +139,8 @@ module sequential_16bit_en_tb ();
             @(negedge CLK);
             $display("fabric(A_IN_top) = 0x%X gold = 0x%X, fabric(A_EN_top) = 0x%X gold = 0x%X",
                 A_IN_top, A_IN_top_gold, A_EN_top, A_EN_top_gold);
-            if (A_IN_top !== A_IN_top_gold) have_errors = 1'b1;
+            // A pad's output data is observable only while its output is enabled.
+            if ((A_IN_top & A_EN_top_gold) !== (A_IN_top_gold & A_EN_top_gold)) have_errors = 1'b1;
             if (A_EN_top !== A_EN_top_gold) have_errors = 1'b1;
         end
 

@@ -12,7 +12,10 @@ module IOBUF (
     (* iopad_external_pin *)
     output EN_top,
     (* iopad_external_pin *)
-    input OUT_top
+    input OUT_top,
+    // Pad side of the -iopad cell iobuf_map.v replaces; nextpnr binds a PCF set_io through it.
+    (* iopad_external_pin *)
+    inout PAD
 );
     parameter EN_REG = 0;
     parameter IN_REG = 0;

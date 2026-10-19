@@ -49,6 +49,47 @@ module cus_mux41 (A0, A1, A2, A3, S0, S0N, S1, S1N, X);
   MUX4X1H7L _TECHMAP_REPLACE_ (.A(A0), .B(A1), .C(A2), .D(A3), .S0(S0), .S1(S1), .Y(X));
 endmodule
 
+// A LUT4x8_ha LC output feeds about 40 switch-matrix mux inputs, 0.09 to 0.10
+// pF once routed. ABC sees that net as a primary output carrying only abc_load,
+// so it drives it with an X0P5 cell whose max_capacitance is 0.011 to 0.024 pF,
+// and nothing after synthesis resizes it. BUFX8H7L's limit is 0.192 pF.
+//
+// The replacement LC is placed as a placeholder retyped to FABULOUS_LC with K
+// set to its default 4, so it is still K=4 logic once flattened. `hierarchy`
+// has already turned every parameterised instance into a $paramod type, so a
+// plain FABULOUS_LC cell carrying K can only be one this rule made, and the
+// rule refuses it rather than wrapping it again.
+(* techmap_celltype = "FABULOUS_LC" *)
+module FABULOUS_LC_drive (I, O, Ci, Co, SR, EN, CLK, ConfigBits);
+  localparam I_WIDTH = 4;
+  localparam CONFIG_WIDTH = 19;
+  parameter K = 0;
+  parameter _TECHMAP_BITS_CONNMAP_ = 0;
+  parameter _TECHMAP_CONNMAP_I_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_ = 0;
+  input [I_WIDTH-1:0] I;
+  output O;
+  input Ci;
+  output Co;
+  input SR, EN, CLK;
+  input [CONFIG_WIDTH-1:0] ConfigBits;
+  // techmap pads or truncates a port whose width differs from the cell's.
+  generate
+    if (_TECHMAP_BITS_CONNMAP_ != 0 && (
+        $bits(_TECHMAP_CONNMAP_I_) != I_WIDTH * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_))
+      $error("FABULOUS_LC ports differ from FABULOUS_LC_drive in techmap/ics55_models.v");
+  endgenerate
+  wire _TECHMAP_FAIL_ = K != 0;
+  wire O_lc;
+  (* techmap_chtype = "FABULOUS_LC" *)
+  _TECHMAP_PLACEHOLDER_ #(.K(4)) _TECHMAP_REPLACE_ (
+    .I(I), .O(O_lc), .Ci(Ci), .Co(Co), .SR(SR), .EN(EN), .CLK(CLK),
+    .ConfigBits(ConfigBits)
+  );
+  BUFX8H7L _TECHMAP_REPLACE_.O_drive (.A(O_lc), .Y(O));
+endmodule
+
 module cus_mux21 (A0, A1, S, X);
   input A0, A1, S;
   output X;

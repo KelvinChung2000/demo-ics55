@@ -909,6 +909,15 @@ def integrate(
         directory, toprun.TOP_MODULE, "legalization", "legalization_dreamplace"
     )
     typer.echo(f"{len(withheld)} seam nets withheld from routing")
+    typer.echo(
+        toprun.repair_placement(
+            legalised,
+            pdk_root=config.fabric.pdk_root,
+            macros=directory / "macros",
+            sdc=directory / "top.sdc",
+            reports=paths().build / "logs" / "top_repair",
+        )
+    )
     step = project.run_range(directory, "route", "filler", log, progress=True)
     typer.echo(
         f"top run recorded as {step.state} after {step.seconds:.0f} s, see {log}"

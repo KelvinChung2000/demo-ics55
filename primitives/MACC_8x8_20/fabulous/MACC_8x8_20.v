@@ -59,16 +59,25 @@ module MACC_8x8_20 #(
     assign clk_sel = CLK_INV ? !CLK : CLK;
     clk_buf clk_drive (.A(clk_sel), .X(clk));
 
+    // ICS55 has no enabled flop, so every `if (EN)` becomes a feedback mux
+    // reading both EN and its complement. Left whole, ABC drove all 56 selects
+    // from one INVX0P5 and the EN net from the switch-matrix mux, 6 ns edges
+    // at the slow corner; one copy per register group keeps each under 20.
+    wire en_a, en_b, en_c, en_acc, acc_rst;
+    fanout_buf en_a_drive (.A(EN), .X(en_a));
+    fanout_buf en_b_drive (.A(EN), .X(en_b));
+    fanout_buf en_c_drive (.A(EN), .X(en_c));
+    fanout_buf en_acc_drive (.A(EN), .X(en_acc));
+    fanout_buf acc_rst_drive (.A(ACC_RST), .X(acc_rst));
+
     // Registers the inputs
     logic [7:0] A_q, B_q;
     logic [19:0] C_q;
 
     always_ff @(posedge clk) begin
-        if (EN) begin
-            A_q <= A;
-            B_q <= B;
-            C_q <= C;
-        end
+        if (en_a) A_q <= A;
+        if (en_b) B_q <= B;
+        if (en_c) C_q <= C;
     end
     
     // Select the operands
@@ -93,10 +102,10 @@ module MACC_8x8_20 #(
     // Accumulator
     logic [19:0] ACC;
     always_ff @(posedge clk) begin
-        if (ACC_RST) begin
+        if (acc_rst) begin
             ACC <= '0;
         end else begin
-            if (EN) begin
+            if (en_acc) begin
                 ACC <= sum;
             end
         end

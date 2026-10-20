@@ -32,6 +32,13 @@ module clk_hop (input A, output X);
   BUFX3H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
 endmodule
 
+// A signal split into copies in RTL so that ABC, which buffers no net in an
+// AREA strategy, derives each copy's complement separately. BUFX4H7L carries
+// 0.097 pF; one copy drives at most 20 enable muxes.
+module fanout_buf (input A, output X);
+  BUFX4H7L _TECHMAP_REPLACE_ (.A(A), .Y(X));
+endmodule
+
 // ABC reaches most of these on its own but not all of them, and it pays for
 // the ones it misses twice: a 4:1 built from three MUX2X1 costs 8.4 um^2
 // against MUX4X1's 6.44, and the select complements stay live because the

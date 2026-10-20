@@ -16,3 +16,10 @@ width_micron = 70.8
 # No height. This type spans two grid rows and `flow.plan._override_die` refuses
 # a single height for a multi-row type, since one number cannot say how tall each
 # row is. Its 168.0 um is LUT4x8_ha's 84.0 twice, frozen there.
+
+[repair]
+# ECC sizes nothing after placement, so the switch-matrix muxes that land
+# 11 to 13 loads keep their MUX4X1 drive. Any margin above 0 leaves too little
+# room to route this die (5% gives 7 DRC, 10% gives 149), so the routed tile
+# keeps a small residual.
+drv_margin_percent = 0

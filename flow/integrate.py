@@ -19,15 +19,12 @@ at the fabric edge rather than through vias over a tile.
 
 from __future__ import annotations
 
-import os
 import re
 import shutil
-import subprocess
-import tempfile
 from dataclasses import dataclass, replace
 from pathlib import Path
 
-from flow import defedit, topwrap
+from flow import defedit, repair, topwrap
 from flow import project as ecc_project
 from flow.config import FabricSettings, Param
 from flow.fabric import Fabric
@@ -541,64 +538,33 @@ def restore_seam_nets(def_path: Path, withheld: list[str]) -> None:
     defedit.write_def(def_path, text, gzipped=def_path.suffix == ".gz")
 
 
-REPAIR_TCL = Path(__file__).with_name("repair.tcl")
 # The full-chip signoff STA times hold against this uncertainty, and the repair
 # adds HOLD_MARGIN on top for the gap between placement-estimated and
 # extracted parasitics.
 HOLD_UNCERTAINTY_NS = 0.05
 HOLD_MARGIN_NS = 0.05
-SPECIALNETS_RE = re.compile(r"^SPECIALNETS \d+ ;$.*?^END SPECIALNETS$", re.M | re.S)
-VIOLATED_RE = re.compile(r"\(VIOLATED\)")
 
 
 def repair_placement(
     def_path: Path, *, pdk_root: Path, macros: Path, sdc: Path, reports: Path
 ) -> str:
-    """Repair slew, capacitance and hold on the legalised top in OpenROAD, in place.
-
-    OpenROAD writes every power connection out explicitly, which drops the
-    `( * vdd_stripe_generate )` term the tile stripes need, so the input's
-    SPECIALNETS block is put back whole: the PDN is not touched here, and its
-    `( * VDD )` reaches the buffers the repair adds. Raises
-    `CalledProcessError` if OpenROAD fails, check_placement included.
-    """
-    reports.mkdir(parents=True, exist_ok=True)
-    original = defedit.read_def(def_path)
-    with tempfile.TemporaryDirectory() as scratch:
-        plain = Path(scratch) / "legalised.def"
-        repaired = Path(scratch) / "repaired.def"
-        plain.write_text(original)
-        with (reports / "repair.log").open("w") as log:
-            subprocess.run(
-                ["openroad", "-exit", "-no_init", str(REPAIR_TCL)],
-                cwd=reports,
-                stdout=log,
-                stderr=subprocess.STDOUT,
-                check=True,
-                env={
-                    **os.environ,
-                    "PDK": str(pdk_root),
-                    "MACROS": str(macros),
-                    "DEF_IN": str(plain),
-                    "DEF_OUT": str(repaired),
-                    "SDC": str(sdc),
-                    "HOLD_UNCERTAINTY": str(HOLD_UNCERTAINTY_NS),
-                    "HOLD_MARGIN": str(HOLD_MARGIN_NS),
-                },
-            )
-        text = repaired.read_text()
-    power = SPECIALNETS_RE.search(original)
-    rewritten = SPECIALNETS_RE.search(text)
-    if power is None or rewritten is None:
-        raise ValueError(f"{def_path} or its repair has no SPECIALNETS section")
-    text = text[: rewritten.start()] + power.group(0) + text[rewritten.end() :]
-    defedit.write_def(def_path, text, gzipped=def_path.suffix == ".gz")
-    before, after = (
-        len(VIOLATED_RE.findall((reports / name).read_text()))
-        for name in ("drv_before.txt", "drv_after.txt")
+    """Repair slew, capacitance and hold on the legalised top in OpenROAD, in place,
+    with `flow.repair.run`."""
+    summary = repair.run(
+        repair.TOP_TCL,
+        def_path,
+        env={
+            "PDK": str(pdk_root),
+            "MACROS": str(macros),
+            "SDC": str(sdc),
+            "HOLD_UNCERTAINTY": str(HOLD_UNCERTAINTY_NS),
+            "HOLD_MARGIN": str(HOLD_MARGIN_NS),
+        },
+        reports=reports,
     )
     holds = [
-        line for line in (reports / "repair.log").read_text().splitlines()
+        line
+        for line in (reports / "repair.log").read_text().splitlines()
         if line.startswith(("hold after:", "setup after:"))
     ]
-    return f"OpenROAD repair: DRV {before} -> {after} (placement estimate); " + "; ".join(holds)
+    return f"OpenROAD repair: {summary}; " + "; ".join(holds)

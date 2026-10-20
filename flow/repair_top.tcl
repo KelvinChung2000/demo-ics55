@@ -1,4 +1,4 @@
-# Post-legalisation DRV and hold repair of eFPGA_top, run by flow.integrate.
+# Post-legalisation DRV and hold repair of eFPGA_top, run by flow.repair.
 # ECC skips TimingOpt (no Sizer here), so nothing else sizes or buffers the
 # loader and front-ends against their placed wire. Reports land in the cwd.
 # env: PDK, MACROS (dir of <tile>/<tile>_Harden.{lef,lib}), DEF_IN, DEF_OUT,

@@ -23,7 +23,7 @@ from typing import Annotated
 
 import typer
 
-from flow import defedit, ioplace, names, project, tilelib
+from flow import defedit, ioplace, names, project, repair, tilelib
 from flow.config import Config, FabricSettings, load_config
 from flow.fabric import Fabric, load_fabric
 from flow.plan import CORE_MARGIN, DBU, build_plan, Plan, stale_dies, uncovered
@@ -447,6 +447,23 @@ def harden(
             project.bypass_placement(
                 directory, tile_type, TAIL_STEP, "postFloorplan_ecc"
             )
+            step = project.run_range(
+                directory, "route", "Harden", log, progress=jobs == 1
+            )
+        elif tile_type in config.tile_repair:
+            step = project.run_range(
+                directory, "place", "legalization", log, progress=jobs == 1
+            )
+            if not step.ok:
+                return tile_type, f"{note}; placement failed, see {log}"
+            folder = ("legalization", "legalization_dreamplace")
+            note += "; OpenROAD " + repair.tile(
+                project.step_def(directory, tile_type, *folder),
+                pdk_root=config.fabric.pdk_root,
+                margin_percent=config.tile_repair[tile_type],
+                reports=directory / "repair",
+            )
+            project.drop_step_database(directory, tile_type, *folder)
             step = project.run_range(
                 directory, "route", "Harden", log, progress=jobs == 1
             )

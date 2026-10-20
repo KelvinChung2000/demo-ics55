@@ -354,6 +354,9 @@ def harden(
                 preset="rtl2gds",
                 overrides=chosen,
                 stripe_pitch_micron=layout.stripe_pitch / DBU,
+                dont_use=(
+                    project.WEAK_DRIVES if config.avoids_weak_drives(tile_type) else ()
+                ),
             )
         except ValueError:
             # An override ECC refuses leaves a project that can never run. Its
@@ -575,6 +578,7 @@ def synth(tile: list[str] = typer.Option(None), jobs: int = 3) -> None:
             params=config.params_for(tile_type),
             # Synthesis only, so no floorplan reads this.
             stripe_pitch_micron=config.fabric.stripe_pitch_micron,
+            dont_use=project.WEAK_DRIVES if config.avoids_weak_drives(tile_type) else (),
         )
         step = project.create_workspace(
             directory,

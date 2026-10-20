@@ -173,8 +173,8 @@ class Config:
     tile_params: dict[str, tuple[Param, ...]]
     tile_die: dict[str, TileDie]
     tile_macro: dict[str, TileMacro]
-    synthesis_default: str | None
-    tile_synthesis: dict[str, str | None]
+    synthesis_default: Synthesis
+    tile_synthesis: dict[str, Synthesis]
 
     def strategy_for(self, tile_type: str) -> str | None:
         """Return the ABC strategy this tile type synthesises with, if any.
@@ -182,7 +182,15 @@ class Config:
         A tile that names none falls back to the shared default, and a fabric
         that names none anywhere leaves Yosys on its own `DELAY 4`.
         """
-        return self.tile_synthesis.get(tile_type) or self.synthesis_default
+        own = self.tile_synthesis.get(tile_type)
+        return (own and own.strategy) or self.synthesis_default.strategy
+
+    def avoids_weak_drives(self, tile_type: str) -> bool:
+        """Whether this tile type synthesises with `project.WEAK_DRIVES` banned."""
+        own = self.tile_synthesis.get(tile_type)
+        if own is not None and own.avoid_weak_drives is not None:
+            return own.avoid_weak_drives
+        return bool(self.synthesis_default.avoid_weak_drives)
 
     def params_for(self, tile_type: str) -> tuple[Param, ...]:
         """Return one tile type's parameters, its own entries replacing the defaults."""
@@ -373,30 +381,44 @@ def _macro(table: object, source: Path) -> TileMacro | None:
 STRATEGY = re.compile(r"^(DELAY|AREA|BALANCE) (\d+)$")
 
 
-def _synthesis(table: object, source: Path) -> str | None:
-    """Read one layer's ABC strategy, refusing a spelling Yosys would reject.
+@dataclass(frozen=True)
+class Synthesis:
+    """One layer's `[synthesis]` table; `None` leaves a key to the layer below."""
 
-    The strategy is not an ECC parameter and cannot go under `[params]`: ECC
-    reads it from `YOSYS_SYNTH_STRATEGY` and its registry has no entry for it.
-    Checking the spelling here matters because a bad one is not caught until
-    the synthesis script has already read the liberty files and exits 1.
+    strategy: str | None = None
+    avoid_weak_drives: bool | None = None
+
+
+def _synthesis(table: object, source: Path) -> Synthesis:
+    """Read one layer's `[synthesis]` table, refusing a spelling Yosys would reject.
+
+    Neither key is an ECC parameter, so neither can go under `[params]`: ECC
+    reads the strategy from `YOSYS_SYNTH_STRATEGY`, and `avoid_weak_drives`
+    reaches it as `[pdk.overrides] dont_use`. Checking the strategy's spelling
+    here matters because a bad one is not caught until the synthesis script has
+    already read the liberty files and exits 1.
     """
     if table is None:
-        return None
+        return Synthesis()
     if not isinstance(table, dict):
         raise ValueError(f"{source}: [synthesis] is not a table")
-    unknown = sorted(set(table) - {"strategy"})
+    unknown = sorted(set(table) - {"strategy", "avoid_weak_drives"})
     if unknown:
-        raise ValueError(f"{source}: [synthesis] takes strategy, not {unknown}")
-    if "strategy" not in table:
-        return None
-    value = table["strategy"]
-    if not isinstance(value, str) or not STRATEGY.match(value):
         raise ValueError(
-            f"{source}: synthesis.strategy is {value!r}, not DELAY, AREA or "
+            f"{source}: [synthesis] takes strategy and avoid_weak_drives, not {unknown}"
+        )
+    strategy = table.get("strategy")
+    if strategy is not None and (
+        not isinstance(strategy, str) or not STRATEGY.match(strategy)
+    ):
+        raise ValueError(
+            f"{source}: synthesis.strategy is {strategy!r}, not DELAY, AREA or "
             "BALANCE followed by an index, as in \"AREA 5\""
         )
-    return value
+    weak = table.get("avoid_weak_drives")
+    if weak is not None and not isinstance(weak, bool):
+        raise ValueError(f"{source}: synthesis.avoid_weak_drives is {weak!r}, not a bool")
+    return Synthesis(strategy=strategy, avoid_weak_drives=weak)
 
 
 def _section(table: dict[str, object], name: str, source: Path) -> dict[str, object]:
@@ -482,7 +504,7 @@ def load_config(paths: Paths, tile_types: tuple[str, ...] = ()) -> Config:
     tiles = {}
     dies = {}
     macros = {}
-    strategies: dict[str, str | None] = {}
+    strategies: dict[str, Synthesis] = {}
     for path in sorted(paths.tiles.glob(f"*/{CONFIG_NAME}")):
         tile_type = path.parent.name
         if tile_type == "include":

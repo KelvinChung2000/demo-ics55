@@ -2,6 +2,9 @@
 # netlist in sweep/strategies_MACC.tsv at 93bf29a: 9983.1 um^2, 528.4 um^2 below DELAY 4's 10511.5.
 [synthesis]
 strategy = "AREA 6"
+# ABC sizes against abc_load alone and leaves X0P5 drivers on nets that route
+# to 0.03 to 0.1 pF; the weak drives it may not use cost no area to ban.
+avoid_weak_drives = true
 
 # The width of this tile's fabric column, which every type in it is built to.
 # Bound by MACC: at 70.8 x 168.0 um it fills 0.9124 of its core and

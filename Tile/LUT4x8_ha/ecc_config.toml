@@ -31,6 +31,9 @@ target_density = 0.95
 # still has 30 violations after 9. Cell area, not instance count, ordered every
 # strategy tried there.
 strategy = "AREA 5"
+# ABC sizes against abc_load alone and leaves X0P5 drivers on nets that route
+# to 0.03 to 0.1 pF; the weak drives it may not use cost no area to ban.
+avoid_weak_drives = true
 
 # The anchor, written down. Kelvin fixed this tile at 82.5 um on 2026-09-21 and
 # every other die in the fabric was measured around it, but 82.5 reached the

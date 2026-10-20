@@ -43,6 +43,29 @@ QUIET_EDITABLE_REBUILD = {"SKBUILD_EDITABLE_VERBOSE": "0"}
 TECHMAP = Path(__file__).resolve().parent.parent / "techmap" / "ics55_models.v"
 TECHMAP_ENV = {"YOSYS_TECHMAP_FILES": str(TECHMAP)}
 WORKSPACE = "default"
+# ECC's built-in ics55 `dont_use` (chipcompiler/data/pdk.py). `[pdk.overrides]`
+# replaces the field whole, so a run that adds to it has to restate these.
+ECC_DONT_USE: tuple[str, ...] = (
+    "DFFSRQX*", "DFFSRX*", "*AO222*", "*2BB2*", "*AOI222*", "*AOI33*",
+    "*OA222*", "*OAI222*", "*OAI33*", "*NOR4*", "ICG*",
+)
+# Every combinational ICS55 family's X0P5, X0P7 and X1 cost the same area as
+# its X1P4 or more (from the liberty `area`), so banning them takes nothing
+# from an area-driven ABC run and stops it leaving a 0.01 to 0.04 pF driver on
+# a net it cannot see is routed. ADDHX1 and AOI2XB1X1 are cheaper than their
+# X1P4 and stay. Sequential cells are left alone: the latch map names LATHX1.
+_WEAK_FAMILIES = (
+    "AND2 AND3 AND4 AO21 AO211 AO22 AO221 AO222 AO31 AOA211 AOAI211 AOI21 AOI211 "
+    "AOI21B AOI22 AOI221 AOI222 AOI2BB1 AOI2BB2 AOI31 AOI32 AOI33 BUF INV MUX2 "
+    "MUX4 MUXI2 NAND2 NAND2B NAND3 NAND3B NAND3BB NAND4 NAND4B NAND4BB NOR2 NOR2B "
+    "NOR3 NOR3B NOR4 NOR4B NOR4BB OA21 OA211 OA22 OA221 OA222 OA31 OAI21 OAI211 "
+    "OAI21B OAI22 OAI221 OAI222 OAI2BB1 OAI2BB2 OAI2XB1 OAI31 OAI32 OAI33 OAO211 "
+    "OAOI211 OR2 OR3 OR4 TBUF TINV XNOR2 XNOR3 XOR2 XOR3"
+).split()
+WEAK_DRIVES: tuple[str, ...] = (
+    *(f"{family}X{drive}H7?" for family in _WEAK_FAMILIES for drive in ("0P5", "0P7", "1")),
+    "ADDFX1H7?", "AOI2XB1X0P5H7?", "AOI2XB1X0P7H7?",
+)
 # FABulous names every switch matrix this way, and only a switch matrix carries
 # the global-buffer network's feedthroughs.
 SWITCH_MATRIX_SUFFIX = "_switch_matrix"
@@ -250,6 +273,7 @@ def write_ecc_toml(
     sdc: str | None = None,
     note: str = "",
     stripe_pitch_micron: float | None = None,
+    dont_use: Sequence[str] = (),
 ) -> None:
     """Render one project's `ecc.toml` from the project configuration.
 
@@ -274,11 +298,16 @@ def write_ecc_toml(
         f"frequency_mhz = {settings.frequency_mhz}\n",
         f'[pdk]\nname = "{settings.pdk_name}"\nroot = "{settings.pdk_root}"\n',
     ]
+    overrides = []
     if sdc is not None:
-        sections.append(
+        overrides.append(
             f"# Without this ECC writes its own SDC from clock_port and ignores {sdc}.\n"
-            f'[pdk.overrides]\nsdc = "{sdc}"\n'
+            f'sdc = "{sdc}"\n'
         )
+    if dont_use:
+        overrides.append(f"dont_use = {json.dumps([*ECC_DONT_USE, *dont_use])}\n")
+    if overrides:
+        sections.append("[pdk.overrides]\n" + "".join(overrides))
     # ECC main rejects `[flow].run`, and records the skip policy when the
     # workspace is first created, so both belong here rather than in a later
     # edit that the ledger would not see.
@@ -339,6 +368,7 @@ def create_project(
     preset: str = "syn_sta",
     overrides: Sequence[Override] = (),
     stripe_pitch_micron: float,
+    dont_use: Sequence[str] = (),
 ) -> None:
     """Lay out an ECC project for one tile, copying its Verilog into `rtl/`.
 
@@ -376,6 +406,7 @@ def create_project(
         params=params,
         preset=preset,
         stripe_pitch_micron=stripe_pitch_micron,
+        dont_use=dont_use,
     )
     apply_overrides(directory, overrides)
 

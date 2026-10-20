@@ -90,6 +90,92 @@ module FABULOUS_LC_drive (I, O, Ci, Co, SR, EN, CLK, ConfigBits);
   BUFX8H7L _TECHMAP_REPLACE_.O_drive (.A(O_lc), .Y(O));
 endmodule
 
+// The same disease on the MACC: each Q bit feeds about 40 switch-matrix mux
+// inputs, 0.09 to 0.12 pF once routed, and ABC drove it from an OAI22X0P5.
+// The guard is FABULOUS_LC_drive's, on NoConfigBits: MACC_bot instantiates
+// the BEL with no parameter, so only a cell this rule made carries one.
+(* techmap_celltype = "MACC_8x8_20" *)
+module MACC_8x8_20_drive (CLK, EN, ACC_RST, ACC_CI, ACC_CO, A, B, C, Q, ConfigBits);
+  localparam CONFIG_WIDTH = 7;
+  parameter NoConfigBits = 0;
+  parameter _TECHMAP_BITS_CONNMAP_ = 0;
+  parameter _TECHMAP_CONNMAP_A_ = 0;
+  parameter _TECHMAP_CONNMAP_B_ = 0;
+  parameter _TECHMAP_CONNMAP_C_ = 0;
+  parameter _TECHMAP_CONNMAP_Q_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_ = 0;
+  input CLK, EN, ACC_RST, ACC_CI;
+  output ACC_CO;
+  input [7:0] A, B;
+  input [19:0] C;
+  output [19:0] Q;
+  input [CONFIG_WIDTH-1:0] ConfigBits;
+  generate
+    if (_TECHMAP_BITS_CONNMAP_ != 0 && (
+        $bits(_TECHMAP_CONNMAP_A_) != 8 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_B_) != 8 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_C_) != 20 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_Q_) != 20 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_))
+      $error("MACC_8x8_20 ports differ from MACC_8x8_20_drive in techmap/ics55_models.v");
+  endgenerate
+  wire _TECHMAP_FAIL_ = NoConfigBits != 0;
+  wire [19:0] Q_bel;
+  (* techmap_chtype = "MACC_8x8_20" *)
+  _TECHMAP_PLACEHOLDER_ #(.NoConfigBits(CONFIG_WIDTH)) _TECHMAP_REPLACE_ (
+    .CLK(CLK), .EN(EN), .ACC_RST(ACC_RST), .ACC_CI(ACC_CI), .ACC_CO(ACC_CO),
+    .A(A), .B(B), .C(C), .Q(Q_bel), .ConfigBits(ConfigBits)
+  );
+  genvar i;
+  generate
+    for (i = 0; i < 20; i = i + 1) begin : Q_drive
+      BUFX8H7L buffer (.A(Q_bel[i]), .Y(Q[i]));
+    end
+  endgenerate
+endmodule
+
+// MACC_bot's strobe_outbuf drives MACC_top's FrameStrobe port across the
+// 168 um supertile, and every MACC_top configuration latch hangs on that port
+// net: 34 latch G pins and 0.07 to 0.08 pF per strobe, against BUFX1H7L's
+// 0.035 pF. A BUFX5H7L (0.122 pF, the area of a BUFX4) in front of the
+// ConfigMem leaves the outbuf driving two inputs. The guard is on
+// MaxFramesPerCol, which MACC_top does not set.
+(* techmap_celltype = "MACC_top_ConfigMem" *)
+module MACC_top_ConfigMem_strobe (FrameData, FrameStrobe, ConfigBits, ConfigBits_N);
+  localparam FRAMES = 20;
+  localparam CONFIG_WIDTH = 406;
+  parameter MaxFramesPerCol = 0;
+  parameter _TECHMAP_BITS_CONNMAP_ = 0;
+  parameter _TECHMAP_CONNMAP_FrameData_ = 0;
+  parameter _TECHMAP_CONNMAP_FrameStrobe_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_N_ = 0;
+  input [31:0] FrameData;
+  input [FRAMES-1:0] FrameStrobe;
+  output [CONFIG_WIDTH-1:0] ConfigBits, ConfigBits_N;
+  generate
+    if (_TECHMAP_BITS_CONNMAP_ != 0 && (
+        $bits(_TECHMAP_CONNMAP_FrameData_) != 32 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_FrameStrobe_) != FRAMES * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_N_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_))
+      $error("MACC_top_ConfigMem ports differ from MACC_top_ConfigMem_strobe in techmap/ics55_models.v");
+  endgenerate
+  wire _TECHMAP_FAIL_ = MaxFramesPerCol != 0;
+  wire [FRAMES-1:0] strobe;
+  genvar i;
+  generate
+    for (i = 0; i < FRAMES; i = i + 1) begin : strobe_drive
+      BUFX5H7L buffer (.A(FrameStrobe[i]), .Y(strobe[i]));
+    end
+  endgenerate
+  (* techmap_chtype = "MACC_top_ConfigMem" *)
+  _TECHMAP_PLACEHOLDER_ #(.MaxFramesPerCol(FRAMES)) _TECHMAP_REPLACE_ (
+    .FrameData(FrameData), .FrameStrobe(strobe), .ConfigBits(ConfigBits),
+    .ConfigBits_N(ConfigBits_N)
+  );
+endmodule
+
 module cus_mux21 (A0, A1, S, X);
   input A0, A1, S;
   output X;

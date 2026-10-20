@@ -8,7 +8,7 @@ The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells,
 
 | Directory | Contents |
 |---|---|
-| `images/` | Report figures, their `.drawio` sources, and `waveforms.py` and `floorplan.py`, which draw the timing and floorplan figures |
+| `images/` | Report figures and their `.drawio` sources. The waveform and floorplan figures are GTKWave and KLayout captures made by `capture/` |
 | `rtl/` | The 51 source files of `eFPGA_top`; `rtl/filelist.f` lists them relative to this directory. `rtl/config/` holds the grid, dies, pin orders and ECC settings. |
 | `sim/` | The counter test design and testbench, its prebuilt bitstream, the passing simulation log, and the nextpnr model and bitstream specification (`fabulous_model/`, gzipped) |
 | `physical/` | `eFPGA_top` and per-tile DEF, netlist, GDS, SPEF at nine RC corners, LEF and Liberty, and `fabric_plan.json` |

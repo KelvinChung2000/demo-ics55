@@ -1,0 +1,13 @@
+[*] resetn pulse and SPI chip select at the start of the Test/ bitstream sim (zoom of clock_reset_timing)
+[size] 1600 340
+[pos] 0 0
+[signals_width] 340
+[sst_expanded] 0
+@28
+sequential_16bit_en_tb.CLK
+sequential_16bit_en_tb.resetn
+sequential_16bit_en_tb.configured
+sequential_16bit_en_tb.config_busy
+sequential_16bit_en_tb.spi_cs_n
+sequential_16bit_en_tb.spi_sck
+sequential_16bit_en_tb.spi_mosi

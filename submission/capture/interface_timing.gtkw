@@ -1,0 +1,20 @@
+[*] SPI loader interface: config_frontend, cocotb test_stream/port=SPI
+[size] 1600 360
+[pos] 0 0
+[sst_width] 1
+[signals_width] 300
+[sst_expanded] 0
+[sst_vpaned_height] 0
+@28
+config_frontend.CLK
+config_frontend.resetn
+config_frontend.spi_cs_n
+config_frontend.spi_sck
+config_frontend.spi_mosi
+config_frontend.spi_strobe
+@22
+config_frontend.spi_data[31:0]
+@28
+config_frontend.bitstream_valid
+@22
+config_frontend.bitstream_data[31:0]

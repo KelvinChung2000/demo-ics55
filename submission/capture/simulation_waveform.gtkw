@@ -1,0 +1,16 @@
+[*] sequential_16bit_en in user mode on eFPGA_top after configuration, fabric against the reference RTL
+[size] 1600 400
+[pos] 0 0
+[signals_width] 340
+[sst_expanded] 0
+@28
+sequential_16bit_en_tb.configured
+sequential_16bit_en_tb.CLK
+@22
+sequential_16bit_en_tb.pad_in[9:0]
+sequential_16bit_en_tb.A_IN_top[9:0]
+sequential_16bit_en_tb.A_IN_top_gold[9:0]
+sequential_16bit_en_tb.A_EN_top[9:0]
+sequential_16bit_en_tb.A_EN_top_gold[9:0]
+@24
+sequential_16bit_en_tb.dut_i.ctr[15:0]

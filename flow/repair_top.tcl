@@ -77,6 +77,11 @@ if {[catch {
     $buffer setPlacementStatus PLACED
   }
   puts "frame strobes: [llength $strobes] drivers sized to $strobe_driver, each buffered by $strobe_buffer"
+  # resetn arrives from its pad as an ideal driver, so repair_design never
+  # buffered its 364 loads; a buffer at the port gives it a cell to repair
+  # from. Not buffer_ports: the user-IO ports sit over the fabric, and their
+  # buffers would be legalised hundreds of um from the E_IO pins they feed.
+  insert_buffer -net [get_nets resetn] -buffer_cell BUFX4H7L -buffer_name resetn_port_buffer
   estimate_parasitics -placement
   report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 3 > drv_before.txt
   puts "hold before: [sta::worst_slack -min]"

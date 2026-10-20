@@ -26,6 +26,36 @@ if {[catch {
   set_wire_rc -signal -layer MET3
   set_wire_rc -clock -layer MET3
   set_dont_use [list *X0P5H7* *X0P7H7* FILL* *X16H7* *X20H7*]
+  # iRT detours the frame-strobe nets through the congested top of the strip,
+  # 100 to 1000 um routed against a 3 um placed estimate, so their NOR2B
+  # drivers are sized for the route rather than for what repair_design sees.
+  set strobe_driver NOR2BX6H7L
+  set sized 0
+  foreach net [[ord::get_db_block] getNets] {
+    set to_strobe 0
+    set drivers {}
+    foreach iterm [$net getITerms] {
+      set inst [$iterm getInst]
+      if {[[$inst getMaster] isBlock]} {
+        if {[$iterm isInputSignal] && [string match FrameStrobe* [[$iterm getMTerm] getName]]} {
+          set to_strobe 1
+        }
+      } elseif {[$iterm isOutputSignal]} {
+        lappend drivers $inst
+      }
+    }
+    if {!$to_strobe} { continue }
+    foreach inst $drivers {
+      set master [[$inst getMaster] getName]
+      if {![string match NOR2BX*H7L $master]} {
+        error "frame strobe [$net getName] is driven by $master, not a NOR2B"
+      }
+      replace_cell [$inst getName] $strobe_driver
+      incr sized
+    }
+  }
+  if {$sized == 0} { error "no top-level frame-strobe driver found" }
+  puts "frame-strobe drivers sized to $strobe_driver: $sized"
   estimate_parasitics -placement
   report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 3 > drv_before.txt
   puts "hold before: [sta::worst_slack -min]"

@@ -561,6 +561,7 @@ def repair_placement(
             "HOLD_MARGIN": str(HOLD_MARGIN_NS),
         },
         reports=reports,
+        keep_pins=False,
     )
     holds = [
         line

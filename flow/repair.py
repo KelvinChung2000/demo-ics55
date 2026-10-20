@@ -19,16 +19,27 @@ from flow import defedit
 TILE_TCL = Path(__file__).with_name("repair_tile.tcl")
 TOP_TCL = Path(__file__).with_name("repair_top.tcl")
 SPECIALNETS_RE = re.compile(r"^SPECIALNETS \d+ ;$.*?^END SPECIALNETS$", re.M | re.S)
+PINS_RE = re.compile(r"^PINS \d+ ;$.*?^END PINS$", re.M | re.S)
 VIOLATED_RE = re.compile(r"\(VIOLATED\)")
 
 
-def run(script: Path, def_path: Path, *, env: Mapping[str, str], reports: Path) -> str:
+def run(
+    script: Path,
+    def_path: Path,
+    *,
+    env: Mapping[str, str],
+    reports: Path,
+    keep_pins: bool,
+) -> str:
     """Run `script` on `def_path` and write its result back in place.
 
     OpenROAD writes every power connection out explicitly, which drops the
     `( * vdd_stripe_generate )` term the tile stripes need, so the input's
     SPECIALNETS block is put back whole: the PDN is not touched here, and its
-    `( * VDD )` reaches the cells the repair adds. The script gets DEF_IN and
+    `( * VDD )` reaches the cells the repair adds. With `keep_pins` the input's
+    PINS block is put back too: OpenROAD rewrites each pin as a `+ PORT`, which
+    iEDA then draws into the PINS cell that flow.paint needs empty. The script
+    gets DEF_IN and
     DEF_OUT on top of `env` and writes drv_before.txt and drv_after.txt into
     `reports`. Raises `CalledProcessError` if OpenROAD fails, check_placement
     included. Returns the violator counts before and after.
@@ -59,6 +70,14 @@ def run(script: Path, def_path: Path, *, env: Mapping[str, str], reports: Path) 
     if power is None or rewritten is None:
         raise ValueError(f"{def_path} or its repair has no SPECIALNETS section")
     text = text[: rewritten.start()] + power.group(0) + text[rewritten.end() :]
+    if keep_pins:
+        pins = PINS_RE.search(original)
+        rewritten = PINS_RE.search(text)
+        if pins is None or rewritten is None:
+            raise ValueError(f"{def_path} or its repair has no PINS section")
+        if pins.group(0).splitlines()[0] != rewritten.group(0).splitlines()[0]:
+            raise ValueError(f"the repair of {def_path} changed its pin count")
+        text = text[: rewritten.start()] + pins.group(0) + text[rewritten.end() :]
     defedit.write_def(def_path, text, gzipped=def_path.suffix == ".gz")
     before, after = (
         len(VIOLATED_RE.findall((reports / name).read_text()))
@@ -77,4 +96,5 @@ def tile(
         def_path,
         env={"PDK": str(pdk_root), "MARGIN": str(margin_percent)},
         reports=reports,
+        keep_pins=True,
     )

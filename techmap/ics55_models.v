@@ -209,6 +209,83 @@ module MACC_top_ConfigMem_strobe (FrameData, FrameStrobe, ConfigBits, ConfigBits
   );
 endmodule
 
+// The fabric's south row takes its strobes straight from the top-level
+// decoder, and up to 32 latch G pins hang on each S_term port net, so the
+// decoder drives the tile's internal wire as well as its own. One buffer per
+// strobe leaves the port with two loads, this and strobe_inbuf. Same guard.
+(* techmap_celltype = "S_term_ConfigMem" *)
+module S_term_ConfigMem_strobe (FrameData, FrameStrobe, ConfigBits, ConfigBits_N);
+  localparam FRAMES = 20;
+  localparam CONFIG_WIDTH = 104;
+  parameter MaxFramesPerCol = 0;
+  parameter _TECHMAP_BITS_CONNMAP_ = 0;
+  parameter _TECHMAP_CONNMAP_FrameData_ = 0;
+  parameter _TECHMAP_CONNMAP_FrameStrobe_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_N_ = 0;
+  input [31:0] FrameData;
+  input [FRAMES-1:0] FrameStrobe;
+  output [CONFIG_WIDTH-1:0] ConfigBits, ConfigBits_N;
+  generate
+    if (_TECHMAP_BITS_CONNMAP_ != 0 && (
+        $bits(_TECHMAP_CONNMAP_FrameData_) != 32 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_FrameStrobe_) != FRAMES * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_N_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_))
+      $error("S_term_ConfigMem ports differ from S_term_ConfigMem_strobe in techmap/ics55_models.v");
+  endgenerate
+  wire _TECHMAP_FAIL_ = MaxFramesPerCol != 0;
+  wire [FRAMES-1:0] strobe;
+  genvar i;
+  generate
+    for (i = 0; i < FRAMES; i = i + 1) begin : strobe_drive
+      BUFX5H7L buffer (.A(FrameStrobe[i]), .Y(strobe[i]));
+    end
+  endgenerate
+  (* techmap_chtype = "S_term_ConfigMem" *)
+  _TECHMAP_PLACEHOLDER_ #(.MaxFramesPerCol(FRAMES)) _TECHMAP_REPLACE_ (
+    .FrameData(FrameData), .FrameStrobe(strobe), .ConfigBits(ConfigBits),
+    .ConfigBits_N(ConfigBits_N)
+  );
+endmodule
+
+// And on S_term_MACC, whose one used frame carries 8 latches.
+(* techmap_celltype = "S_term_MACC_ConfigMem" *)
+module S_term_MACC_ConfigMem_strobe (FrameData, FrameStrobe, ConfigBits, ConfigBits_N);
+  localparam FRAMES = 20;
+  localparam CONFIG_WIDTH = 8;
+  parameter MaxFramesPerCol = 0;
+  parameter _TECHMAP_BITS_CONNMAP_ = 0;
+  parameter _TECHMAP_CONNMAP_FrameData_ = 0;
+  parameter _TECHMAP_CONNMAP_FrameStrobe_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_N_ = 0;
+  input [31:0] FrameData;
+  input [FRAMES-1:0] FrameStrobe;
+  output [CONFIG_WIDTH-1:0] ConfigBits, ConfigBits_N;
+  generate
+    if (_TECHMAP_BITS_CONNMAP_ != 0 && (
+        $bits(_TECHMAP_CONNMAP_FrameData_) != 32 * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_FrameStrobe_) != FRAMES * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_ ||
+        $bits(_TECHMAP_CONNMAP_ConfigBits_N_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_))
+      $error("S_term_MACC_ConfigMem ports differ from S_term_MACC_ConfigMem_strobe in techmap/ics55_models.v");
+  endgenerate
+  wire _TECHMAP_FAIL_ = MaxFramesPerCol != 0;
+  wire [FRAMES-1:0] strobe;
+  genvar i;
+  generate
+    for (i = 0; i < FRAMES; i = i + 1) begin : strobe_drive
+      BUFX5H7L buffer (.A(FrameStrobe[i]), .Y(strobe[i]));
+    end
+  endgenerate
+  (* techmap_chtype = "S_term_MACC_ConfigMem" *)
+  _TECHMAP_PLACEHOLDER_ #(.MaxFramesPerCol(FRAMES)) _TECHMAP_REPLACE_ (
+    .FrameData(FrameData), .FrameStrobe(strobe), .ConfigBits(ConfigBits),
+    .ConfigBits_N(ConfigBits_N)
+  );
+endmodule
+
 module cus_mux21 (A0, A1, S, X);
   input A0, A1, S;
   output X;

@@ -141,6 +141,32 @@ module MACC_8x8_20_drive (CLK, EN, ACC_RST, ACC_CI, ACC_CO, A, B, C, Q, ConfigBi
   endgenerate
 endmodule
 
+// And on E_IO, whose IOBUF OUT feeds 41 switch-matrix inputs from a MUX2X0P5.
+// Same guard, on NoConfigBits, which E_IO does not set.
+(* techmap_celltype = "IOBUF" *)
+module IOBUF_drive (CLK, IN, EN, OUT, IN_top, EN_top, OUT_top, ConfigBits);
+  localparam CONFIG_WIDTH = 3;
+  parameter NoConfigBits = 0;
+  parameter _TECHMAP_BITS_CONNMAP_ = 0;
+  parameter _TECHMAP_CONNMAP_ConfigBits_ = 0;
+  input CLK, IN, EN, OUT_top;
+  output OUT, IN_top, EN_top;
+  input [CONFIG_WIDTH-1:0] ConfigBits;
+  generate
+    if (_TECHMAP_BITS_CONNMAP_ != 0 &&
+        $bits(_TECHMAP_CONNMAP_ConfigBits_) != CONFIG_WIDTH * _TECHMAP_BITS_CONNMAP_)
+      $error("IOBUF ports differ from IOBUF_drive in techmap/ics55_models.v");
+  endgenerate
+  wire _TECHMAP_FAIL_ = NoConfigBits != 0;
+  wire OUT_bel;
+  (* techmap_chtype = "IOBUF" *)
+  _TECHMAP_PLACEHOLDER_ #(.NoConfigBits(CONFIG_WIDTH)) _TECHMAP_REPLACE_ (
+    .CLK(CLK), .IN(IN), .EN(EN), .OUT(OUT_bel), .IN_top(IN_top), .EN_top(EN_top),
+    .OUT_top(OUT_top), .ConfigBits(ConfigBits)
+  );
+  BUFX8H7L _TECHMAP_REPLACE_.OUT_drive (.A(OUT_bel), .Y(OUT));
+endmodule
+
 // MACC_bot's strobe_outbuf drives MACC_top's FrameStrobe port across the
 // 168 um supertile, and every MACC_top configuration latch hangs on that port
 // net: 34 latch G pins and 0.07 to 0.08 pF per strobe, against BUFX1H7L's

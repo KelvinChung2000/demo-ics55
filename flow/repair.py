@@ -2,7 +2,7 @@
 
 ECC runs no sizer after placement, so nothing else buffers or upsizes a driver
 against its placed wire. The tile run repairs slew and capacitance only; the
-top run, `top.tcl`, also sizes the frame strobes and repairs hold.
+top run, `repair_top.tcl`, also sizes the frame strobes and repairs hold.
 """
 
 from __future__ import annotations

@@ -2,7 +2,7 @@
 
 This directory is what the project submits to the OpenECOS MPW. `ECOS_Community_Tapeout_Project_Design_Report.md` is the report, and everything else here is its appendix: the RTL, the simulation set-up and results, the physical views, the signoff and STA reports and the inputs for a gate-level simulation. Section 11.3 of the report maps each directory to what it supports.
 
-The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells, 5 multiply-accumulate blocks and 10 user IO on its east edge, plus its configuration controller, hardened by ECC on ICS55 (PDK `v1.10.103`) at commit `d500ff0`.
+The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells, 5 multiply-accumulate blocks and 10 user IO on its east edge, plus its configuration controller, hardened by ECC on ICS55 (PDK `v1.10.103`) at commit `f82fb9a`.
 
 ## Layout
 

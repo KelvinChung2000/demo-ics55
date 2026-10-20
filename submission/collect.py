@@ -18,6 +18,7 @@ import gzip
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -27,6 +28,7 @@ VARIANT = ROOT / "fabrics" / "nobram"
 BUILD = ROOT / "build" / "nobram"
 TOP = BUILD / "top" / "default"
 FULLSTA = BUILD / "fullsta"
+STA_RECIPE = ROOT / "flow" / "sta"
 SIM_BUILD = ROOT / "Test" / "build"
 GENERATED = ("rtl", "sim", "physical", "signoff", "sta", "gl")
 RC_CORNERS = (
@@ -192,14 +194,15 @@ def collect_signoff(tiles: list[str]) -> None:
 
 def collect_sta() -> None:
     out = OUT / "sta"
+    # The tracked recipe ran the logs; copies left in FULLSTA by earlier runs may be stale.
     for name in ("full.tcl", "prepare.sh", "run.sh", "summarise.py", "write_v.tcl"):
-        copy(FULLSTA / name, out / "scripts" / name)
-    for pattern in ("*.log", "drv_*.txt", "hold_violators_*.txt", "mpw_*.txt"):
+        copy(STA_RECIPE / name, out / "scripts" / name)
+    for pattern in ("ff*.log", "ss*.log", "write_v.log", "drv_*.txt", "hold_violators_*.txt", "mpw_*.txt"):
         for f in sorted(FULLSTA.glob(pattern)):
             copy_gz(f, out / "reports")
-    tags = sorted(f.stem for f in FULLSTA.glob("*.log"))
     summary = subprocess.run(
-        ["python3", "summarise.py", *tags], cwd=FULLSTA, check=True, capture_output=True, text=True
+        [sys.executable, str(STA_RECIPE / "summarise.py"), str(FULLSTA)],
+        check=True, capture_output=True, text=True,
     ).stdout
     (out / "summary.txt").write_text(summary)
 

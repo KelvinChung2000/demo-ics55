@@ -23,7 +23,7 @@ library (eFPGA_top) {
   nom_voltage                    : 1.08;
 
   cell (eFPGA_top) {
-    area : 736637.72000004;
+    area : 743392.44000006;
     is_macro_cell : true;
    pin("A_EN_top_0") {
      direction               : output;
@@ -107,43 +107,43 @@ library (eFPGA_top) {
    }
    pin("A_OUT_top_0") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_1") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_2") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_3") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_4") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_5") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_6") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_7") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_8") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("A_OUT_top_9") {
      direction               : input;
-     capacitance             : 0.00000132;
+     capacitance             : 0.00000147;
    }
    pin("CLK") {
      direction               : input;
@@ -172,7 +172,7 @@ library (eFPGA_top) {
    }
    pin("ComActive") {
      direction               : output;
-     capacitance             : 0.00106413;
+     capacitance             : 0.00000000;
    }
    pin("ConfigBusy") {
      direction               : output;
@@ -180,7 +180,7 @@ library (eFPGA_top) {
    }
    pin("Configured") {
      direction               : output;
-     capacitance             : 0.00154870;
+     capacitance             : 0.00080999;
    }
    pin("ReceiveLED") {
      direction               : output;
@@ -196,7 +196,7 @@ library (eFPGA_top) {
    }
    pin("resetn") {
      direction               : input;
-     capacitance             : 0.49994180;
+     capacitance             : 0.00273730;
    }
    pin("s_clk") {
      direction               : input;

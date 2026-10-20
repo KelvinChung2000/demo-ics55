@@ -1,7 +1,9 @@
 # Full-chip STA of eFPGA_top: hierarchical tile netlists with per-instance SPEF.
-# env: LIBC (liberty corner), RC (SPEF corner), PERIOD (config clock ns)
-set L /home/kelvin/side-project/demo-ics55/pdk/IP/STD_cell/ics55_LLSC_H7C_V1p10C100
-set TOPSPEF /home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/build/nobram/top/default/RCX_ecc/output
+# Run by run.sh in <build>/fullsta after prepare.sh. The GBUF and CLK_INV pins
+# are the nobram fabric's.
+# env: PDK, LIBC (liberty corner), RC (SPEF corner), PERIOD (config clock ns),
+#      CLKINV (MACC CLK_INV bit), HOLD_UNC (hold uncertainty ns), TAG
+set L $::env(PDK)/IP/STD_cell/ics55_LLSC_H7C_V1p10C100
 set libc $::env(LIBC); set rc $::env(RC); set T $::env(PERIOD)
 read_liberty $L/ics55_LLSC_H7CR/liberty/ics55_LLSC_H7CR_${libc}_nldm.lib
 read_liberty $L/ics55_LLSC_H7CL/liberty/ics55_LLSC_H7CL_${libc}_nldm.lib
@@ -27,14 +29,15 @@ if {[info exists ::env(IDEAL_GBUF)]} {
   create_clock -name uclk -period 10 $gpins
   set_clock_transition 0.1 [get_clocks uclk]
 } else {
-  create_clock -name uclk -period 10 [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/B]
+  create_clock -name uclk -period 10 [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/A]
 }
-set_case_analysis 0 [get_pins Tile_X0Y11_SW_term/Inst_GBUF_A_GBUF.ConfigBits_0__DOL__DLATCH_P__Q/Q]
+set_case_analysis 0 [get_pins Tile_X0Y11_SW_term/Inst_GBUF_A_GBUF.ConfigBits_0___DOL__DLATCH_P__Q/Q]
 set clkinv [get_pins -hierarchical *MACC_bot_ConfigMem.Inst_frame13_bit30.Q__DOL__DLATCH_P__Q/Q]
 puts "MACC CLK_INV bits: [llength $clkinv]"
 set_case_analysis $::env(CLKINV) $clkinv
 set_propagated_clock [all_clocks]
 set_clock_groups -asynchronous -group CLK -group uclk
+set_clock_uncertainty -hold $::env(HOLD_UNC) [all_clocks]
 
 set latD [get_pins -hierarchical *_DLATCH_P__Q/D]
 set latG [get_pins -hierarchical *_DLATCH_P__Q/G]
@@ -57,7 +60,7 @@ report_checks -path_delay max -from $clkregs -to [all_registers -clock CLK -data
 report_checks -path_delay min -from $clkregs -to [all_registers -clock CLK -data_pins] -group_path_count 3 -digits 3 -format end
 
 puts "\n==== uclk hold from the GBUF source pin (clock used as data, e.g. GBUF A into GSR)"
-report_checks -path_delay min -from [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/B] -group_path_count 1 -format end -digits 3
+report_checks -path_delay min -from [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/A] -group_path_count 1 -format end -digits 3
 puts "\n==== uclk hold, bound mode"
 set uregs [all_registers -clock uclk -clock_pins]
 puts "uclk registers: [llength $uregs]"

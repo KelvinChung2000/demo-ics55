@@ -8,14 +8,6 @@ MACRO eFPGA_top
   ORIGIN 0.0 0.0 ;
   SIZE 999.000 BY 912.600 ;
   SYMMETRY X Y ;
-  PIN CLK
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 2.450 0.000 2.550 0.550 ;
-    END
-  END CLK
   PIN A_EN_top_0
     DIRECTION OUTPUT ;
     USE SIGNAL ;
@@ -256,30 +248,14 @@ MACRO eFPGA_top
         RECT 998.450 877.850 999.000 877.950 ;
     END
   END A_OUT_top_9
-  PIN SYS_RESET_RESET_top
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET3 ;
-        RECT 0.000 42.050 0.550 42.150 ;
-    END
-  END SYS_RESET_RESET_top
-  PIN resetn
+  PIN CLK
     DIRECTION INPUT ;
     USE SIGNAL ;
     PORT
       LAYER MET4 ;
-        RECT 7.850 0.000 7.950 0.550 ;
+        RECT 2.450 0.000 2.550 0.550 ;
     END
-  END resetn
-  PIN Rx
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 7.250 0.000 7.350 0.550 ;
-    END
-  END Rx
+  END CLK
   PIN ComActive
     DIRECTION OUTPUT ;
     USE SIGNAL ;
@@ -288,54 +264,6 @@ MACRO eFPGA_top
         RECT 3.050 0.000 3.150 0.550 ;
     END
   END ComActive
-  PIN ReceiveLED
-    DIRECTION OUTPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 6.650 0.000 6.750 0.550 ;
-    END
-  END ReceiveLED
-  PIN s_clk
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 8.450 0.000 8.550 0.550 ;
-    END
-  END s_clk
-  PIN s_data
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 9.050 0.000 9.150 0.550 ;
-    END
-  END s_data
-  PIN spi_sck
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 10.850 0.000 10.950 0.550 ;
-    END
-  END spi_sck
-  PIN spi_cs_n
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 9.650 0.000 9.750 0.550 ;
-    END
-  END spi_cs_n
-  PIN spi_mosi
-    DIRECTION INPUT ;
-    USE SIGNAL ;
-    PORT
-      LAYER MET4 ;
-        RECT 10.250 0.000 10.350 0.550 ;
-    END
-  END spi_mosi
   PIN ConfigBusy
     DIRECTION OUTPUT ;
     USE SIGNAL ;
@@ -352,6 +280,78 @@ MACRO eFPGA_top
         RECT 6.050 0.000 6.150 0.550 ;
     END
   END Configured
+  PIN ReceiveLED
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 6.650 0.000 6.750 0.550 ;
+    END
+  END ReceiveLED
+  PIN Rx
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 7.250 0.000 7.350 0.550 ;
+    END
+  END Rx
+  PIN SYS_RESET_RESET_top
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 42.050 0.550 42.150 ;
+    END
+  END SYS_RESET_RESET_top
+  PIN resetn
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 7.850 0.000 7.950 0.550 ;
+    END
+  END resetn
+  PIN s_clk
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 8.450 0.000 8.550 0.550 ;
+    END
+  END s_clk
+  PIN s_data
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 9.050 0.000 9.150 0.550 ;
+    END
+  END s_data
+  PIN spi_cs_n
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 9.650 0.000 9.750 0.550 ;
+    END
+  END spi_cs_n
+  PIN spi_mosi
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 10.250 0.000 10.350 0.550 ;
+    END
+  END spi_mosi
+  PIN spi_sck
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 10.850 0.000 10.950 0.550 ;
+    END
+  END spi_sck
   PIN vdd_stripe_generate
     DIRECTION INOUT ;
     USE POWER ;

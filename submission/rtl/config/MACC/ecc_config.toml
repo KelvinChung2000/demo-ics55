@@ -2,6 +2,9 @@
 # netlist in sweep/strategies_MACC.tsv at 93bf29a: 9983.1 um^2, 528.4 um^2 below DELAY 4's 10511.5.
 [synthesis]
 strategy = "AREA 6"
+# ABC sizes against abc_load alone and leaves X0P5 drivers on nets that route
+# to 0.03 to 0.1 pF; the weak drives it may not use cost no area to ban.
+avoid_weak_drives = true
 
 # The width of this tile's fabric column, which every type in it is built to.
 # Bound by MACC: at 70.8 x 168.0 um it fills 0.9124 of its core and
@@ -13,3 +16,13 @@ width_micron = 70.8
 # No height. This type spans two grid rows and `flow.plan._override_die` refuses
 # a single height for a multi-row type, since one number cannot say how tall each
 # row is. Its 168.0 um is LUT4x8_ha's 84.0 twice, frozen there.
+
+[repair]
+# ECC sizes nothing after placement, so the switch-matrix muxes that land
+# 11 to 13 loads keep their MUX4X1 drive. This die routes with too little room
+# for repair_design's buffers: margin 0 left 12 nets over at ss_125_Cworst,
+# margin 5 gave 7 DRC, 10 gave 149, and margin 0 plus upsizing at 1.35 gave 2.
+# Upsizing alone adds no net and ends 36 um^2 below margin 0's buffers.
+# The routed Cworst wire runs a median 12% over the MET3 estimate and up to 54%
+# on a net of 10 fF or more; 1.25 already flagged every net margin 0 left over.
+upsize_wire_scale = 1.5

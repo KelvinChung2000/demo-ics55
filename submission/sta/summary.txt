@@ -1,8 +1,19 @@
-corner | CLK setup | CLK hold | hold WNS | hold TNS | viol | LUT | IO | MACC | D max | D min | G fall max | G fall min | sel rise min
-ff1p08_125_RCbest | 6.450 | 0.062 | 0.000 | 0.000 | 0 | 0.162 | 5.339 | 0.159 | 2.798 | 0.355 | 5.219 | 0.854 | 1.091
-ff_125_Cbest | 7.560 | 0.044 | 0.000 | 0.000 | 0 | 0.112 | 3.782 | 0.108 | 1.980 | 0.261 | 3.810 | 0.625 | 0.800
-ff_m40_Cbest | 8.004 | 0.043 | 0.000 | 0.000 | 0 | 0.100 | 3.322 | 0.099 | 1.833 | 0.233 | 3.374 | 0.549 | 0.696
-ff_m40_RCbest | 7.823 | 0.042 | 0.000 | 0.000 | 0 | 0.101 | 3.513 | 0.100 | 1.887 | 0.239 | 3.534 | 0.576 | 0.723
-ss_125_Cworst | 1.969 | 0.102 | 0.000 | 0.000 | 0 | 0.315 | 11.340 | 0.296 | 5.322 | 0.684 | 9.515 | 1.614 | 1.967
-ss_m40_Cworst | 2.833 | 0.090 | 0.000 | 0.000 | 0 | 0.311 | 10.955 | 0.287 | 5.586 | 0.666 | 8.977 | 1.532 | 1.885
-write_v | - | - | - | - | - | - | - | - | - | - | - | - | -
+corner | CLK setup | CLK hold | uclk LUT | uclk IO | uclk MACC | uclk violators
+ff_m40_RCbest | 8.927 | 0.041 | 0.046 | 2.910 | 0.043 | 0
+ff_m40_Cbest | 8.968 | 0.038 | 0.044 | 2.752 | 0.042 | 0
+ff_125_Cbest | 8.817 | 0.045 | 0.058 | 3.138 | 0.052 | 0
+ff1p08_125_RCbest | 8.350 | 0.086 | 0.102 | 4.515 | 0.097 | 0
+ss_125_Cworst | 6.853 | 0.199 | 0.229 | 9.493 | 0.220 | 0
+ss_m40_Cworst | 6.927 | 0.192 | 0.215 | 9.074 | 0.204 | 0
+
+ff_m40_RCbest: 0 DRV violators
+
+ff_m40_Cbest: 0 DRV violators
+
+ff_125_Cbest: 0 DRV violators
+
+ff1p08_125_RCbest: 0 DRV violators
+
+ss_125_Cworst: 0 DRV violators
+
+ss_m40_Cworst: 0 DRV violators

@@ -31,6 +31,9 @@ target_density = 0.95
 # still has 30 violations after 9. Cell area, not instance count, ordered every
 # strategy tried there.
 strategy = "AREA 5"
+# ABC sizes against abc_load alone and leaves X0P5 drivers on nets that route
+# to 0.03 to 0.1 pF; the weak drives it may not use cost no area to ban.
+avoid_weak_drives = true
 
 # The anchor, written down. Kelvin fixed this tile at 82.5 um on 2026-09-21 and
 # every other die in the fabric was measured around it, but 82.5 reached the
@@ -47,3 +50,9 @@ strategy = "AREA 5"
 [die]
 width_micron = 82.6  # columns 1, 2, 4, 5, 7 and 8
 height_micron = 84.0 # rows 1 to 14
+
+[repair]
+# ECC sizes nothing after placement, so the switch-matrix muxes that land
+# 11 to 13 loads keep their MUX4X1 drive; 10% inside the limits covers the
+# gap to the routed parasitics without pushing placed density past 0.99.
+drv_margin_percent = 10

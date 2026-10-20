@@ -175,9 +175,9 @@ class Config:
     tile_macro: dict[str, TileMacro]
     synthesis_default: Synthesis
     tile_synthesis: dict[str, Synthesis]
-    # Tile type to `[repair] drv_margin_percent`; a type without one is routed
-    # as DreamPlace legalised it.
-    tile_repair: dict[str, float]
+    # Tile type to its `[repair]` table; a type without one is routed as
+    # DreamPlace legalised it.
+    tile_repair: dict[str, Repair]
 
     def strategy_for(self, tile_type: str) -> str | None:
         """Return the ABC strategy this tile type synthesises with, if any.
@@ -424,19 +424,50 @@ def _synthesis(table: object, source: Path) -> Synthesis:
     return Synthesis(strategy=strategy, avoid_weak_drives=weak)
 
 
-def _repair(table: object, source: Path) -> float | None:
-    """Read a tile's `[repair]` table: the margin OpenROAD repairs slew and
-    capacitance inside, after legalisation and before ECC routes."""
+@dataclass(frozen=True)
+class Repair:
+    """One tile's `[repair]` table: OpenROAD's slew and capacitance repair after
+    legalisation and before ECC routes."""
+
+    # Percent inside the liberty limits that `repair_design` buffers and sizes
+    # to; None skips `repair_design`.
+    margin_percent: float | None
+    # Wire capacitance multiplier for the upsizing pass that follows; None
+    # skips the pass.
+    upsize_wire_scale: float | None
+
+
+def _repair(table: object, source: Path) -> Repair | None:
+    """Read a tile's `[repair]` table, which names one or both passes."""
     if table is None:
         return None
     if not isinstance(table, dict):
         raise ValueError(f"{source}: [repair] is not a table")
-    if set(table) != {"drv_margin_percent"}:
-        raise ValueError(f"{source}: [repair] takes drv_margin_percent only, not {sorted(table)}")
-    margin = table["drv_margin_percent"]
-    if isinstance(margin, bool) or not isinstance(margin, int | float) or not 0 <= margin < 100:
-        raise ValueError(f"{source}: repair.drv_margin_percent is {margin!r}, not 0 to 100")
-    return float(margin)
+    keys = {"drv_margin_percent", "upsize_wire_scale"}
+    if not table or not set(table) <= keys:
+        raise ValueError(
+            f"{source}: [repair] takes one or both of {sorted(keys)}, not {sorted(table)}"
+        )
+    margin = table.get("drv_margin_percent")
+    if margin is not None and (
+        isinstance(margin, bool)
+        or not isinstance(margin, int | float)
+        or not 0 <= margin < 100
+    ):
+        raise ValueError(
+            f"{source}: repair.drv_margin_percent is {margin!r}, not 0 to 100"
+        )
+    scale = table.get("upsize_wire_scale")
+    if scale is not None and (
+        isinstance(scale, bool) or not isinstance(scale, int | float) or scale < 1
+    ):
+        raise ValueError(
+            f"{source}: repair.upsize_wire_scale is {scale!r}, not a number from 1"
+        )
+    return Repair(
+        margin_percent=None if margin is None else float(margin),
+        upsize_wire_scale=None if scale is None else float(scale),
+    )
 
 
 def _section(table: dict[str, object], name: str, source: Path) -> dict[str, object]:
@@ -523,7 +554,7 @@ def load_config(paths: Paths, tile_types: tuple[str, ...] = ()) -> Config:
     dies = {}
     macros = {}
     strategies: dict[str, Synthesis] = {}
-    repairs: dict[str, float] = {}
+    repairs: dict[str, Repair] = {}
     for path in sorted(paths.tiles.glob(f"*/{CONFIG_NAME}")):
         tile_type = path.parent.name
         if tile_type == "include":
@@ -542,9 +573,9 @@ def load_config(paths: Paths, tile_types: tuple[str, ...] = ()) -> Config:
         if macro is not None:
             macros[tile_type] = macro
         strategies[tile_type] = _synthesis(table.get("synthesis"), path)
-        margin = _repair(table.get("repair"), path)
-        if margin is not None:
-            repairs[tile_type] = margin
+        repair = _repair(table.get("repair"), path)
+        if repair is not None:
+            repairs[tile_type] = repair
     for tile_type, die in _variant_dies(paths.dies, tile_types).items():
         dies[tile_type] = _merge_die(dies.get(tile_type, TileDie()), die, tile_type, paths.dies)
     settings = _fabric(table=fabric_table, source=fabric_path, root=paths.root)

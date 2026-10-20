@@ -19,7 +19,10 @@ width_micron = 70.8
 
 [repair]
 # ECC sizes nothing after placement, so the switch-matrix muxes that land
-# 11 to 13 loads keep their MUX4X1 drive. Any margin above 0 leaves too little
-# room to route this die (5% gives 7 DRC, 10% gives 149), so the routed tile
-# keeps a small residual.
-drv_margin_percent = 0
+# 11 to 13 loads keep their MUX4X1 drive. This die routes with too little room
+# for repair_design's buffers: margin 0 left 12 nets over at ss_125_Cworst,
+# margin 5 gave 7 DRC, 10 gave 149, and margin 0 plus upsizing at 1.35 gave 2.
+# Upsizing alone adds no net and ends 36 um^2 below margin 0's buffers.
+# The routed Cworst wire runs a median 12% over the MET3 estimate and up to 54%
+# on a net of 10 fF or more; 1.25 already flagged every net margin 0 left over.
+upsize_wire_scale = 1.5

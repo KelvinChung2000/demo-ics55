@@ -13,8 +13,12 @@ import subprocess
 import tempfile
 from collections.abc import Mapping
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from flow import defedit
+
+if TYPE_CHECKING:
+    from flow.config import Repair
 
 TILE_TCL = Path(__file__).with_name("repair_tile.tcl")
 TOP_TCL = Path(__file__).with_name("repair_top.tcl")
@@ -86,15 +90,23 @@ def run(
     return f"DRV {before} -> {after} (placement estimate)"
 
 
-def tile(
-    def_path: Path, *, pdk_root: Path, margin_percent: float, reports: Path
-) -> str:
-    """Repair slew and capacitance on a legalised tile, `margin_percent` inside the
-    liberty limits to cover the gap between the placement estimate and the route."""
-    return run(
-        TILE_TCL,
-        def_path,
-        env={"PDK": str(pdk_root), "MARGIN": str(margin_percent)},
-        reports=reports,
-        keep_pins=True,
+def tile(def_path: Path, *, pdk_root: Path, repair: Repair, reports: Path) -> str:
+    """Repair slew and capacitance on a legalised tile: `repair_design` to
+    `repair.margin_percent` inside the liberty limits, then an upsizing of each
+    driver still over them with the wire capacitance scaled by
+    `repair.upsize_wire_scale`, each where it is set."""
+    env = {"PDK": str(pdk_root)}
+    if repair.margin_percent is not None:
+        env["MARGIN"] = str(repair.margin_percent)
+    if repair.upsize_wire_scale is not None:
+        env["UPSIZE_WIRE_SCALE"] = str(repair.upsize_wire_scale)
+    summary = run(TILE_TCL, def_path, env=env, reports=reports, keep_pins=True)
+    if repair.upsize_wire_scale is None:
+        return summary
+    log = (reports / "repair.log").read_text().splitlines()
+    upsized = sum(1 for line in log if line.startswith("upsize: ") and " -> " in line)
+    left = len(VIOLATED_RE.findall((reports / "drv_upsized.txt").read_text()))
+    return (
+        f"{summary}; {upsized} drivers upsized, {left} DRV left at "
+        f"{repair.upsize_wire_scale}x wire capacitance"
     )

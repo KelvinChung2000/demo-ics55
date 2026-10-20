@@ -460,7 +460,7 @@ def harden(
             note += "; OpenROAD " + repair.tile(
                 project.step_def(directory, tile_type, *folder),
                 pdk_root=config.fabric.pdk_root,
-                margin_percent=config.tile_repair[tile_type],
+                repair=config.tile_repair[tile_type],
                 reports=directory / "repair",
             )
             project.drop_step_database(directory, tile_type, *folder)

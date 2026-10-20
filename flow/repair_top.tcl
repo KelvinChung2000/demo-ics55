@@ -27,35 +27,56 @@ if {[catch {
   set_wire_rc -clock -layer MET3
   set_dont_use [list *X0P5H7* *X0P7H7* FILL* *X16H7* *X20H7*]
   # iRT detours the frame-strobe nets through the congested top of the strip,
-  # 100 to 1000 um routed against a 3 um placed estimate, so their NOR2B
-  # drivers are sized for the route rather than for what repair_design sees.
+  # 100 to 1000 um routed against a 3 um placed estimate, which repair_design
+  # cannot see. Each NOR2B is upsized and a BUFX12H7L (0.29 pF) goes just
+  # under the tile pin, so either half of the net can take the detour.
   set strobe_driver NOR2BX6H7L
-  set sized 0
-  foreach net [[ord::get_db_block] getNets] {
-    set to_strobe 0
+  set strobe_buffer BUFX12H7L
+  set dbu [[ord::get_db_tech] getDbUnitsPerMicron]
+  set block [ord::get_db_block]
+  set buffer_master [[ord::get_db] findMaster $strobe_buffer]
+  set strobes {}
+  foreach net [$block getNets] {
+    set pins {}
     set drivers {}
     foreach iterm [$net getITerms] {
       set inst [$iterm getInst]
       if {[[$inst getMaster] isBlock]} {
         if {[$iterm isInputSignal] && [string match FrameStrobe* [[$iterm getMTerm] getName]]} {
-          set to_strobe 1
+          lappend pins $iterm
         }
       } elseif {[$iterm isOutputSignal]} {
         lappend drivers $inst
       }
     }
-    if {!$to_strobe} { continue }
-    foreach inst $drivers {
-      set master [[$inst getMaster] getName]
-      if {![string match NOR2BX*H7L $master]} {
-        error "frame strobe [$net getName] is driven by $master, not a NOR2B"
-      }
-      replace_cell [$inst getName] $strobe_driver
-      incr sized
+    if {[llength $pins] == 0} { continue }
+    if {[llength $pins] != 1 || [llength $drivers] != 1} {
+      error "frame strobe [$net getName] has [llength $pins] tile pins and [llength $drivers] drivers"
     }
+    lappend strobes [list [$net getName] [lindex $drivers 0] [lindex $pins 0]]
   }
-  if {$sized == 0} { error "no top-level frame-strobe driver found" }
-  puts "frame-strobe drivers sized to $strobe_driver: $sized"
+  if {[llength $strobes] == 0} { error "no top-level frame-strobe net found" }
+  foreach strobe $strobes {
+    lassign $strobe name driver pin
+    set master [[$driver getMaster] getName]
+    if {![string match NOR2BX*H7L $master]} {
+      error "frame strobe $name is driven by $master, not a NOR2B"
+    }
+    replace_cell [$driver getName] $strobe_driver
+    # insert_buffer segfaults on a macro load pin here, so the buffer is
+    # made in odb; detailed_placement legalises it below.
+    set tile_net [odb::dbNet_create $block "${name}_tile"]
+    if {$tile_net eq "NULL"} { error "net ${name}_tile already exists" }
+    set buffer [odb::dbInst_create $block $buffer_master "${name}_tile_buffer"]
+    $pin disconnect
+    $pin connect $tile_net
+    [$buffer findITerm A] connect [$block findNet $name]
+    [$buffer findITerm Y] connect $tile_net
+    set box [$pin getBBox]
+    $buffer setLocation [expr {([$box xMin] + [$box xMax]) / 2}] [expr {[$box yMin] - 3 * $dbu}]
+    $buffer setPlacementStatus PLACED
+  }
+  puts "frame strobes: [llength $strobes] drivers sized to $strobe_driver, each buffered by $strobe_buffer"
   estimate_parasitics -placement
   report_check_types -max_slew -max_capacitance -max_fanout -violators -digits 3 > drv_before.txt
   puts "hold before: [sta::worst_slack -min]"

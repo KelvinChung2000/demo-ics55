@@ -25,7 +25,12 @@ module sequential_16bit_en_tb ();
     assign A_OUT_top = pad_in;
 
     // Instantiate both the fabric and the reference DUT
+`ifdef GL_TOP
+    // The hardened netlist's ports are per bit; Test/gen_gl_top.py's wrapper restores the vectors.
+    eFPGA_top_gl top_i (
+`else
     eFPGA_top top_i (
+`endif
         .A_EN_top           (A_EN_top         ),
         .A_IN_top           (A_IN_top         ),
         .A_OUT_top          (A_OUT_top        ),
@@ -76,14 +81,30 @@ module sequential_16bit_en_tb ();
     // flop async resets once config_done is high.
 `ifdef GL_SIM
     `include "force_block.vh"
+    `define GL_PROGRESS
+`endif
+`ifdef GL_TOP
+    `define GL_PROGRESS
+`endif
 
+`ifdef GL_PROGRESS
     // Progress for runtime estimates of the (slow) whole-fabric GL run.
+    // +max_cycles=N ends a smoke run after N CLK cycles.
     integer n_cycles = 0;
+    integer max_cycles;
+    initial if (!$value$plusargs("max_cycles=%d", max_cycles)) max_cycles = 0;
     always @(posedge CLK) begin
         n_cycles = n_cycles + 1;
         if (n_cycles % 1000 == 0) $display("[gl] %0d cycles @ %0t", n_cycles, $time);
+        if (n_cycles == max_cycles) begin
+            $display("[gl] stopped at +max_cycles=%0d @ %0t", max_cycles, $time);
+            $finish;
+        end
     end
 `endif
+
+    always @(config_busy) $display("ConfigBusy = %b @ %0t", config_busy, $time);
+    always @(configured) $display("Configured = %b @ %0t", configured, $time);
 
     initial begin
 

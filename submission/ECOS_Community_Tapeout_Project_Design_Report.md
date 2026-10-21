@@ -329,7 +329,7 @@ Tile figures sum each tile type's result times its grid count. Top figures are t
 | Sequential cell count | 71,638: 70,856 in tiles, 782 at top | Yosys 0.68 / ECC `14be467` | Tiles: 1,110 flip-flops, 69,746 configuration latches. Top: 782 flip-flops |
 | Macro count | 151 tile macros at top, 0 hard IP | Yosys 0.68 / ECC `14be467` | No hard macro |
 | Synthesized area | 683,670 µm²: 674,731 in tiles, 8,939 at top | Yosys 0.68 / ECC `14be467` | Cell area; configuration logic 1.3% |
-| Post-synthesis timing | Section 6.3 | ECC STA | Tile constraints time switch-matrix feedthroughs, not a user clock |
+| Post-synthesis timing | Section 6.3 | ECC STA | Tile constraints time paths through the unconfigured switch matrix, not a user clock |
 
 | Tile | Count | Cells | Area (µm²) | Flip-flops | Latches |
 |---|---:|---:|---:|---:|---:|
@@ -402,17 +402,16 @@ Values are from the filler step. The 16,666 top-level instances are 3,150 logic 
 
 ### 6.3 Signoff Results
 
-Per-tile and `eFPGA_top` signoff from ECC `14be467`; full-chip OpenSTA from `build/nobram/fullsta/`.
+Per-tile and `eFPGA_top` signoff from ECC `14be467`, full-chip OpenSTA from `build/nobram/fullsta/` and per-tile OpenSTA from `build/sta-recheck-2026-10-21/`. A second full-chip OpenSTA run from the main checkout on 2026-10-21 produced byte-identical logs for all six corners.
 
 | Check | Status | Violation count | Disposition |
 |---|---|---:|---|
-| Setup timing, tiles | Fail | 387 on `LUT4x8_ha` (WNS −14.924 ns), 2,331 on `MACC` (WNS −65.706 ns), 0 on the other 10 types | Tile STA puts a 10 ns clock on the global-buffer pin with zero IO delay, so the failing paths are switch-matrix feedthroughs, not user-design paths |
-| Hold timing, tiles | Fail | Every type, WNS −0.456 to −0.500 ns (e.g. 3,425 on `LUT4x8_ha`) | Zero-delay feedthroughs fail by the ECC SDC's 0.5 ns clock uncertainty (5% of 10 ns); not user-design paths |
-| Setup timing, `eFPGA_top` (iSTA) | Pass | 0 | 13 corners, WNS +6.820 ns at ss 125 °C Cworst, 314 MHz. Configuration logic only, since the tile Liberty has one setup arc and no hold arc. |
-| Hold timing, `eFPGA_top` (iSTA) | Pass | 0 | 13 corners, WNS +0.079 ns at ff −40 °C Cbest |
+| Setup timing, tiles (iSTA) | Fail | Worst corner 81 endpoints on `LUT4x8_ha` (WNS −14.924 ns) and 188 on `MACC` (WNS −65.706 ns), 0 on the other 10 types | ECC's step totals of 387 and 2,331 sum the 13 corners. The failing paths are combinational loops through the unconfigured switch matrix and transparent configuration latches, up to 122 stages on `MACC`, which no configured design forms. OpenSTA breaks the loops differently and reports −14.337 and −67.463 ns at ss 125 °C Cworst, so neither WNS is a design figure. |
+| Hold timing, tiles (iSTA) | Fail | Every type, worst-corner WNS −0.456 to −0.500 ns; worst corner 265 endpoints on `LUT4x8_ha` and 441 on `MACC` | The ECC SDC puts 0.5 ns uncertainty (5% of 10 ns) on an ideal clock, so feedthroughs shorter than 0.5 ns and flip-flop self-loops fail by it. OpenSTA confirms the cause, since the worst `LUT4x8_ha` path is a 0.6 ps wire with slack −0.499 ns. Under the full chip's 50 ps the tile registers pass (table below). |
+| Setup and hold, `eFPGA_top` alone (iSTA) | Pass, superseded | 0 | Times the configuration logic against the ss-only tile Liberty, which has no hold arc, with no hold uncertainty. Setup +6.820 ns at ss 125 °C Cworst and hold +0.079 ns at ff −40 °C Cbest. Full-chip OpenSTA times the same registers with tile netlists and SPEF, agrees on setup within 33 ps at the same endpoints and replaces these figures. |
 | Full-chip setup and hold (OpenSTA) | Pass | 0 | Table below |
-| Minimum pulse width (OpenSTA) | Pass | 0 | All six corners |
-| Slew and capacitance (OpenSTA) | Pass | 0 | All six corners, after the drive-buffer and repair steps below |
+| Minimum pulse width (OpenSTA) | Pass | 0 | All six corners, full chip and each tile type |
+| Slew and capacitance (OpenSTA) | Pass | 0 | All six corners, full chip and each of the 12 tile types under its own SDC and SPEF, after the drive-buffer and repair steps below. iSTA's tile report writes slew and capacitance as constant 0 (`TimingReporter.cpp`) and is not a check. |
 | DRC | Pass | 0 per tile; 0 on `eFPGA_top` | iEDA DRC on abstracts |
 | LVS | Pass on signal, power opens on top | 0 per tile; 278 on `eFPGA_top` | iLVS of routed DEF connectivity against the netlist, not GDS-extracted. On `eFPGA_top` 3,189 of 3,189 nets connect with 0 shorts; the 278 opens are 139 VDD and 139 VSS tile supply pins fed by abutment, which iLVS cannot see. The 32,404 tile-to-tile nets are outside this check. |
 | Antenna checks | Not run | N/A | The ECC flow reports no antenna result |
@@ -551,7 +550,7 @@ The next revision should produce a mask-ready GDS with the pad ring and seal rin
 
 ### 11.1 Known Limitations
 
-- User-mode Fmax is unmeasured; the tile-level `sta_frequency_mhz` 40 on `LUT4x8_ha` is a switch-matrix feedthrough.
+- User-mode Fmax is unmeasured; the tile-level `sta_frequency_mhz` 40 on `LUT4x8_ha` comes from a loop through the unconfigured switch matrix.
 - Only `GBUF` A is shown to work. A counter clocked through `GBUF` C stays X in RTL simulation although nextpnr routes the clock to every flip-flop. `GBUF` B and D are untested. The cause is not established.
 - Simulation is RTL only, with no gate-level or partial-reconfiguration run.
 - `ComRate` = 217 is mismatched to the 100 MHz `CLK` (Section 2.5).

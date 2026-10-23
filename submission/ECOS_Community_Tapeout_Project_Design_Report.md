@@ -18,7 +18,7 @@ All figures are for the `nobram` variant at `f82fb9a` on PDK `v1.10.103` (2026-1
 | Source repository | `github.com/KelvinChung2000/demo-ics55`, branch `master`; RTL, builds and simulations at `f82fb9a`, report and appendix at the head. Local at the time of writing, to be pushed before submission. |
 | Tapeout run | MPW |
 | Process and PDK | ICS55 (55 nm), ECOS PDK `v1.10.103` (`2d72857`), standard cells `ics55_LLSC_H7C_V1p10C100` (`H7CR` and `H7CL`) |
-| Report version | v2.0 |
+| Report version | v2.0, describing IP v3.0 (Section 4.8) |
 | Submission date | [YYYY-MM-DD] |
 | Current project stage | Pre-tapeout |
 
@@ -28,7 +28,7 @@ All figures are for the `nobram` variant at `f82fb9a` on PDK `v1.10.103` (2026-1
 
 The design is an island-style FABulous eFPGA hardened on ICS55 for an OpenECOS MPW die. Its array `eFPGA` abuts 151 hard tiles of 12 types in a 13 × 12 grid of 947.0 × 884.8 µm. The top level `eFPGA_top` adds the configuration controller in 999.0 × 912.6 µm and needs 27 of the MPW's 36 pads. This `nobram` variant omits the block RAM of the `bram` variant.
 
-ECC hardens each tile type once to a routed macro. Abutment connects the 32,404 tile-to-tile nets through coincident pins, so the `eFPGA_top` run routes only the 3,189 nets of the controller, the IO and the configuration buses.
+ECC hardens each tile type once to a routed macro. Abutment connects the 31,760 tile-to-tile nets through coincident pins, so the `eFPGA_top` run routes only the 3,189 nets of the controller, the IO and the configuration buses.
 
 The RTL, the 12 tile types and `eFPGA_top` are hardened and signed off on ECC abstracts (Section 6.3). An RTL bitstream simulation runs a counter on the fabric (Section 5.3). Outstanding are a mask-layer GDS of the whole macro with DRC and LVS (Section 7), the pad and seal rings and a timed user design.
 
@@ -159,7 +159,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 
 | Part replaced | Replacement for this fabric |
 |---|---|
-| nextpnr model and bitstream specification | `fabrics/nobram/.FABulous/` (`pips.txt`, `bel.v3.txt`, `bitStreamSpec.bin`) |
+| nextpnr model and bitstream specification | `fabrics/nobram/.FABulous/` (`pips.txt`, `bel.v2.txt`, `bitStreamSpec.bin`) |
 | IO constraints (written) | `fabrics/nobram/user_design/pads.pcf` on the 10 `IOBUF` BELs, `iobuf_map.v` for the `-iopad` cells, clock through `SYS_RESET` at `X0Y11.E` into a `GBUF` as in `top_wrapper.v` |
 | Techmaps | Without the register-file and SRAM mappings |
 | Pico upload pins | `spi_cs_n`, `spi_sck`, `spi_mosi`, with `ConfigBusy` and `Configured` as status, in place of gf180's `FPGA_MODE`, `FPGA_BUSY`, `CS_N`, `SCLK`, `MOSI` |
@@ -175,7 +175,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 | Multiply-accumulate blocks | 5 | 5 | Physical: 5 `MACC` supertiles |
 | User IO | 10 | 10 | RTL: `A_*_top[9:0]` |
 | Global clocks | 4 | 4 | RTL: `GBUF_A` to `GBUF_D` in `SW_term` |
-| Seam connectivity | all declared links meet | 31,760 of 31,760 links over 282 seams | `task check` on `build/nobram/fabric_plan.json`. The `eFPGA_top` netlist counts 32,404 tile-to-tile nets. Its difference from the 31,760 plan links is not yet reconciled. |
+| Seam connectivity | all declared links meet | 31,760 of 31,760 links over 282 seams | `task check` on `build/nobram/fabric_plan.json`. The `eFPGA_top` DEF holds the same 31,760 two-tile nets plus 644 single-pin nets, the `FrameData_O` (384) and `FrameStrobe_O` (260) outputs left unconnected at the array edge. |
 | Configuration reaches every row | all 12 rows | 384 of 384 `FrameData` and 260 of 260 `FrameStrobe` bits routed | Routed DEF. Simulation shows rows 1 to 8 and 11 configured (Section 5.3). No simulated design observes row 0. |
 | User design on the fabric | runs a test design | 100 of 100 cycles match on all 10 IO bits | Section 5.3 |
 
@@ -208,7 +208,7 @@ Another project can take the hardened `eFPGA_top`, the abutted `eFPGA` array wit
 |---|---|---|
 | RTL-level reuse | Yes | `fabrics/nobram/Fabric/`, `Tile/`, `primitives/`. Regenerating the Verilog byte-identically needs FABulous `c0ca476` (`user-clk-attr`), while `io_pin_order.yaml` needs `092f606` (`fix-direction`). Neither checkout produces both. |
 | Post-synthesis netlist reuse | Yes, per tile and for `eFPGA_top` | `build/nobram/tiles/<type>/`, `build/nobram/top/` |
-| Hard-macro reuse | Per tile and `eFPGA_top` | Per tile abstract LEF, extracted Liberty, routed DEF, SPEF at six RC corners and abstract GDS. `eFPGA_top` routed DEF, netlist and SPEF at nine RC corners, plus ECC Harden's abstract LEF (999.000 × 912.600 µm, 45 pins including the two supplies), ss 125 °C 1.08 V Liberty with 2 timing arcs and pin/OBS GDS in `build/nobram/top/default/Harden_ecc/output/` |
+| Hard-macro reuse | Per tile and `eFPGA_top` | Per tile abstract LEF, extracted Liberty, routed DEF, SPEF at nine RC corners and abstract GDS. `eFPGA_top` routed DEF, netlist and SPEF at nine RC corners, plus ECC Harden's abstract LEF (999.000 × 912.600 µm, 45 pins including the two supplies), ss 125 °C 1.08 V Liberty with 2 timing arcs and pin/OBS GDS in `build/nobram/top/default/Harden_ecc/output/` |
 | Tile/fabric-level reuse | Yes | `build/nobram/fabric_plan.json` holds every die, pin offset and seam |
 | MPW top-level integration | Partly | No pad ring, seal ring or chip-level GDS |
 
@@ -262,7 +262,7 @@ The build runs as five stages, each stopping at the first failure.
 | Stage | Run time |
 |---|---|
 | `task harden`, all 12 tile types (2026-10-17) | [time] |
-| `task harden`, three terminator types (2026-10-19) | 5 minutes at three jobs |
+| `task harden`, `W_term`, `N_term` and `S_term` (2026-10-19; `S_term` re-hardened 2026-10-20) | 5 minutes at three jobs |
 | `integrate` (2026-10-20) | 63 minutes, 58 of them from RCX through Harden |
 | Full-chip OpenSTA | about 8.5 minutes and 2.7 GB per corner |
 
@@ -311,7 +311,7 @@ The bitstream simulation runs as `task VARIANT=nobram WAVEFORM_TYPE=vcd YOSYS_PA
 
 ### 5.2 Verification Scope and Methods
 
-DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streamed GDS of Section 7 has no mask-geometry check, because the PDK's decks in `pdk/pv/` are Calibre, unlicensed here, while `pdk/` holds no open deck (KLayout `.lydrc` or `.lylvs`, Magic tech file or netgen setup). Whether the MPW organisers run Calibre DRC and LVS on submitted GDS is unconfirmed. There are no random, formal, gate-level or FPGA-prototype tests.
+DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streamed GDS of Section 7 has no mask-geometry check, because the PDK's decks in `pdk/pv/` are Calibre, unlicensed here, while `pdk/` holds no open deck (KLayout `.lydrc` or `.lylvs`, Magic tech file or netgen setup). Whether the MPW organisers run Calibre DRC and LVS on submitted GDS is unconfirmed. There are no random, formal or FPGA-prototype tests, and the one gate-level simulation fails on X (Section 5.3).
 
 ### 5.3 Verification Results
 
@@ -325,6 +325,7 @@ DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streame
 | Full-chip STA (OpenSTA) | 6 corners | 6 | 0 | Section 6.3 |
 | Antenna | 0 | 0 | 0 | Not run; the ECC flow reports no antenna result |
 | Bitstream simulation | 1 design, 100 compared cycles | 1 | 0 | No compare error (2026-10-20, `f82fb9a`). `ConfigBusy` rose at 668.5 µs and `Configured` at 433,436.5 µs. The design uses 13 of 800 `FABULOUS_LC`, 10 of 10 `IOBUF` and 1 of 4 `GBUF`. `A_EN_top[9:2]` rising as the `E_IO` frames load and the counter running on `GBUF` A show rows 1 to 8 and 11 configured. Log in `submission/sim/results/bitstream_sim.log`. |
+| Gate-level bitstream simulation | 1 design, 100 compared cycles | 0 | 1 | Zero-delay `-Dfunctional` run of the hardened `eFPGA_top` netlist, `task run-gl-top` (2026-10-21, `871d91a`). The SPI load matches RTL, with `ConfigBusy` at 668.5 µs and `Configured` at 433,436.5 µs and every configuration latch defined. All 100 compares fail with `A_IN_top` at X while `A_EN_top` matches. Unused LUT inputs sit on combinational loops through unconfigured routing and stay X; the AOI-mapped LUT propagates that X where the RTL multiplexer does not. A real fault under the X is not excluded. Logs in `build/gl-functional-2026-10-21/`. |
 | cocotb loader tests | 4 loaders | 4 | 0 | 166 s, 2026-10-18 |
 
 ![Key simulation waveform](images/simulation_waveform.png)
@@ -430,7 +431,7 @@ Per-tile and `eFPGA_top` signoff come from ECC `14be467`, full-chip OpenSTA from
 | Minimum pulse width (OpenSTA) | Pass | 0 | All six corners, full chip and each tile type |
 | Slew and capacitance (OpenSTA) | Pass | 0 | All six corners, full chip and each of the 12 tile types under its own SDC and SPEF, after the drive-buffer and repair steps below. iSTA's tile report writes both as a constant 0 (`TimingReporter.cpp`), so OpenSTA checks them. |
 | DRC | Pass | 0 per tile; 0 on `eFPGA_top` | iEDA DRC on abstracts |
-| LVS | Pass on signal, power opens on top | 0 per tile; 278 on `eFPGA_top` | iLVS of routed DEF connectivity against the netlist. On `eFPGA_top` 3,189 of 3,189 nets connect with 0 shorts. The 278 opens are 139 VDD and 139 VSS tile supply pins fed by abutment, which iLVS does not see. The check excludes the 32,404 tile-to-tile nets. |
+| LVS | Pass on signal, power opens on top | 0 per tile; 278 on `eFPGA_top` | iLVS of routed DEF connectivity against the netlist. On `eFPGA_top` 3,189 of 3,189 nets connect with 0 shorts. The 278 opens are 139 VDD and 139 VSS tile supply pins fed by abutment, which iLVS does not see. The check excludes the 31,760 tile-to-tile nets and the 644 unconnected edge outputs. |
 | Antenna checks | Not run | N/A | The ECC flow reports no antenna result |
 | Other checks | Pass, plan level | 0 | `task check`: 31,760 of 31,760 seam links meet |
 
@@ -461,7 +462,7 @@ The repair also raises `CLK` setup slack at ss 125 °C Cworst from +1.969 to +6.
 
 ## 7. Layout
 
-The layout of record is `build/nobram/top/default/filler_ecc/output/eFPGA_top_filler.def.gz`, the only view carrying all 35,593 nets (3,189 routed, 32,404 tile-to-tile restored unrouted).
+The layout of record is `build/nobram/top/default/filler_ecc/output/eFPGA_top_filler.def.gz`, the only view carrying all 35,593 nets (3,189 routed, 31,760 tile-to-tile and 644 unconnected `FrameData_O` and `FrameStrobe_O` edge outputs restored unrouted).
 
 ECC's GDS is not mask data. It writes standard cells and tile macros as flat LEF abstracts, so in the top GDS `Master_N_term_MACC` is 549 shapes with no sub-cells. It numbers layers by their order in the tech LEF `pdk/prtech/techLEF/N551P6M.lef` (MET1 7/0, MET5 15/0), not by `pdk/techfile/icsprout55.layermap` (MET1 81/1).
 
@@ -579,7 +580,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 
 - User-mode Fmax is unmeasured. The tile-level `sta_frequency_mhz` 40 on `LUT4x8_ha` reflects a loop through the unconfigured switch matrix.
 - Only `GBUF` A is shown to work. A counter clocked through `GBUF` C stays X in RTL simulation although nextpnr routes the clock to every flip-flop, for a reason not yet found. `GBUF` B and D are untested.
-- Simulation is RTL only, with no gate-level or partial-reconfiguration run.
+- Gate-level simulation configures the fabric but fails every user-mode compare on X (Section 5.3). No partial-reconfiguration run exists.
 - `ComRate` = 217 is mismatched to the 100 MHz `CLK` (Section 2.5).
 - Mask-layer GDS for `SE_term` only, with no cell boundary layer, pad ring or seal ring. The PDK's Calibre decks have not been run and no open deck exists (Sections 5.2 and 7).
 - 10 user IO bits in total, all in column 12.
@@ -621,7 +622,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 | `physical/fabric_plan.json` | built from `f82fb9a` | Dies, pin offsets, seams | Yes |
 | `signoff/<block>/` | built from `f82fb9a` | ECC DRC, iLVS and iSTA summaries | Yes |
 | `sta/` | built from `f82fb9a` | Full-chip OpenSTA scripts, logs, reports and `summary.txt` | Yes |
-| `gl/` | built from `f82fb9a` | `top_full.v` with all seam nets and the 12 tile netlists, for a gate-level simulation not yet run | Yes |
+| `gl/` | built from `f82fb9a` | `top_full.v` with all seam nets and the 12 tile netlists, inputs to the gate-level simulation of Section 5.3 | Yes |
 
 Every appendix GDS is an ECC abstract (Section 7). The build flow and documentation stay in the repository.
 

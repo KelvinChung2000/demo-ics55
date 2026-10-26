@@ -59,8 +59,8 @@ if {[catch {
   foreach strobe $strobes {
     lassign $strobe name driver pin
     set master [[$driver getMaster] getName]
-    if {![string match NOR2BX*H7L $master]} {
-      error "frame strobe $name is driven by $master, not a NOR2B"
+    if {![string match NOR2BX*H7? $master]} {
+      error "frame strobe $name is driven by $master, not a NOR2BX*H7?"
     }
     replace_cell [$driver getName] $strobe_driver
     # insert_buffer segfaults on a macro load pin here, so the buffer is

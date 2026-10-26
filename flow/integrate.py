@@ -186,6 +186,9 @@ def write_project(
         # No stripes: over the fabric they would lie across the tiles' own grid,
         # and `write_pdn` draws the strip's and the channel's instead.
         stripe_pitch_micron=None,
+        # As the logic tiles synthesise: an AOI21X0P5 left on a frame_data D pin
+        # broke ss max slew after route, though repair cleared it on the placed estimate.
+        dont_use=ecc_project.WEAK_DRIVES,
     )
     with (directory / "ecc.toml").open("a") as handle:
         handle.write(_macro_placements(plan, shape))

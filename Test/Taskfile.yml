@@ -84,7 +84,9 @@ tasks:
       - task: compile:compile-yosys
         vars:
           YOSYS_EXTRA_ARGS: '{{.YOSYS_EXTRA_ARGS | default ""}}'
-          SYNTH_CMD: 'synth_fabulous -top {{.TOP_WRAPPER}} -json {{.RESOLVED_JSON_FILE}} {{.CUSTOM_PRIMS}} {{.SYNTH_EXTRA_ARGS | default ""}}'
+          # -complex-dff maps sync resets and enables onto the cell's SR and EN, the
+          # only way a reset taken through a GBUF and GSR reaches a flop.
+          SYNTH_CMD: 'synth_fabulous -top {{.TOP_WRAPPER}} -json {{.RESOLVED_JSON_FILE}} {{.CUSTOM_PRIMS}} {{.SYNTH_EXTRA_ARGS | default "-complex-dff"}}'
           DESIGN_FILES: "{{.RESOLVED_DESIGN_FILES}}"
           TOP_WRAPPER_FILE: "{{.RESOLVED_TOP_WRAPPER_FILE}}"
 

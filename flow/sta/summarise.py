@@ -18,7 +18,8 @@ CORNERS = (
     "ss_125_Cworst",
     "ss_m40_Cworst",
 )
-SLACK_RE = re.compile(r"\s(-?\d+\.\d+) \((?:MET|VIOLATED)\)")
+# A `-format end` row ends in `<slack> (MET)`, a full path in `<slack>   slack (MET)`.
+SLACK_RE = re.compile(r"\s(-?\d+\.\d+)(?:\s+slack)? \((?:MET|VIOLATED)\)")
 TILE_RE = re.compile(r"Tile_X\d+Y\d+_(\w+?)/")
 # A pin on the frame-strobe path: the top decoder outputs and, in a tile, the
 # strobe buffers and the ConfigMem latch gates they drive.
@@ -70,6 +71,7 @@ def violations(report: Path) -> list[Violation]:
 def main(fullsta: Path) -> None:
     typer.echo(
         "corner | CLK setup | CLK hold | uclk LUT | uclk IO | uclk MACC | uclk violators"
+        " | USER_RESET setup | USER_RESET hold"
     )
     for tag in CORNERS:
         log = (fullsta / f"{tag}.log").read_text()
@@ -81,7 +83,15 @@ def main(fullsta: Path) -> None:
             worst_after(log, "worst hold into IO"),
             worst_after(log, "worst hold into MACC"),
         ]
-        typer.echo(" | ".join([tag, *(f"{s:.3f}" for s in slacks), str(held)]))
+        reset = [
+            worst_after(log, "==== USER_RESET setup into GSR"),
+            worst_after(log, "==== USER_RESET hold into GSR"),
+        ]
+        typer.echo(
+            " | ".join(
+                [tag, *(f"{s:.3f}" for s in slacks), str(held), *(f"{s:.3f}" for s in reset)]
+            )
+        )
     for tag in CORNERS:
         found = violations(fullsta / f"drv_{tag}.txt")
         counts = Counter((v.check, v.owner) for v in found)

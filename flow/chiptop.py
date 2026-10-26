@@ -28,8 +28,6 @@ USER_IO_PIN = re.compile(r"A_(IN|OUT|EN)_top_(\d+)")
 
 # `uclk` in flow/sta/full.tcl; the user clock's Fmax is unmeasured.
 USER_PERIOD_NS = 10.0
-# Board-side budget on each user IO path, 30 % of the user period each way.
-USER_IO_DELAY_NS = 3.0
 # The IO datasheet's 100 MHz output AC condition. With the PAD pin's own 1.56 pF
 # it lands 0.1 pF past the ss Liberty tables' 11.46 pF edge.
 BOARD_LOAD_PF = 10.0
@@ -44,11 +42,10 @@ class Timing(Enum):
 
     CONFIG_CLOCK = "config_clock"
     USER_CLOCK = "user_clock"
-    # Sampled by `CLK` without a fixed phase: SPI through a 4-flop sampler, Rx
-    # through one flop, resetn as an asynchronous clear.
-    ASYNC_IN = "async_in"
-    # Status read off-chip with no clock relationship.
-    ASYNC_OUT = "async_out"
+    # Configuration logic ports, which the macro's timing model carries arcs for.
+    CONFIG_IN = "config_in"
+    CONFIG_OUT = "config_out"
+    # Through the fabric's configurable routing; the timing model has no arcs.
     USER = "user"
 
 
@@ -66,15 +63,15 @@ SIGNALS: dict[str, Signal] = {
     "USER_CLK": Signal("PAD_USER_CLK", Timing.USER_CLOCK),
     "USER_RESET": Signal("PAD_USER_RESET", Timing.USER),
     # Pulled so a floating pin holds the loader out of reset and the SPI slave deselected.
-    "resetn": Signal("PAD_RSTN", Timing.ASYNC_IN, pull_up=True),
-    "spi_cs_n": Signal("PAD_SPI_CSN", Timing.ASYNC_IN, pull_up=True),
-    "spi_sck": Signal("PAD_SPI_SCK", Timing.ASYNC_IN),
-    "spi_mosi": Signal("PAD_SPI_MOSI", Timing.ASYNC_IN),
-    "Rx": Signal("PAD_UART_RX", Timing.ASYNC_IN),
-    "ComActive": Signal("PAD_UART_ACTIVE", Timing.ASYNC_OUT),
-    "ReceiveLED": Signal("PAD_CFG_LED", Timing.ASYNC_OUT),
-    "ConfigBusy": Signal("PAD_CFG_BUSY", Timing.ASYNC_OUT),
-    "Configured": Signal("PAD_CFG_DONE", Timing.ASYNC_OUT),
+    "resetn": Signal("PAD_RSTN", Timing.CONFIG_IN, pull_up=True),
+    "spi_cs_n": Signal("PAD_SPI_CSN", Timing.CONFIG_IN, pull_up=True),
+    "spi_sck": Signal("PAD_SPI_SCK", Timing.CONFIG_IN),
+    "spi_mosi": Signal("PAD_SPI_MOSI", Timing.CONFIG_IN),
+    "Rx": Signal("PAD_UART_RX", Timing.CONFIG_IN),
+    "ComActive": Signal("PAD_UART_ACTIVE", Timing.CONFIG_OUT),
+    "ReceiveLED": Signal("PAD_CFG_LED", Timing.CONFIG_OUT),
+    "ConfigBusy": Signal("PAD_CFG_BUSY", Timing.CONFIG_OUT),
+    "Configured": Signal("PAD_CFG_DONE", Timing.CONFIG_OUT),
 }
 USER_IO_PORT = "PAD_IO"
 
@@ -276,33 +273,43 @@ def sdc(ring: Ring, config_period_ns: float) -> str:
         if p.timing in (Timing.CONFIG_CLOCK, Timing.USER_CLOCK)
     }
     user_io = f"[get_ports {{{USER_IO_PORT}[*]}}]"
-    config_in = ports(Timing.ASYNC_IN, direction=ring.inputs)
-    config_out = ports(Timing.ASYNC_OUT, direction=ring.outputs)
+    config_in = ports(Timing.CONFIG_IN, direction=ring.inputs)
+    config_out = ports(Timing.CONFIG_OUT, direction=ring.outputs)
+    user_in = ports(Timing.USER, direction=ring.inputs)
     return f"""\
 # Chip-level constraints for `{TOP}`, written by `flow cli chip-top`.
-# The two clocks have no phase relationship: CLK runs the configuration logic and
-# USER_CLK reaches the fabric only through the SW_term global-buffer muxes.
+# Load eFPGA_top from the timing model flow/sta/etm.tcl extracts, not from ECC's
+# eFPGA_top_Harden.lib, which has no arcs.
 create_clock -name CLK -period {config_period_ns:.1f} [get_ports {clock[Timing.CONFIG_CLOCK]}]
+# USER_CLK reaches the fabric only through the SW_term global-buffer muxes and has
+# no phase relationship with CLK.
 create_clock -name USER_CLK -period {USER_PERIOD_NS:.1f} [get_ports {clock[Timing.USER_CLOCK]}]
 set_clock_groups -asynchronous -group CLK -group USER_CLK
+# Each clock tree is one pad and a wire, so the pad delay counts from the start.
+set_propagated_clock [all_clocks]
 set_clock_uncertainty -hold {HOLD_UNCERTAINTY_NS} [all_clocks]
 
 # Board: a {BOARD_LOAD_PF:.0f} pF load on every driven pad and a {BOARD_TRANSITION_NS} ns edge into every pad.
 set_load {BOARD_LOAD_PF} [all_outputs]
 set_input_transition {BOARD_TRANSITION_NS} [all_inputs]
 
-# Configuration pins have no fixed phase to CLK: SPI passes a 4-flop sampler, Rx
-# one flop, resetn is an asynchronous clear, and the status outputs are polled.
-# The zero delays only tie each port to CLK so no port reads as unconstrained.
+# Configuration logic: zero board delay, so each path is the pad plus the macro's
+# own arc and must fit one CLK period. The host's own delay comes out of the slack.
 set_input_delay 0 -clock CLK {config_in}
 set_output_delay 0 -clock CLK {config_out}
-set_false_path -from {config_in}
-set_false_path -to {config_out}
+# The inputs come from a host on its own clock into synchronisers (SPI a 4-flop
+# sampler, Rx one flop, resetn an asynchronous clear), so a hold check against CLK
+# describes no real transfer; setup still bounds the pad-to-sampler delay.
+set_false_path -hold -from {config_in}
 
-# User IO and the user reset are timed against USER_CLK with a {USER_IO_DELAY_NS} ns board budget each way.
-set_input_delay {USER_IO_DELAY_NS} -clock USER_CLK {ports(Timing.USER, direction=ring.inputs)}
-set_input_delay {USER_IO_DELAY_NS} -clock USER_CLK {user_io}
-set_output_delay {USER_IO_DELAY_NS} -clock USER_CLK {user_io}
+# User IO and the user reset pass through configurable routing, whose timing
+# depends on the bitstream, so nothing at chip level times them.
+set_input_delay 0 -clock USER_CLK {user_in}
+set_input_delay 0 -clock USER_CLK {user_io}
+set_output_delay 0 -clock USER_CLK {user_io}
+set_false_path -from {user_in}
+set_false_path -from {user_io}
+set_false_path -to {user_io}
 """
 
 

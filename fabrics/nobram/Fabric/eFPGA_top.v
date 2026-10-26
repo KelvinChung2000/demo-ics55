@@ -5,7 +5,8 @@ module eFPGA_top (
     output wire [9:0] A_EN_top,
     output wire [9:0] A_IN_top,
     input wire [9:0] A_OUT_top,
-    input wire [0:0] SYS_RESET_RESET_top,
+    input wire USER_CLK,
+    input wire USER_RESET,
     // Configuration clock and reset. The fabric's own clock arrives on a pad
     // through the global buffers, since the grid sets DisableUserCLK.
     input wire CLK,
@@ -13,8 +14,6 @@ module eFPGA_top (
     input wire Rx,
     output wire ComActive,
     output wire ReceiveLED,
-    input wire s_clk,
-    input wire s_data,
     input wire spi_sck,
     input wire spi_cs_n,
     input wire spi_mosi,
@@ -40,8 +39,8 @@ module eFPGA_top (
         .Rx(Rx),
         .ComActive(ComActive),
         .ReceiveLED(ReceiveLED),
-        .s_clk(s_clk),
-        .s_data(s_data),
+        .s_clk(1'b0),
+        .s_data(1'b0),
         .spi_sck(spi_sck),
         .spi_cs_n(spi_cs_n),
         .spi_mosi(spi_mosi),
@@ -102,7 +101,8 @@ module eFPGA_top (
         .Tile_X12Y3_A_OUT_top(A_OUT_top[7]),
         .Tile_X12Y2_A_OUT_top(A_OUT_top[8]),
         .Tile_X12Y1_A_OUT_top(A_OUT_top[9]),
-        .Tile_X0Y11_SYS_RESET_RESET_top(SYS_RESET_RESET_top[0]),
+        .Tile_X0Y11_SYS_RESET_RESET_top(USER_RESET),
+        .Tile_X0Y11_USER_CLK_CLK_top(USER_CLK),
         .FrameData(frame_data),
         .FrameStrobe(frame_strobe)
     );

@@ -230,6 +230,10 @@ def fabric_pins(
     bound = topwrap.bindings(text)
 
     def port_name(bit: str) -> str:
+        if bit in topwrap.PAD_NAMES.values():
+            if bit not in ports:
+                raise ValueError(f"synthesis wrote no port for {bit}")
+            return bit
         # ECC's synthesis bit-blasts a bus into `A_OUT_top_16`, and a one-bit
         # bus into its bare name.
         name, index = re.fullmatch(r"(\w+)\[(\d+)\]", bit).groups()

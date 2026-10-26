@@ -7,7 +7,8 @@ every frame after the first loads misaligned. This top is written from the
 variant's own `eFPGA.v` instead. The loader is `fabric_config` from
 fabulous-fabrics, sized by the row and column counts the grid has, and the words
 it takes come from `config_frontend`, which serves UART, bitbang and SPI. Its
-32-bit parallel port is tied off, since 33 pads do not fit the MPW pad budget.
+32-bit parallel port and the bitbang port are tied off, since the MPW allows 36
+pads: only UART and SPI reach a pin.
 
 A tile port `eFPGA.v` marks `//EXTERNAL` becomes one bit of a top-level bus
 named after the port, numbered the way FABulous numbers them: bottom row first,
@@ -15,7 +16,8 @@ west to east within a row. A user design's pin constraints index those buses, so
 keeping FABulous's order is what lets a wrapper written against the old top load
 unchanged. `CONFIGURED_top` is the exception. It tells a BEL the fabric has
 finished loading, which only the loader knows, so `configured_o` drives it
-rather than a pin.
+rather than a pin. A one-bit port in `PAD_NAMES` is the other exception: it
+becomes a scalar named for what the pad carries.
 """
 
 from __future__ import annotations
@@ -31,6 +33,12 @@ from flow.variant import Paths
 # The header word carries the column in its top five bits, as `bit_gen` writes it.
 FRAME_SELECT_WIDTH = 5
 CONFIGURED_PORT = "CONFIGURED_top"
+# The SW_term pads: SYS_RESET carries the user reset and USER_CLK the user clock,
+# each reaching the fabric only through the global-buffer input muxes.
+PAD_NAMES = {
+    "SYS_RESET_RESET_top": "USER_RESET",
+    "USER_CLK_CLK_top": "USER_CLK",
+}
 
 EXTERNAL_RE = re.compile(
     r"^\s*(input|output)\s+Tile_X(\d+)Y(\d+)_(\w+)\s*,?\s*//EXTERNAL\s*$", re.M
@@ -76,9 +84,26 @@ def bindings(text: str) -> dict[str, str]:
     bound = {}
     externals = read_externals(text)
     for port in sorted(externals, key=lambda name: (name == CONFIGURED_PORT, name)):
+        if port in PAD_NAMES:
+            (bit,) = _single_bit(port, externals[port])
+            bound[bit.scalar] = PAD_NAMES[port]
+            continue
         for index, bit in enumerate(externals[port]):
             bound[bit.scalar] = "configured" if port == CONFIGURED_PORT else f"{port}[{index}]"
     return bound
+
+
+def _single_bit(port: str, bits: list[External]) -> list[External]:
+    if len(bits) != 1:
+        raise ValueError(f"{port} is {len(bits)} bits wide; a named pad must be one")
+    return bits
+
+
+def _port_declaration(port: str, bits: list[External]) -> tuple[str, str]:
+    if port in PAD_NAMES:
+        (bit,) = _single_bit(port, bits)
+        return PAD_NAMES[port], f"    {bit.direction} wire {PAD_NAMES[port]},"
+    return port, f"    {bits[0].direction} wire [{len(bits) - 1}:0] {port},"
 
 
 def _rtl_body(text: str) -> str:
@@ -146,9 +171,12 @@ def render(fabric: Fabric, text: str, source: str, netlist: Netlist | None = Non
         )
     buses = read_externals(text)
     ports = [
-        f"    {scalars[0].direction} wire [{len(scalars) - 1}:0] {port},"
-        for port, scalars in sorted(buses.items())
-        if port != CONFIGURED_PORT
+        line
+        for _, line in sorted(
+            _port_declaration(port, bits)
+            for port, bits in buses.items()
+            if port != CONFIGURED_PORT
+        )
     ]
     body = _rtl_body(text) if netlist is None else _hard_body(text, netlist, frame_bits, frames)
     return f"""// Written by flow/topwrap.py from {source}; regenerate with `flow gen-top`.
@@ -163,8 +191,6 @@ module eFPGA_top (
     input wire Rx,
     output wire ComActive,
     output wire ReceiveLED,
-    input wire s_clk,
-    input wire s_data,
     input wire spi_sck,
     input wire spi_cs_n,
     input wire spi_mosi,
@@ -190,8 +216,8 @@ module eFPGA_top (
         .Rx(Rx),
         .ComActive(ComActive),
         .ReceiveLED(ReceiveLED),
-        .s_clk(s_clk),
-        .s_data(s_data),
+        .s_clk(1'b0),
+        .s_data(1'b0),
         .spi_sck(spi_sck),
         .spi_cs_n(spi_cs_n),
         .spi_mosi(spi_mosi),

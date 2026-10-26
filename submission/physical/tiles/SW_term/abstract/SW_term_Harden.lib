@@ -33,7 +33,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.70173721");
+                                values ("5.68493154");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -48,7 +48,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.66823917");
+                                values ("5.59266574");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -63,7 +63,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.60223871");
+                                values ("5.60236438");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -78,7 +78,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.63889175");
+                                values ("5.71061008");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -221,7 +221,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18985145");
+                                values ("0.19047374");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -236,7 +236,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20934066");
+                                values ("0.19789604");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -251,7 +251,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17270987");
+                                values ("0.19800034");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -266,7 +266,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.21503920");
+                                values ("0.19149752");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -281,7 +281,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17776346");
+                                values ("0.17411956");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -296,7 +296,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17186186");
+                                values ("0.17102486");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -311,7 +311,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17234855");
+                                values ("0.16892224");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -326,7 +326,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16793690");
+                                values ("0.17239411");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -341,7 +341,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17446844");
+                                values ("0.16733918");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -356,7 +356,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19592320");
+                                values ("0.16977411");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -371,7 +371,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16929740");
+                                values ("0.17802109");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -386,7 +386,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17238563");
+                                values ("0.16935332");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -401,7 +401,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.21050228");
+                                values ("0.19556991");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -416,7 +416,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20278685");
+                                values ("0.17144837");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -431,7 +431,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20759711");
+                                values ("0.18586307");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -446,7 +446,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16990320");
+                                values ("0.18448895");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -461,7 +461,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17213912");
+                                values ("0.16942486");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -476,7 +476,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18485958");
+                                values ("0.17700237");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -491,7 +491,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16623133");
+                                values ("0.18182220");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -506,7 +506,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17389407");
+                                values ("0.17246760");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -521,7 +521,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16768738");
+                                values ("0.17351939");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -536,7 +536,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17325770");
+                                values ("0.17631655");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -551,7 +551,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16605963");
+                                values ("0.17297292");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -565,10 +565,10 @@ library (SW_term) {
                        related_pin        : "FrameData_3";
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
-                        cell_rise(scalar) {
-                                values ("0.21728778");
+                        cell_fall(scalar) {
+                                values ("0.20535986");
                        }
-                        rise_transition(scalar) {
+                        fall_transition(scalar) {
                                 values ("0.00000000");
                        }
                 }
@@ -581,7 +581,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16959436");
+                                values ("0.17084053");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -596,7 +596,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16967325");
+                                values ("0.17188931");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -611,7 +611,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20337565");
+                                values ("0.20133135");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -625,10 +625,10 @@ library (SW_term) {
                        related_pin        : "FrameData_5";
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
-                        cell_fall(scalar) {
-                                values ("0.20327362");
+                        cell_rise(scalar) {
+                                values ("0.20438947");
                        }
-                        fall_transition(scalar) {
+                        rise_transition(scalar) {
                                 values ("0.00000000");
                        }
                 }
@@ -641,7 +641,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.21178277");
+                                values ("0.20637572");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -656,7 +656,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20344270");
+                                values ("0.21470245");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -671,7 +671,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16777830");
+                                values ("0.19823049");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -686,7 +686,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19427885");
+                                values ("0.19070366");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -781,7 +781,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.16902907");
+                                values ("0.16735156");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -796,7 +796,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19609271");
+                                values ("0.19315023");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -811,7 +811,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18980605");
+                                values ("0.19090511");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -826,7 +826,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19148976");
+                                values ("0.19680738");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -841,7 +841,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18846291");
+                                values ("0.19382038");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -856,7 +856,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18663986");
+                                values ("0.19842086");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -871,7 +871,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18561415");
+                                values ("0.19680873");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -886,7 +886,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18791079");
+                                values ("0.20037636");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -901,7 +901,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20031257");
+                                values ("0.19065082");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -916,7 +916,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.18606840");
+                                values ("0.18612984");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -931,7 +931,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19964573");
+                                values ("0.20147842");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -946,7 +946,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.17928880");
+                                values ("0.18201288");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -961,7 +961,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20055633");
+                                values ("0.19944786");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -976,7 +976,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19284095");
+                                values ("0.21300746");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -991,7 +991,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20335159");
+                                values ("0.19387302");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -1006,7 +1006,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20568875");
+                                values ("0.20480342");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -1021,7 +1021,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.20300554");
+                                values ("0.17143175");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -1036,7 +1036,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19418170");
+                                values ("0.20575933");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -1051,7 +1051,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19065528");
+                                values ("0.19540694");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -1066,7 +1066,7 @@ library (SW_term) {
                        timing_sense        : positive_unate;
                        timing_type        : combinational;
                         cell_fall(scalar) {
-                                values ("0.19413256");
+                                values ("0.19898244");
                        }
                         fall_transition(scalar) {
                                 values ("0.00000000");
@@ -1081,7 +1081,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.70111505");
+                                values ("5.66991320");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -1096,7 +1096,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.66679626");
+                                values ("5.59656189");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -1111,7 +1111,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.60511672");
+                                values ("5.61972809");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -1126,7 +1126,7 @@ library (SW_term) {
                        timing_sense        : negative_unate;
                        timing_type        : combinational;
                         cell_rise(scalar) {
-                                values ("5.64837541");
+                                values ("5.71554144");
                        }
                         rise_transition(scalar) {
                                 values ("0.00000000");
@@ -1152,6 +1152,10 @@ library (SW_term) {
    pin("S_GBUF_FEED_END_3") {
      direction               : input;
      capacitance             : 0.00262919;
+   }
+   pin("USER_CLOCK_top") {
+     direction               : input;
+     capacitance             : 0.00247364;
    }
    pin("W_GBUF_FEED_END_0") {
      direction               : input;

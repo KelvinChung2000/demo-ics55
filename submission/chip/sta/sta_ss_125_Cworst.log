@@ -1,0 +1,189 @@
+OpenSTA 2.7.0 GITDIR-NOT Copyright (c) 2025, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+Warning: top.v line 97, instance u_pad_0 port VDD not found.
+Warning: top.v line 97, instance u_pad_0 port VDDIO not found.
+Warning: top.v line 97, instance u_pad_0 port VSS not found.
+Warning: top.v line 97, instance u_pad_0 port VSSIO not found.
+Warning: top.v line 114, instance u_pad_1 port VDD not found.
+Warning: top.v line 114, instance u_pad_1 port VDDIO not found.
+Warning: top.v line 114, instance u_pad_1 port VSS not found.
+Warning: top.v line 114, instance u_pad_1 port VSSIO not found.
+Warning: top.v line 131, instance u_pad_2 port VDD not found.
+Warning: top.v line 131, instance u_pad_2 port VDDIO not found.
+Warning: top.v line 131, instance u_pad_2 port VSS not found.
+Warning: top.v line 131, instance u_pad_2 port VSSIO not found.
+Warning: top.v line 148, instance u_pad_3 port VDD not found.
+Warning: top.v line 148, instance u_pad_3 port VDDIO not found.
+Warning: top.v line 148, instance u_pad_3 port VSS not found.
+Warning: top.v line 148, instance u_pad_3 port VSSIO not found.
+Warning: top.v line 165, instance u_pad_4 port VDD not found.
+Warning: top.v line 165, instance u_pad_4 port VDDIO not found.
+Warning: top.v line 165, instance u_pad_4 port VSS not found.
+Warning: top.v line 165, instance u_pad_4 port VSSIO not found.
+Warning: top.v line 182, instance u_pad_5 port VDD not found.
+Warning: top.v line 182, instance u_pad_5 port VDDIO not found.
+Warning: top.v line 182, instance u_pad_5 port VSS not found.
+Warning: top.v line 182, instance u_pad_5 port VSSIO not found.
+Warning: top.v line 199, instance u_pad_6 port VDD not found.
+Warning: top.v line 199, instance u_pad_6 port VDDIO not found.
+Warning: top.v line 199, instance u_pad_6 port VSS not found.
+Warning: top.v line 199, instance u_pad_6 port VSSIO not found.
+Warning: top.v line 216, instance u_pad_7 port VDD not found.
+Warning: top.v line 216, instance u_pad_7 port VDDIO not found.
+Warning: top.v line 216, instance u_pad_7 port VSS not found.
+Warning: top.v line 216, instance u_pad_7 port VSSIO not found.
+Warning: top.v line 233, instance u_pad_8 port VDD not found.
+Warning: top.v line 233, instance u_pad_8 port VDDIO not found.
+Warning: top.v line 233, instance u_pad_8 port VSS not found.
+Warning: top.v line 233, instance u_pad_8 port VSSIO not found.
+Warning: top.v line 250, instance u_pad_9 port VDD not found.
+Warning: top.v line 250, instance u_pad_9 port VDDIO not found.
+Warning: top.v line 250, instance u_pad_9 port VSS not found.
+Warning: top.v line 250, instance u_pad_9 port VSSIO not found.
+Warning: top.v line 267, instance u_pad_10 port VDD not found.
+Warning: top.v line 267, instance u_pad_10 port VDDIO not found.
+Warning: top.v line 267, instance u_pad_10 port VSS not found.
+Warning: top.v line 267, instance u_pad_10 port VSSIO not found.
+Warning: top.v line 284, instance u_pad_11 port VDD not found.
+Warning: top.v line 284, instance u_pad_11 port VDDIO not found.
+Warning: top.v line 284, instance u_pad_11 port VSS not found.
+Warning: top.v line 284, instance u_pad_11 port VSSIO not found.
+Warning: top.v line 301, instance u_pad_12 port VDD not found.
+Warning: top.v line 301, instance u_pad_12 port VDDIO not found.
+Warning: top.v line 301, instance u_pad_12 port VSS not found.
+Warning: top.v line 301, instance u_pad_12 port VSSIO not found.
+Warning: top.v line 318, instance u_pad_13 port VDD not found.
+Warning: top.v line 318, instance u_pad_13 port VDDIO not found.
+Warning: top.v line 318, instance u_pad_13 port VSS not found.
+Warning: top.v line 318, instance u_pad_13 port VSSIO not found.
+Warning: top.v line 335, instance u_pad_14 port VDD not found.
+Warning: top.v line 335, instance u_pad_14 port VDDIO not found.
+Warning: top.v line 335, instance u_pad_14 port VSS not found.
+Warning: top.v line 335, instance u_pad_14 port VSSIO not found.
+Warning: top.v line 352, instance u_pad_15 port VDD not found.
+Warning: top.v line 352, instance u_pad_15 port VDDIO not found.
+Warning: top.v line 352, instance u_pad_15 port VSS not found.
+Warning: top.v line 352, instance u_pad_15 port VSSIO not found.
+Warning: top.v line 369, instance u_pad_16 port VDD not found.
+Warning: top.v line 369, instance u_pad_16 port VDDIO not found.
+Warning: top.v line 369, instance u_pad_16 port VSS not found.
+Warning: top.v line 369, instance u_pad_16 port VSSIO not found.
+Warning: top.v line 386, instance u_pad_17 port VDD not found.
+Warning: top.v line 386, instance u_pad_17 port VDDIO not found.
+Warning: top.v line 386, instance u_pad_17 port VSS not found.
+Warning: top.v line 386, instance u_pad_17 port VSSIO not found.
+Warning: top.v line 403, instance u_pad_18 port VDD not found.
+Warning: top.v line 403, instance u_pad_18 port VDDIO not found.
+Warning: top.v line 403, instance u_pad_18 port VSS not found.
+Warning: top.v line 403, instance u_pad_18 port VSSIO not found.
+Warning: top.v line 420, instance u_pad_19 port VDD not found.
+Warning: top.v line 420, instance u_pad_19 port VDDIO not found.
+Warning: top.v line 420, instance u_pad_19 port VSS not found.
+Warning: top.v line 420, instance u_pad_19 port VSSIO not found.
+Warning: top.v line 437, instance u_pad_20 port VDD not found.
+Warning: top.v line 437, instance u_pad_20 port VDDIO not found.
+Warning: top.v line 437, instance u_pad_20 port VSS not found.
+Warning: top.v line 437, instance u_pad_20 port VSSIO not found.
+Warning: top.v line 454, instance u_pad_21 port VDD not found.
+Warning: top.v line 454, instance u_pad_21 port VDDIO not found.
+Warning: top.v line 454, instance u_pad_21 port VSS not found.
+Warning: top.v line 454, instance u_pad_21 port VSSIO not found.
+Warning: There are 10 unconstrained endpoints.
+  PAD_IO[0]
+  PAD_IO[1]
+  PAD_IO[2]
+  PAD_IO[3]
+  PAD_IO[4]
+  PAD_IO[5]
+  PAD_IO[6]
+  PAD_IO[7]
+  PAD_IO[8]
+  PAD_IO[9]
+max_delay/setup group CLK
+
+                                     Required   Actual
+Endpoint                                Delay    Delay    Slack
+---------------------------------------------------------------
+PAD_CFG_LED (output)                   10.000    5.506    4.494 (MET)
+PAD_CFG_BUSY (output)                  10.000    5.302    4.698 (MET)
+PAD_UART_ACTIVE (output)               10.000    5.029    4.971 (MET)
+PAD_CFG_DONE (output)                  10.000    4.972    5.028 (MET)
+u_efpga/resetn (eFPGA_top)             10.663    1.865    8.798 (MET)
+u_efpga/spi_mosi (eFPGA_top)           12.319    1.865   10.454 (MET)
+u_efpga/spi_sck (eFPGA_top)            12.319    1.865   10.454 (MET)
+u_efpga/Rx (eFPGA_top)                 12.336    1.866   10.470 (MET)
+u_efpga/spi_cs_n (eFPGA_top)           12.336    1.865   10.471 (MET)
+
+min_delay/hold group CLK
+
+                                     Required   Actual
+Endpoint                                Delay    Delay    Slack
+---------------------------------------------------------------
+PAD_CFG_DONE (output)                   0.050    4.899    4.849 (MET)
+PAD_UART_ACTIVE (output)                0.050    4.958    4.908 (MET)
+PAD_CFG_BUSY (output)                   0.050    5.237    5.187 (MET)
+PAD_CFG_LED (output)                    0.050    5.470    5.420 (MET)
+
+Startpoint: u_efpga (rising edge-triggered flip-flop clocked by CLK)
+Endpoint: PAD_CFG_DONE (output port clocked by CLK)
+Path Group: CLK
+Path Type: max
+
+   Delay     Time   Description
+-----------------------------------------------------------
+   0.000    0.000   clock CLK (rise edge)
+   0.000    0.000   clock source latency
+   0.000    0.000 ^ PAD_CLK (in)
+   1.875    1.875 ^ u_pad_0/C (P65_1233_PBMUX)
+   0.000    1.875 ^ u_efpga/CLK (eFPGA_top)
+   0.787    2.662 ^ u_efpga/Configured (eFPGA_top)
+   2.310    4.972 ^ u_pad_3/PAD (P65_1233_PBMUX)
+   0.000    4.972 ^ PAD_CFG_DONE (out)
+            4.972   data arrival time
+
+  10.000   10.000   clock CLK (rise edge)
+   0.000   10.000   clock network delay (propagated)
+   0.000   10.000   clock reconvergence pessimism
+   0.000   10.000   output external delay
+           10.000   data required time
+-----------------------------------------------------------
+           10.000   data required time
+           -4.972   data arrival time
+-----------------------------------------------------------
+            5.028   slack (MET)
+
+
+Startpoint: PAD_SPI_MOSI (input port clocked by CLK)
+Endpoint: u_efpga (rising edge-triggered flip-flop clocked by CLK)
+Path Group: CLK
+Path Type: max
+
+   Delay     Time   Description
+-----------------------------------------------------------
+   0.000    0.000   clock CLK (rise edge)
+   0.000    0.000   clock network delay (propagated)
+   0.000    0.000 ^ input external delay
+   0.000    0.000 ^ PAD_SPI_MOSI (in)
+   1.865    1.865 ^ u_pad_10/C (P65_1233_PBMUX)
+   0.000    1.865 ^ u_efpga/spi_mosi (eFPGA_top)
+            1.865   data arrival time
+
+  10.000   10.000   clock CLK (rise edge)
+   0.000   10.000   clock source latency
+   0.000   10.000 ^ PAD_CLK (in)
+   1.875   11.875 ^ u_pad_0/C (P65_1233_PBMUX)
+   0.000   11.875 ^ u_efpga/CLK (eFPGA_top)
+   0.000   11.875   clock reconvergence pessimism
+   0.444   12.319   library setup time
+           12.319   data required time
+-----------------------------------------------------------
+           12.319   data required time
+           -1.865   data arrival time
+-----------------------------------------------------------
+           10.454   slack (MET)
+
+

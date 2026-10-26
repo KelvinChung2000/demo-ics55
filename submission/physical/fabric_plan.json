@@ -19523,7 +19523,15 @@
         "tile_type": "SW_term",
         "name": "SYS_RESET_RESET_top",
         "side": "W",
-        "offset": 17500,
+        "offset": 17300,
+        "layer": "MET3",
+        "external": true
+      },
+      {
+        "tile_type": "SW_term",
+        "name": "USER_CLOCK_top",
+        "side": "W",
+        "offset": 17700,
         "layer": "MET3",
         "external": true
       },
@@ -19531,7 +19539,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_0",
         "side": "W",
-        "offset": 4700,
+        "offset": 4500,
         "layer": "MET3",
         "external": true
       },
@@ -19539,7 +19547,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_1",
         "side": "W",
-        "offset": 5100,
+        "offset": 4900,
         "layer": "MET3",
         "external": true
       },
@@ -19547,7 +19555,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_2",
         "side": "W",
-        "offset": 5500,
+        "offset": 5300,
         "layer": "MET3",
         "external": true
       },
@@ -19555,7 +19563,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_3",
         "side": "W",
-        "offset": 5900,
+        "offset": 5700,
         "layer": "MET3",
         "external": true
       },
@@ -19563,7 +19571,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_4",
         "side": "W",
-        "offset": 6300,
+        "offset": 6100,
         "layer": "MET3",
         "external": true
       },
@@ -19571,7 +19579,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_5",
         "side": "W",
-        "offset": 6700,
+        "offset": 6500,
         "layer": "MET3",
         "external": true
       },
@@ -19579,7 +19587,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_6",
         "side": "W",
-        "offset": 7100,
+        "offset": 6900,
         "layer": "MET3",
         "external": true
       },
@@ -19587,7 +19595,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_7",
         "side": "W",
-        "offset": 7500,
+        "offset": 7300,
         "layer": "MET3",
         "external": true
       },
@@ -19595,7 +19603,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_8",
         "side": "W",
-        "offset": 7900,
+        "offset": 7700,
         "layer": "MET3",
         "external": true
       },
@@ -19603,7 +19611,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_9",
         "side": "W",
-        "offset": 8300,
+        "offset": 8100,
         "layer": "MET3",
         "external": true
       },
@@ -19611,7 +19619,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_10",
         "side": "W",
-        "offset": 8700,
+        "offset": 8500,
         "layer": "MET3",
         "external": true
       },
@@ -19619,7 +19627,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_11",
         "side": "W",
-        "offset": 9100,
+        "offset": 8900,
         "layer": "MET3",
         "external": true
       },
@@ -19627,7 +19635,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_12",
         "side": "W",
-        "offset": 9500,
+        "offset": 9300,
         "layer": "MET3",
         "external": true
       },
@@ -19635,7 +19643,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_13",
         "side": "W",
-        "offset": 9900,
+        "offset": 9700,
         "layer": "MET3",
         "external": true
       },
@@ -19643,7 +19651,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_14",
         "side": "W",
-        "offset": 10300,
+        "offset": 10100,
         "layer": "MET3",
         "external": true
       },
@@ -19651,7 +19659,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_15",
         "side": "W",
-        "offset": 10700,
+        "offset": 10500,
         "layer": "MET3",
         "external": true
       },
@@ -19659,7 +19667,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_16",
         "side": "W",
-        "offset": 11100,
+        "offset": 10900,
         "layer": "MET3",
         "external": true
       },
@@ -19667,7 +19675,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_17",
         "side": "W",
-        "offset": 11500,
+        "offset": 11300,
         "layer": "MET3",
         "external": true
       },
@@ -19675,7 +19683,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_18",
         "side": "W",
-        "offset": 11900,
+        "offset": 11700,
         "layer": "MET3",
         "external": true
       },
@@ -19683,7 +19691,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_19",
         "side": "W",
-        "offset": 12300,
+        "offset": 12100,
         "layer": "MET3",
         "external": true
       },
@@ -19691,7 +19699,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_20",
         "side": "W",
-        "offset": 12700,
+        "offset": 12500,
         "layer": "MET3",
         "external": true
       },
@@ -19699,7 +19707,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_21",
         "side": "W",
-        "offset": 13100,
+        "offset": 12900,
         "layer": "MET3",
         "external": true
       },
@@ -19707,7 +19715,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_22",
         "side": "W",
-        "offset": 13500,
+        "offset": 13300,
         "layer": "MET3",
         "external": true
       },
@@ -19715,7 +19723,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_23",
         "side": "W",
-        "offset": 13900,
+        "offset": 13700,
         "layer": "MET3",
         "external": true
       },
@@ -19723,7 +19731,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_24",
         "side": "W",
-        "offset": 14300,
+        "offset": 14100,
         "layer": "MET3",
         "external": true
       },
@@ -19731,7 +19739,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_25",
         "side": "W",
-        "offset": 14700,
+        "offset": 14500,
         "layer": "MET3",
         "external": true
       },
@@ -19739,7 +19747,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_26",
         "side": "W",
-        "offset": 15100,
+        "offset": 14900,
         "layer": "MET3",
         "external": true
       },
@@ -19747,7 +19755,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_27",
         "side": "W",
-        "offset": 15500,
+        "offset": 15300,
         "layer": "MET3",
         "external": true
       },
@@ -19755,7 +19763,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_28",
         "side": "W",
-        "offset": 15900,
+        "offset": 15700,
         "layer": "MET3",
         "external": true
       },
@@ -19763,7 +19771,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_29",
         "side": "W",
-        "offset": 16300,
+        "offset": 16100,
         "layer": "MET3",
         "external": true
       },
@@ -19771,7 +19779,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_30",
         "side": "W",
-        "offset": 16700,
+        "offset": 16500,
         "layer": "MET3",
         "external": true
       },
@@ -19779,7 +19787,7 @@
         "tile_type": "SW_term",
         "name": "FrameData_31",
         "side": "W",
-        "offset": 17100,
+        "offset": 16900,
         "layer": "MET3",
         "external": true
       },

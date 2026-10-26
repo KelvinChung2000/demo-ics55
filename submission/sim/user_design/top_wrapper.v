@@ -57,19 +57,28 @@ module top_wrapper;
         .EN (~io_oeb[0])
     );
 
-    // No UserCLK in this fabric: the clock enters on the SYS_RESET pad, whose
-    // only fabric connection is the SW_term global buffers.
-    wire clk_pad, clk;
-    (* keep, BEL="X0Y11.E" *) SYS_RESET clk_pad_i (
-        .RESET(clk_pad)
+    // No UserCLK in this fabric: the USER_CLK and USER_RESET pads reach it only
+    // through the SW_term global buffers, the clock on GBUF A into each tile's
+    // GCLK and the reset on GBUF B into each tile's GSR.
+    wire clk_pad, clk, reset_pad, reset;
+    (* keep, BEL="X0Y11.F" *) USER_CLK clk_pad_i (
+        .CLOCK(clk_pad)
     );
     (* keep, BEL="X0Y11.A" *) GBUF clk_buf_i (
         .IN (clk_pad),
         .OUT(clk)
     );
+    (* keep, BEL="X0Y11.E" *) SYS_RESET reset_pad_i (
+        .RESET(reset_pad)
+    );
+    (* keep, BEL="X0Y11.B" *) GBUF reset_buf_i (
+        .IN (reset_pad),
+        .OUT(reset)
+    );
 
     sequential_16bit_en top_i (
         .clk(clk),
+        .user_reset(reset),
         .io_in(io_in),
         .io_out(io_out),
         .io_oeb(io_oeb)

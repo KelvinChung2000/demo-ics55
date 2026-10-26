@@ -2,7 +2,7 @@
 
 The appendix is a snapshot, so it is rebuilt from its sources rather than
 edited by hand: every file under rtl/, sim/, physical/, signoff/, sta/ and gl/
-is copied (and large text views gzipped) by this script, and a rerun replaces
+and chip/ is copied (and large text views gzipped) by this script, and a rerun replaces
 those directories. The report, images/ and the README are hand-written and are
 left alone.
 
@@ -28,9 +28,10 @@ VARIANT = ROOT / "fabrics" / "nobram"
 BUILD = ROOT / "build" / "nobram"
 TOP = BUILD / "top" / "default"
 FULLSTA = BUILD / "fullsta"
+CHIP = BUILD / "chip"
 STA_RECIPE = ROOT / "flow" / "sta"
 SIM_BUILD = ROOT / "Test" / "build"
-GENERATED = ("rtl", "sim", "physical", "signoff", "sta", "gl")
+GENERATED = ("rtl", "sim", "physical", "signoff", "sta", "gl", "chip")
 RC_CORNERS = (
     "Cbest_125C", "Cbest_m40C", "Cworst_125C", "Cworst_m40C", "RCbest_125C",
     "RCbest_m40C", "RCworst_125C", "RCworst_m40C", "TYPICAL_25C",
@@ -195,7 +196,7 @@ def collect_signoff(tiles: list[str]) -> None:
 def collect_sta() -> None:
     out = OUT / "sta"
     # The tracked recipe ran the logs; copies left in FULLSTA by earlier runs may be stale.
-    for name in ("full.tcl", "prepare.sh", "run.sh", "summarise.py", "write_v.tcl"):
+    for name in ("full.tcl", "prepare.sh", "run.sh", "summarise.py", "write_v.tcl", "etm.tcl", "chip.tcl"):
         copy(STA_RECIPE / name, out / "scripts" / name)
     for pattern in ("ff*.log", "ss*.log", "write_v.log", "drv_*.txt", "hold_violators_*.txt", "mpw_*.txt"):
         for f in sorted(FULLSTA.glob(pattern)):
@@ -215,6 +216,19 @@ def collect_gl() -> None:
     copy(ROOT / "Test" / "gen_gl_xinit.py", out / "gen_gl_xinit.py")
 
 
+def collect_chip() -> None:
+    out = OUT / "chip"
+    for name in ("top.v", "top.sdc"):
+        copy(CHIP / name, out / name)
+    models = sorted((CHIP / "etm").glob("eFPGA_top_*.lib"))
+    if not models:
+        raise FileNotFoundError(f"no extracted model in {CHIP / 'etm'}; run flow/sta/etm.tcl")
+    for f in models:
+        copy(f, out / "etm" / f.name)
+    for f in sorted(CHIP.glob("sta_*.log")):
+        copy(f, out / "sta" / f.name)
+
+
 def main() -> None:
     for d in GENERATED:
         shutil.rmtree(OUT / d, ignore_errors=True)
@@ -225,6 +239,7 @@ def main() -> None:
     collect_signoff(tiles)
     collect_sta()
     collect_gl()
+    collect_chip()
     total = sum(f.stat().st_size for d in GENERATED for f in (OUT / d).rglob("*") if f.is_file())
     largest = max((f for d in GENERATED for f in (OUT / d).rglob("*") if f.is_file()),
                   key=lambda f: f.stat().st_size)

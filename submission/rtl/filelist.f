@@ -49,3 +49,4 @@ rtl/primitives/GBUF/fabulous/GBUF.v
 rtl/primitives/IOBUF/fabulous/IOBUF.v
 rtl/primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v
 rtl/primitives/SYS_RESET/fabulous/SYS_RESET.v
+rtl/primitives/USER_CLK/fabulous/USER_CLK.v

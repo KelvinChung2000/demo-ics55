@@ -23,7 +23,7 @@ library (eFPGA_top) {
   nom_voltage                    : 1.08;
 
   cell (eFPGA_top) {
-    area : 743392.44000006;
+    area : 742672.56000006;
     is_macro_cell : true;
    pin("A_EN_top_0") {
      direction               : output;
@@ -148,7 +148,7 @@ library (eFPGA_top) {
    pin("CLK") {
      direction               : input;
      clock                   : true;
-     capacitance             : 0.00399340;
+     capacitance             : 0.00273730;
                 timing () {
                        timing_sense        : positive_unate;
                        timing_type        : min_clock_tree_path;
@@ -172,7 +172,7 @@ library (eFPGA_top) {
    }
    pin("ComActive") {
      direction               : output;
-     capacitance             : 0.00000000;
+     capacitance             : 0.00090589;
    }
    pin("ConfigBusy") {
      direction               : output;
@@ -180,7 +180,7 @@ library (eFPGA_top) {
    }
    pin("Configured") {
      direction               : output;
-     capacitance             : 0.00080999;
+     capacitance             : 0.00000000;
    }
    pin("ReceiveLED") {
      direction               : output;
@@ -190,21 +190,17 @@ library (eFPGA_top) {
      direction               : input;
      capacitance             : 0.00103471;
    }
-   pin("SYS_RESET_RESET_top") {
+   pin("USER_CLK") {
+     direction               : input;
+     capacitance             : 0.00000247;
+   }
+   pin("USER_RESET") {
      direction               : input;
      capacitance             : 0.00000261;
    }
    pin("resetn") {
      direction               : input;
      capacitance             : 0.00273730;
-   }
-   pin("s_clk") {
-     direction               : input;
-     capacitance             : 0.00100488;
-   }
-   pin("s_data") {
-     direction               : input;
-     capacitance             : 0.00100488;
    }
    pin("spi_cs_n") {
      direction               : input;

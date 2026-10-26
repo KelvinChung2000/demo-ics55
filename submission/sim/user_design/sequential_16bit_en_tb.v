@@ -16,8 +16,7 @@ module sequential_16bit_en_tb ();
     reg         rx                  = 1'b1 ;
     wire        com_active                 ;
     wire        receive_led                ;
-    reg         s_clk               = 1'b0 ;
-    reg         s_data              = 1'b0 ;
+    reg         user_reset          = 1'b0 ;
     reg         config_done         = 1'b0 ;
     wire        config_busy                ;
     wire        configured                 ;
@@ -25,19 +24,23 @@ module sequential_16bit_en_tb ();
     assign A_OUT_top = pad_in;
 
     // Instantiate both the fabric and the reference DUT
+`ifdef GL_TOP
+    // The hardened netlist's ports are per bit; Test/gen_gl_top.py's wrapper restores the vectors.
+    eFPGA_top_gl top_i (
+`else
     eFPGA_top top_i (
+`endif
         .A_EN_top           (A_EN_top         ),
         .A_IN_top           (A_IN_top         ),
         .A_OUT_top          (A_OUT_top        ),
-        // The SYS_RESET pad carries the fabric clock (see user_design/top_wrapper.v).
-        .SYS_RESET_RESET_top(CLK              ),
+        // The fabric clock is CLK on its own pad (see user_design/top_wrapper.v).
+        .USER_CLK           (CLK              ),
+        .USER_RESET         (user_reset       ),
         .CLK                (CLK              ),
         .resetn             (resetn           ),
         .Rx                 (rx               ),
         .ComActive          (com_active       ),
         .ReceiveLED         (receive_led      ),
-        .s_clk              (s_clk            ),
-        .s_data             (s_data           ),
         .spi_sck            (spi_sck          ),
         .spi_cs_n           (spi_cs_n         ),
         .spi_mosi           (spi_mosi         ),
@@ -49,6 +52,7 @@ module sequential_16bit_en_tb ();
     wire [9:0] A_IN_top_gold, oeb_gold, A_EN_top_gold;
     sequential_16bit_en dut_i (
         .clk   (CLK          ),
+        .user_reset(user_reset),
         .io_out(A_IN_top_gold),
         .io_oeb(oeb_gold     ),
         .io_in (A_OUT_top    )
@@ -66,6 +70,24 @@ module sequential_16bit_en_tb ();
     integer b                 ;
     reg     [31:0] word       ;
     reg     have_errors = 1'b0;
+    integer compares    = 0   ;
+    integer mismatches  = 0   ;
+
+    // One compare on the next falling edge, where the pads also change.
+    task automatic compare;
+        begin
+            @(negedge CLK);
+            $display("fabric(A_IN_top) = 0x%X gold = 0x%X, fabric(A_EN_top) = 0x%X gold = 0x%X",
+                A_IN_top, A_IN_top_gold, A_EN_top, A_EN_top_gold);
+            compares = compares + 1;
+            // A pad's output data is observable only while its output is enabled.
+            if ((A_IN_top & A_EN_top_gold) !== (A_IN_top_gold & A_EN_top_gold)
+                || A_EN_top !== A_EN_top_gold) begin
+                mismatches = mismatches + 1;
+                have_errors = 1'b1;
+            end
+        end
+    endtask
 
     reg [2047:0] bitstream_hex_arg  ; // 256 bytes for characters
     reg [2047:0] output_waveform_arg; // 256 bytes for characters
@@ -76,14 +98,30 @@ module sequential_16bit_en_tb ();
     // flop async resets once config_done is high.
 `ifdef GL_SIM
     `include "force_block.vh"
+    `define GL_PROGRESS
+`endif
+`ifdef GL_TOP
+    `define GL_PROGRESS
+`endif
 
+`ifdef GL_PROGRESS
     // Progress for runtime estimates of the (slow) whole-fabric GL run.
+    // +max_cycles=N ends a smoke run after N CLK cycles.
     integer n_cycles = 0;
+    integer max_cycles;
+    initial if (!$value$plusargs("max_cycles=%d", max_cycles)) max_cycles = 0;
     always @(posedge CLK) begin
         n_cycles = n_cycles + 1;
         if (n_cycles % 1000 == 0) $display("[gl] %0d cycles @ %0t", n_cycles, $time);
+        if (n_cycles == max_cycles) begin
+            $display("[gl] stopped at +max_cycles=%0d @ %0t", max_cycles, $time);
+            $finish;
+        end
     end
 `endif
+
+    always @(config_busy) $display("ConfigBusy = %b @ %0t", config_busy, $time);
+    always @(configured) $display("Configured = %b @ %0t", configured, $time);
 
     initial begin
 
@@ -148,14 +186,18 @@ module sequential_16bit_en_tb ();
         repeat (5) @(negedge CLK);
         // Deassert reset while keeping the counter enabled
         pad_in[1:0] = 2'b10;
-        for (i = 0; i < 100; i = i + 1) begin
-            @(negedge CLK);
-            $display("fabric(A_IN_top) = 0x%X gold = 0x%X, fabric(A_EN_top) = 0x%X gold = 0x%X",
-                A_IN_top, A_IN_top_gold, A_EN_top, A_EN_top_gold);
-            // A pad's output data is observable only while its output is enabled.
-            if ((A_IN_top & A_EN_top_gold) !== (A_IN_top_gold & A_EN_top_gold)) have_errors = 1'b1;
-            if (A_EN_top !== A_EN_top_gold) have_errors = 1'b1;
+        for (i = 0; i < 100; i = i + 1) compare;
+        $display("count: %0d of %0d compares match", compares - mismatches, compares);
+        // USER_RESET clears the counter through GBUF B and GSR while it counts.
+        user_reset = 1'b1;
+        for (i = 0; i < 3; i = i + 1) compare;
+        if (A_IN_top_gold[9:2] !== 8'd0) begin
+            $display("Error: the reference counter did not clear under USER_RESET");
+            have_errors = 1'b1;
         end
+        user_reset = 1'b0;
+        for (i = 0; i < 20; i = i + 1) compare;
+        $display("total: %0d of %0d compares match", compares - mismatches, compares);
 
         if (have_errors) $fatal;
         else $finish;

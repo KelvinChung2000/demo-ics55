@@ -7,21 +7,29 @@ module sequential_16bit_en_pcf (
     inout wire [9:0] pad
 );
     wire [9:0] io_out, io_oeb;
-    wire clk_pad, clk;
+    wire clk_pad, clk, reset_pad, reset;
 
-    // The clock enters on the SYS_RESET pad, whose only fabric connection is
-    // the SW_term global buffers. GBUF A is pinned because a counter clocked
-    // through GBUF C stays X in simulation; the other GBUFs are untested.
-    (* keep, BEL="X0Y11.E" *) SYS_RESET clk_pad_i (
-        .RESET(clk_pad)
+    // The USER_CLK and USER_RESET pads reach the fabric only through the
+    // SW_term global buffers. GBUF A is pinned for the clock because a counter
+    // clocked through GBUF C stays X in simulation; B and D are untested as clocks.
+    (* keep, BEL="X0Y11.F" *) USER_CLK clk_pad_i (
+        .CLOCK(clk_pad)
     );
     (* keep, BEL="X0Y11.A" *) GBUF clk_buf_i (
         .IN (clk_pad),
         .OUT(clk)
     );
+    (* keep, BEL="X0Y11.E" *) SYS_RESET reset_pad_i (
+        .RESET(reset_pad)
+    );
+    (* keep, BEL="X0Y11.B" *) GBUF reset_buf_i (
+        .IN (reset_pad),
+        .OUT(reset)
+    );
 
     sequential_16bit_en top_i (
         .clk   (clk),
+        .user_reset(reset),
         .io_in (pad),
         .io_out(io_out),
         .io_oeb(io_oeb)

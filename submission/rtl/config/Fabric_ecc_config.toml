@@ -22,7 +22,7 @@
 # The value here stands for the fabric-level run alone, and it is a macro pin
 # rather than a port because `eFPGA.v` has no clock port to name. Under
 # `DisableUserCLK` the clock reaches `SW_term`'s four `GBUF` BELs on the
-# `SYS_RESET` pad in nobram, which has no west IO, or in bram on a `W_IO`
+# `USER_CLK` pad in nobram, which has no west IO, or in bram on a `W_IO`
 # `IOBUF` routed down the west column into `S_GBUF_FEED_END`. It leaves them on
 # `N_GBUF_BEG` and `E_GBUF_BEG`, which is where the fabric's clock network
 # begins. `GBUF_A` drives `N_GBUF_BEG0` and `E_GBUF_BEG0` from one output, so the

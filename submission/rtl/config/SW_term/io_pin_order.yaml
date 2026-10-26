@@ -62,6 +62,12 @@ X0Y0:
     - SYS_RESET_RESET_top
     reverse_result: false
     sort_mode: bus_major
+  - max_distance: null
+    min_distance: null
+    pins:
+    - USER_CLOCK_top
+    reverse_result: false
+    sort_mode: bus_major
   WEST:
   - max_distance: null
     min_distance: null

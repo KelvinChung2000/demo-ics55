@@ -29,9 +29,30 @@ if {[info exists ::env(IDEAL_GBUF)]} {
   create_clock -name uclk -period 10 $gpins
   set_clock_transition 0.1 [get_clocks uclk]
 } else {
-  create_clock -name uclk -period 10 [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/A]
+  create_clock -name uclk -period 10 [get_ports USER_CLK]
 }
-set_case_analysis 0 [get_pins Tile_X0Y11_SW_term/Inst_GBUF_A_GBUF.ConfigBits_0___DOL__DLATCH_P__Q/Q]
+# Every GBUF input mux passes USER_CLK uninverted. Each is a 16:1 tree of
+# MUX4X1H7L, Y = A !S0 !S1 + B S0 !S1 + C !S0 S1 + D S0 S1: level-1 mux 2 takes
+# USER_RESET on A and USER_CLK on B, and level 2 takes level-1 mux 2 on C. Selects
+# are frame0 bits 16-19 (GBUF A) to 28-31 (GBUF D), level-1 S0 S1 then level-2.
+# GBUF B leaves its level-1 S0 free, so it passes USER_RESET as well as the clock,
+# the way a design that takes its reset through a GBUF into GSR configures it.
+proc case_pin {val name} {
+  set p [get_pins -quiet $name]
+  if {[llength $p] != 1} { error "case analysis pin not found: $name" }
+  set_case_analysis $val $p
+}
+set sw Tile_X0Y11_SW_term
+foreach {g base} {A 16 B 20 C 24 D 28} {
+  foreach {off val} {0 1 1 0 2 0 3 1} {
+    if {$g eq "B" && $off == 0} { continue }
+    case_pin $val $sw/Inst_SW_term_ConfigMem.Inst_frame0_bit[expr {$base + $off}].Q__DOL__DLATCH_P__Q/Q
+  }
+  case_pin 0 $sw/Inst_GBUF_${g}_GBUF.ConfigBits_0___DOL__DLATCH_P__Q/Q
+}
+# USER_RESET is data, a synchronous reset launched at the pad by the USER_CLK
+# edge, so its slacks are the window an external driver has to meet at the pad.
+set_input_delay 0 -clock uclk [get_ports USER_RESET]
 set clkinv [get_pins -hierarchical *MACC_bot_ConfigMem.Inst_frame13_bit30.Q__DOL__DLATCH_P__Q/Q]
 puts "MACC CLK_INV bits: [llength $clkinv]"
 set_case_analysis $::env(CLKINV) $clkinv
@@ -59,11 +80,12 @@ set clkregs [all_registers -clock CLK -clock_pins]
 report_checks -path_delay max -from $clkregs -to [all_registers -clock CLK -data_pins] -group_path_count 1 -digits 3 -format end
 report_checks -path_delay min -from $clkregs -to [all_registers -clock CLK -data_pins] -group_path_count 3 -digits 3 -format end
 
-puts "\n==== uclk hold from the GBUF source pin (clock used as data, e.g. GBUF A into GSR)"
-report_checks -path_delay min -from [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/A] -group_path_count 1 -format end -digits 3
+puts "\n==== uclk hold from the pad (clock used as data, e.g. a GBUF into GSR)"
+report_checks -path_delay min -from [get_ports USER_CLK] -group_path_count 1 -format end -digits 3
 puts "\n==== uclk hold, bound mode"
 set uregs [all_registers -clock uclk -clock_pins]
 puts "uclk registers: [llength $uregs]"
+if {[llength $uregs] == 0} { error "uclk reaches no register; check the GBUF case analysis" }
 foreach {label pat} {LUT *LUT_flop_reg_p/D IO *IOBUF.*_q_reg_p/D MACC *MACC_8x8_20*reg_p/D} {
   set to [get_pins -hierarchical $pat]
   puts "== worst hold into $label ([llength $to] pins)"
@@ -72,9 +94,18 @@ foreach {label pat} {LUT *LUT_flop_reg_p/D IO *IOBUF.*_q_reg_p/D MACC *MACC_8x8_
 report_checks -path_delay min -from $uregs -group_path_count 1000000 -slack_max 0 -format end -digits 3 > hold_violators_$::env(TAG).txt
 report_checks -path_delay min -from $uregs -group_path_count 1 -format full_clock_expanded -fields {slew cap fanout} -digits 3
 report_clock_skew -hold -clock uclk -digits 3
-puts "\n==== uclk spine: insertion delay at every tile's GBUF tap, the clk_buf chain's whole cost"
+puts "\n==== uclk insertion delay from the pad through the GBUF mux, XOR and spine"
 report_clock_latency -clock uclk -digits 3
 report_clock_skew -setup -clock uclk -digits 3
+
+set gsr [get_pins -hierarchical *inst_cus_mux41_GSR_BEG0/Y]
+puts "\n==== USER_RESET into GSR, [llength $gsr] LUT tiles"
+if {[llength $gsr] == 0} { error "no GSR mux found" }
+puts "\n==== USER_RESET setup into GSR"
+report_checks -path_delay max -from [get_ports USER_RESET] -through $gsr -group_path_count 1 -format full_clock_expanded -digits 3
+puts "\n==== USER_RESET hold into GSR"
+report_checks -path_delay min -from [get_ports USER_RESET] -through $gsr -group_path_count 1 -format full_clock_expanded -digits 3
+report_checks -path_delay min -from [get_ports USER_RESET] -through $gsr -group_path_count 1000000 -slack_max 0 -format end -digits 3 > reset_hold_violators_$::env(TAG).txt
 
 puts "\n==== config write: FrameData into latch D (arrival = T - max slack, = min slack)"
 report_checks -path_delay max -to $latD -group_path_count 1 -digits 3 -format end

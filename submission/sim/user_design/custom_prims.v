@@ -30,11 +30,20 @@ module GBUF (
     parameter INVERT = 0;
 endmodule
 
-// RESET_top is the SYS_RESET pad; a wrapper takes the pad through RESET only.
+// RESET_top is the USER_RESET pad; a wrapper takes the pad through RESET only.
 (* blackbox, keep *)
 module SYS_RESET (
     output RESET,
     (* iopad_external_pin *)
     input RESET_top
+);
+endmodule
+
+// CLOCK_top is the USER_CLK pad; a wrapper takes the pad through CLOCK only.
+(* blackbox, keep *)
+module USER_CLK (
+    output CLOCK,
+    (* iopad_external_pin *)
+    input CLOCK_top
 );
 endmodule

@@ -1,5 +1,5 @@
 task: Task "mkdir-build" is up to date
-task: [compile:compile-yosys] /nix/store/f1q0w7rd0a4ny4hqvfxlhs4cmariidcy-yosys-0.62/bin/yosys   -p "synth_fabulous -top top_wrapper -json build/sequential_16bit_en.json -extra-plib ../fabrics/nobram/user_design/custom_prims.v " ../fabrics/nobram/user_design/top_wrapper.v ../fabrics/nobram/user_design/sequential_16bit_en.v
+task: [compile:compile-yosys] /nix/store/f1q0w7rd0a4ny4hqvfxlhs4cmariidcy-yosys-0.62/bin/yosys   -p "synth_fabulous -top top_wrapper -json build/sequential_16bit_en.json -extra-plib ../fabrics/nobram/user_design/custom_prims.v -complex-dff" ../fabrics/nobram/user_design/top_wrapper.v ../fabrics/nobram/user_design/sequential_16bit_en.v
 
  /----------------------------------------------------------------------------\
  |  yosys -- Yosys Open SYnthesis Suite                                       |
@@ -22,7 +22,7 @@ Parsing Verilog input from `../fabrics/nobram/user_design/sequential_16bit_en.v'
 Storing AST representation for module `$abstract\sequential_16bit_en'.
 Successfully finished Verilog frontend.
 
--- Running command `synth_fabulous -top top_wrapper -json build/sequential_16bit_en.json -extra-plib ../fabrics/nobram/user_design/custom_prims.v ' --
+-- Running command `synth_fabulous -top top_wrapper -json build/sequential_16bit_en.json -extra-plib ../fabrics/nobram/user_design/custom_prims.v -complex-dff' --
 
 3. Executing SYNTH_FABULOUS pass.
 
@@ -47,6 +47,11 @@ Generating RTLIL representation for module `\OutPass4_frame_config'.
 Generating RTLIL representation for module `\IO_1_bidirectional_frame_config_pass'.
 Generating RTLIL representation for module `\MULADD'.
 Generating RTLIL representation for module `\RegFile_32x4'.
+Generating RTLIL representation for module `\LUTFF_E'.
+Generating RTLIL representation for module `\LUTFF_SR'.
+Generating RTLIL representation for module `\LUTFF_SS'.
+Generating RTLIL representation for module `\LUTFF_ESR'.
+Generating RTLIL representation for module `\LUTFF_ESS'.
 Successfully finished Verilog frontend.
 
 3.2. Executing Verilog-2005 frontend: ../fabrics/nobram/user_design/custom_prims.v
@@ -54,6 +59,7 @@ Parsing Verilog input from `../fabrics/nobram/user_design/custom_prims.v' to AST
 Generating RTLIL representation for module `\IOBUF'.
 Generating RTLIL representation for module `\GBUF'.
 Generating RTLIL representation for module `\SYS_RESET'.
+Generating RTLIL representation for module `\USER_CLK'.
 Successfully finished Verilog frontend.
 
 3.3. Executing HIERARCHY pass (managing design hierarchy).
@@ -84,11 +90,11 @@ Removed 2 unused modules.
 Cleaned up 0 empty switches.
 
 3.5.2. Executing PROC_RMDEAD pass (remove dead branches from decision trees).
-Marked 2 switch rules as full_case in process $proc$../fabrics/nobram/user_design/sequential_16bit_en.v:13$45 in module sequential_16bit_en.
+Marked 1 switch rules as full_case in process $proc$../fabrics/nobram/user_design/sequential_16bit_en.v:20$45 in module sequential_16bit_en.
 Removed a total of 0 dead cases.
 
 3.5.3. Executing PROC_PRUNE pass (remove redundant assignments in processes).
-Removed 1 redundant assignment.
+Removed 0 redundant assignments.
 Promoted 0 assignments to connections.
 
 3.5.4. Executing PROC_INIT pass (extract init attributes).
@@ -100,20 +106,20 @@ Converted 0 switches.
 <suppressed ~2 debug messages>
 
 3.5.7. Executing PROC_MUX pass (convert decision trees to multiplexers).
-Creating decoders for process `\sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:13$45'.
+Creating decoders for process `\sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:20$45'.
      1/1: $0\ctr[15:0]
 
 3.5.8. Executing PROC_DLATCH pass (convert process syncs to latches).
 
 3.5.9. Executing PROC_DFF pass (convert process syncs to FFs).
-Creating register for signal `\sequential_16bit_en.\ctr' using process `\sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:13$45'.
-  created $dff cell `$procdff$53' with positive edge clock.
+Creating register for signal `\sequential_16bit_en.\ctr' using process `\sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:20$45'.
+  created $dff cell `$procdff$54' with positive edge clock.
 
 3.5.10. Executing PROC_MEMWR pass (convert process memory writes to cells).
 
 3.5.11. Executing PROC_CLEAN pass (remove empty switches from decision trees).
-Found and cleaned up 2 empty switches in `\sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:13$45'.
-Removing empty process `sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:13$45'.
+Found and cleaned up 2 empty switches in `\sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:20$45'.
+Removing empty process `sequential_16bit_en.$proc$../fabrics/nobram/user_design/sequential_16bit_en.v:20$45'.
 Cleaned up 2 empty switches.
 
 3.5.12. Executing OPT_EXPR pass (perform const folding).
@@ -152,7 +158,7 @@ Optimizing module top_wrapper.
 
 3.14.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 17 cells of `\top_wrapper'.
+Computing hashes of 21 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -170,7 +176,7 @@ Performed a total of 0 changes.
 
 3.14.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 17 cells of `\top_wrapper'.
+Computing hashes of 21 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -210,7 +216,7 @@ Optimizing module top_wrapper.
 
 3.16.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 17 cells of `\top_wrapper'.
+Computing hashes of 21 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -228,13 +234,13 @@ Performed a total of 0 changes.
 
 3.16.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 17 cells of `\top_wrapper'.
+Computing hashes of 21 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
 3.16.6. Executing OPT_DFF pass (perform DFF optimizations).
-Adding EN signal on $flatten\top_i.$procdff$53 ($dff) from module top_wrapper (D = $flatten\top_i.$procmux$49_Y, Q = \top_i.ctr).
-Adding SRST signal on $auto$ff.cc:337:slice$55 ($dffe) from module top_wrapper (D = $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:16$46_Y, Q = \top_i.ctr, rval = 16'0000000000000000).
+Adding EN signal on $flatten\top_i.$procdff$54 ($dff) from module top_wrapper (D = $flatten\top_i.$procmux$50_Y, Q = \top_i.ctr).
+Adding SRST signal on $auto$ff.cc:337:slice$56 ($dffe) from module top_wrapper (D = $flatten\top_i.$and$../fabrics/nobram/user_design/sequential_16bit_en.v:23$48_Y, Q = \top_i.ctr, rval = 16'0000000000000000).
 
 3.16.7. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top_wrapper..
@@ -258,7 +264,7 @@ Performed a total of 0 changes.
 
 3.16.12. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -298,9 +304,9 @@ No more expansions possible.
 
 3.21. Executing ALUMACC pass (create $alu and $macc cells).
 Extracting $alu and $macc cells in module top_wrapper:
-  creating $macc model for $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:16$46 ($add).
-  creating $alu model for $macc $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:16$46.
-  creating $alu cell for $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:16$46: $auto$alumacc.cc:512:replace_alu$59
+  creating $macc model for $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:23$46 ($add).
+  creating $alu model for $macc $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:23$46.
+  creating $alu cell for $flatten\top_i.$add$../fabrics/nobram/user_design/sequential_16bit_en.v:23$46: $auto$alumacc.cc:512:replace_alu$60
   created 1 $alu and 0 $macc cells.
 
 3.22. Executing SHARE pass (SAT-based resource sharing).
@@ -312,7 +318,7 @@ Optimizing module top_wrapper.
 
 3.23.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -328,7 +334,7 @@ Performed a total of 0 changes.
 
 3.23.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -392,7 +398,7 @@ Optimizing module top_wrapper.
 
 3.28.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -412,7 +418,7 @@ Optimizing module top_wrapper.
 
 3.30.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -428,7 +434,7 @@ Performed a total of 0 changes.
 
 3.30.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -449,7 +455,7 @@ Optimizing module top_wrapper.
 
 3.31.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -465,7 +471,7 @@ Performed a total of 0 changes.
 
 3.31.5. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 15 cells of `\top_wrapper'.
+Computing hashes of 19 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 Removed a total of 0 cells.
 
@@ -520,16 +526,16 @@ Successfully finished Verilog frontend.
 3.32.3. Continuing TECHMAP pass.
 Using template $paramod$2af30114e9bd4ccb04dad757b3f0a8f6bf0615b0\_90_alu for cells of type $alu.
 Using extmapper simplemap for cells of type $sdffce.
+Using extmapper simplemap for cells of type $and.
+Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $xor.
 Using template $paramod\_90_fa\WIDTH=32'00000000000000000000000000010000 for cells of type $fa.
 Using template $paramod\_90_lcu_brent_kung\WIDTH=32'00000000000000000000000000010000 for cells of type $lcu.
 Using extmapper simplemap for cells of type $pos.
 Using extmapper simplemap for cells of type $mux.
-Using extmapper simplemap for cells of type $not.
 Using extmapper simplemap for cells of type $or.
-Using extmapper simplemap for cells of type $and.
 No more expansions possible.
-<suppressed ~309 debug messages>
+<suppressed ~311 debug messages>
 
 3.33. Executing OPT pass (performing simple optimizations).
 
@@ -539,9 +545,9 @@ Optimizing module top_wrapper.
 
 3.33.2. Executing OPT_MERGE pass (detect identical cells).
 Finding identical cells in module `\top_wrapper'.
-Computing hashes of 87 cells of `\top_wrapper'.
+Computing hashes of 106 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
-Computing hashes of 86 cells of `\top_wrapper'.
+Computing hashes of 105 cells of `\top_wrapper'.
 Finding duplicate cells in `\top_wrapper'.
 <suppressed ~3 debug messages>
 Removed a total of 1 cells.
@@ -550,8 +556,8 @@ Removed a total of 1 cells.
 
 3.33.4. Executing OPT_CLEAN pass (remove unused cells and wires).
 Finding unused cells or wires in module \top_wrapper..
-Removed 49 unused cells and 87 unused wires.
-<suppressed ~50 debug messages>
+Removed 57 unused cells and 87 unused wires.
+<suppressed ~58 debug messages>
 
 3.33.5. Finished fast OPT passes.
 
@@ -582,21 +588,21 @@ Generating RTLIL representation for module `$_SDFFCE_PP1P_'.
 Successfully finished Verilog frontend.
 
 3.36.2. Continuing TECHMAP pass.
-Using template $_DFF_P_ for cells of type $_DFF_P_.
+Using template $_SDFFCE_PP0P_ for cells of type $_SDFFCE_PP0P_.
 No more expansions possible.
 <suppressed ~16 debug messages>
-Removed 0 unused cells and 24 unused wires.
+Removed 0 unused cells and 40 unused wires.
 
 3.37. Executing ABC pass (technology mapping using ABC).
 
 3.37.1. Extracting gate netlist of module `\top_wrapper' to `<abc-temp-dir>/input.blif'..
 
 3.37.1.1. Executed ABC.
-Extracted 32 gates and 43 wires to a netlist network with 10 inputs and 8 outputs.
+Extracted 25 gates and 34 wires to a netlist network with 9 inputs and 8 outputs.
 Running ABC script: <abc-temp-dir>/abc.script
 ABC: ======== ABC command line "source <abc-temp-dir>/abc.script"
 ABC: + read_blif <abc-temp-dir>/input.blif 
-ABC: + read_lut /tmp/yosys-abc-phllyA/lutdefs.txt 
+ABC: + read_lut /tmp/yosys-abc-yDcLxX/lutdefs.txt 
 ABC: + strash 
 ABC: + &get -n 
 ABC: + &fraig -x 
@@ -611,23 +617,23 @@ ABC: + if
 ABC: + mfs2 
 ABC: + lutpack -S 1 
 ABC: + dress <abc-temp-dir>/input.blif 
-ABC: Total number of equiv classes                =       9.
-ABC: Participating nodes from both networks       =      17.
-ABC: Participating nodes from the first network   =       8. (  57.14 % of nodes)
-ABC: Participating nodes from the second network  =       9. (  64.29 % of nodes)
-ABC: Node pairs (any polarity)                    =       8. (  57.14 % of names can be moved)
-ABC: Node pairs (same polarity)                   =       8. (  57.14 % of names can be moved)
+ABC: Total number of equiv classes                =      13.
+ABC: Participating nodes from both networks       =      24.
+ABC: Participating nodes from the first network   =      12. (  92.31 % of nodes)
+ABC: Participating nodes from the second network  =      12. (  92.31 % of nodes)
+ABC: Node pairs (any polarity)                    =      12. (  92.31 % of names can be moved)
+ABC: Node pairs (same polarity)                   =      12. (  92.31 % of names can be moved)
 ABC: Total runtime =     0.01 sec
 ABC: + write_blif <abc-temp-dir>/output.blif 
 
 3.37.1.2. Re-integrating ABC results.
-ABC RESULTS:              $lut cells:       13
-ABC RESULTS:        internal signals:       25
-ABC RESULTS:           input signals:       10
+ABC RESULTS:              $lut cells:       12
+ABC RESULTS:        internal signals:       17
+ABC RESULTS:           input signals:        9
 ABC RESULTS:          output signals:        8
 Removing temp directory.
 Removing global temp directory.
-Removed 0 unused cells and 31 unused wires.
+Removed 0 unused cells and 16 unused wires.
 
 3.38. Executing TECHMAP pass (map to technology primitives).
 
@@ -638,17 +644,14 @@ Generating RTLIL representation for module `$_DFF_P_'.
 Successfully finished Verilog frontend.
 
 3.38.2. Continuing TECHMAP pass.
-Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00011100 for cells of type $lut.
-Using template $paramod$5ef3e2a003d9029352faafd477743177813cd767$lut for cells of type $lut.
-Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10000000 for cells of type $lut.
-Using template $paramod$f6718da5409ec8636fab31113c774a3123f56b0b$lut for cells of type $lut.
-Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'1000 for cells of type $lut.
-Using template $paramod$571404c0889eaf57f492cb5e37f8acb5df5852f9$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000010\LUT=4'0001 for cells of type $lut.
 Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'00010100 for cells of type $lut.
 Using template $paramod$ecf9cac817e9cbb222dc9e58a122faf05f34c860$lut for cells of type $lut.
+Using template $paramod$lut\WIDTH=32'00000000000000000000000000000011\LUT=8'10000000 for cells of type $lut.
+Using template $paramod$571404c0889eaf57f492cb5e37f8acb5df5852f9$lut for cells of type $lut.
 No more expansions possible.
-<suppressed ~121 debug messages>
-Removed 0 unused cells and 26 unused wires.
+<suppressed ~81 debug messages>
+Removed 0 unused cells and 24 unused wires.
 
 3.39. Executing HIERARCHY pass (managing design hierarchy).
 Attribute `top' found on module `top_wrapper'. Setting top module to top_wrapper.
@@ -666,25 +669,26 @@ Removed 0 unused modules.
 
         +----------Local Count, excluding submodules.
         | 
-       25 wires
-       94 wire bits
-       12 public wires
-       81 public wire bits
-       34 cells
+       27 wires
+       96 wire bits
+       15 public wires
+       84 public wire bits
+       35 cells
         1   $scopeinfo
-        1   GBUF
+        2   GBUF
        10   IOBUF
         1   LUT2
-        5   LUT3
-        7   LUT4
-        8   LUTFF
+        7   LUT3
+        4   LUT4
+        8   LUTFF_ESR
         1   SYS_RESET
+        1   USER_CLK
 
 3.41. Executing JSON backend.
 
-End of script. Logfile hash: a895ea7555, CPU: user 0.06s system 0.00s, MEM: 39.71 MB peak
+End of script. Logfile hash: 853e3f4cb6, CPU: user 0.06s system 0.01s, MEM: 40.58 MB peak
 Yosys 0.62 (git sha1 7326bb7d6641500ecb285c291a54a662cb1e76cf, clang++ 21.1.2 -fPIC -O3)
-Time spent: 58% 1x abc (0 sec), 13% 16x read_verilog (0 sec), ...
+Time spent: 57% 1x abc (0 sec), 13% 16x read_verilog (0 sec), ...
 task: Task "mkdir-build" is up to date
 task: [compile:compile-nextpnr] FAB_ROOT=../fabrics/nobram nextpnr-generic --uarch fabulous --json build/sequential_16bit_en.json -o fasm=build/sequential_16bit_en.fasm   
 Info: Detected FABulous 2.0 format project.
@@ -692,34 +696,35 @@ Info: Reading BELs file: /.FABulous/bel.v2.txt
 Info: Reading PIPs file: /.FABulous/pips.txt
 
 Info: No PCF file specified, skipping constraints application.
-Info: Checksum: 0xff356db5
+Info: Checksum: 0x68505184
 
 Info: Device utilisation:
-Info: 	         FABULOUS_LC:      13/    800     1%
+Info: 	         FABULOUS_LC:      12/    800     1%
 Info: 	               IOBUF:      10/     10   100%
 Info: 	         MACC_8x8_20:       0/      5     0%
-Info: 	                GBUF:       1/      4    25%
+Info: 	                GBUF:       2/      4    50%
 Info: 	           SYS_RESET:       1/      1   100%
+Info: 	            USER_CLK:       1/      1   100%
 
-Info: Placed 12 cells based on constraints.
-Info: Creating initial analytic placement for 15 cells, random placement wirelen = 225.
-Info:     at initial placer iter 0, wirelen = 53
-Info:     at initial placer iter 1, wirelen = 54
-Info:     at initial placer iter 2, wirelen = 53
-Info:     at initial placer iter 3, wirelen = 54
+Info: Placed 14 cells based on constraints.
+Info: Creating initial analytic placement for 14 cells, random placement wirelen = 246.
+Info:     at initial placer iter 0, wirelen = 70
+Info:     at initial placer iter 1, wirelen = 70
+Info:     at initial placer iter 2, wirelen = 70
+Info:     at initial placer iter 3, wirelen = 70
 Info: Running main analytical placer, max placement attempts per cell = 10000.
-Info:     at iteration #1, type _CONST1_DRV: wirelen solved = 54, spread = 54, legal = 54; time = 0.00s
-Info:     at iteration #1, type _CONST0_DRV: wirelen solved = 54, spread = 54, legal = 54; time = 0.00s
-Info:     at iteration #1, type FABULOUS_LC: wirelen solved = 53, spread = 53, legal = 53; time = 0.00s
-Info:     at iteration #1, type ALL: wirelen solved = 54, spread = 54, legal = 54; time = 0.00s
+Info:     at iteration #1, type _CONST1_DRV: wirelen solved = 70, spread = 70, legal = 70; time = 0.00s
+Info:     at iteration #1, type _CONST0_DRV: wirelen solved = 70, spread = 70, legal = 70; time = 0.00s
+Info:     at iteration #1, type FABULOUS_LC: wirelen solved = 70, spread = 70, legal = 70; time = 0.00s
+Info:     at iteration #1, type ALL: wirelen solved = 70, spread = 70, legal = 70; time = 0.00s
 Info: HeAP Placer Time: 0.00s
 Info:   of which solving equations: 0.00s
 Info:   of which spreading cells: 0.00s
 Info:   of which strict legalisation: 0.00s
 
 Info: Running simulated annealing placer for refinement.
-Info:   at iteration #1: temp = 0.000000, timing cost = 40, wirelen = 54
-Info:   at iteration #2: temp = 0.000000, timing cost = 28, wirelen = 58 
+Info:   at iteration #1: temp = 0.000000, timing cost = 29, wirelen = 70
+Info:   at iteration #2: temp = 0.000000, timing cost = 29, wirelen = 70 
 Info: SA placement time 0.00s
 
 Info: Max frequency for clock 'clk': 54.05 MHz (PASS at 12.00 MHz)
@@ -727,7 +732,7 @@ Info: Max frequency for clock 'clk': 54.05 MHz (PASS at 12.00 MHz)
 Info: Slack histogram:
 Info:  legend: * represents 1 endpoint(s)
 Info:          + represents [1,1) endpoint(s)
-Info: [ 64833,  65434) |**** 
+Info: [ 64833,  65434) |** 
 Info: [ 65434,  66035) | 
 Info: [ 66035,  66636) | 
 Info: [ 66636,  67237) | 
@@ -736,7 +741,7 @@ Info: [ 67838,  68439) |
 Info: [ 68439,  69040) | 
 Info: [ 69040,  69641) | 
 Info: [ 69641,  70242) | 
-Info: [ 70242,  70843) |*** 
+Info: [ 70242,  70843) |***** 
 Info: [ 70843,  71444) | 
 Info: [ 71444,  72045) | 
 Info: [ 72045,  72646) | 
@@ -747,36 +752,42 @@ Info: [ 74449,  75050) |
 Info: [ 75050,  75651) | 
 Info: [ 75651,  76252) | 
 Info: [ 76252,  76853) |********** 
-Info: Checksum: 0xba8ef1b9
+Info: Checksum: 0xc8fe76bb
 
 Info: Routing..
 Info: Setting up routing queue.
-Info: Routing 74 arcs.
+Info: Routing 85 arcs.
 Info:            |   (re-)routed arcs  |   delta    | remaining|       time spent     |
 Info:    IterCnt |  w/ripup   wo/ripup |  w/r  wo/r |      arcs| batch(sec) total(sec)|
-Info:        104 |       26         78 |   26    78 |         0|       0.01       0.01|
+Info:        105 |       15         90 |   15    90 |         0|       0.01       0.01|
 Info: Routing complete.
 Info: Router1 time 0.01s
-Info: Checksum: 0x64096bf5
+Info: Checksum: 0x82fba7ae
 
 Info: Critical path report for clock 'clk' (posedge -> posedge):
 Info:       type curr  total name
-Info:   clk-skew -0.80 -0.80 Net clk (11,5) -> (11,4)
-Info:                          Sink $abc$481$auto$blifparse.cc:557:parse_blif$494.CLK
+Info:   clk-skew -1.60 -1.60 Net clk (11,6) -> (11,4)
+Info:                          Sink $abc$467$auto$blifparse.cc:557:parse_blif$478.CLK
 Info:                          Defined in:
 Info:                               ../fabrics/nobram/user_design/sequential_16bit_en.v:4.16-4.19
-Info:   clk-to-q  1.00  0.20 Source $abc$481$auto$blifparse.cc:557:parse_blif$482.Q
-Info:    routing  3.90  4.10 Net io_out[2] (11,5) -> (11,4)
-Info:                          Sink $abc$481$auto$blifparse.cc:557:parse_blif$488.I0
+Info:   clk-to-q  1.00 -0.60 Source $abc$467$auto$blifparse.cc:557:parse_blif$470.Q
+Info:    routing  3.90  3.30 Net io_out[4] (11,6) -> (11,5)
+Info:                          Sink $abc$467$auto$blifparse.cc:557:parse_blif$474.I2
 Info:                          Defined in:
-Info:                               ../fabrics/nobram/user_design/sequential_16bit_en.v:6.23-6.29
-Info:      logic  3.00  7.10 Source $abc$481$auto$blifparse.cc:557:parse_blif$488.O
-Info:    routing  2.10  9.20 Net $abc$481$new_n26 (11,4) -> (11,4)
-Info:                          Sink $abc$481$auto$blifparse.cc:557:parse_blif$493.I0
-Info:      logic  3.00  12.20 Source $abc$481$auto$blifparse.cc:557:parse_blif$493.O
-Info:    routing  2.10  14.30 Net $abc$481$new_n31 (11,4) -> (11,4)
-Info:                          Sink $abc$481$auto$blifparse.cc:557:parse_blif$494.I0
-Info:      setup  2.50  16.80 Source $abc$481$auto$blifparse.cc:557:parse_blif$494.I0
+Info:                               ../fabrics/nobram/user_design/sequential_16bit_en.v:8.23-8.29
+Info:      logic  3.00  6.30 Source $abc$467$auto$blifparse.cc:557:parse_blif$474.O
+Info:    routing  2.90  9.20 Net $abc$467$auto$alumacc.cc:512:replace_alu$60.CO[3]_new (11,5) -> (11,4)
+Info:                          Sink $abc$467$auto$blifparse.cc:557:parse_blif$479.I0
+Info:                          Defined in:
+Info:                               ../fabrics/nobram/user_design/sequential_16bit_en.v:23.26-23.36
+Info:                               /nix/store/f1q0w7rd0a4ny4hqvfxlhs4cmariidcy-yosys-0.62/bin/../share/yosys/techmap.v:274.23-274.25
+Info:      logic  3.00  12.20 Source $abc$467$auto$blifparse.cc:557:parse_blif$479.O
+Info:    routing  2.10  14.30 Net $abc$467$auto$alumacc.cc:512:replace_alu$60.CO[6]_new (11,4) -> (11,4)
+Info:                          Sink $abc$467$auto$blifparse.cc:557:parse_blif$478.I1
+Info:                          Defined in:
+Info:                               ../fabrics/nobram/user_design/sequential_16bit_en.v:23.26-23.36
+Info:                               /nix/store/f1q0w7rd0a4ny4hqvfxlhs4cmariidcy-yosys-0.62/bin/../share/yosys/techmap.v:274.23-274.25
+Info:      setup  2.50  16.80 Source $abc$467$auto$blifparse.cc:557:parse_blif$478.I1
 Info: 9.50 ns logic, 7.30 ns routing
 
 Info: Max frequency for clock 'clk': 59.52 MHz (PASS at 12.00 MHz)
@@ -784,31 +795,31 @@ Info: Max frequency for clock 'clk': 59.52 MHz (PASS at 12.00 MHz)
 Info: Slack histogram:
 Info:  legend: * represents 1 endpoint(s)
 Info:          + represents [1,1) endpoint(s)
-Info: [ 66533,  67044) |*** 
+Info: [ 66533,  67044) |** 
 Info: [ 67044,  67555) | 
 Info: [ 67555,  68066) | 
 Info: [ 68066,  68577) | 
 Info: [ 68577,  69088) | 
 Info: [ 69088,  69599) | 
-Info: [ 69599,  70110) |* 
+Info: [ 69599,  70110) | 
 Info: [ 70110,  70621) | 
 Info: [ 70621,  71132) | 
-Info: [ 71132,  71643) |** 
+Info: [ 71132,  71643) |*** 
 Info: [ 71643,  72154) | 
 Info: [ 72154,  72665) | 
 Info: [ 72665,  73176) | 
 Info: [ 73176,  73687) | 
 Info: [ 73687,  74198) | 
 Info: [ 74198,  74709) | 
-Info: [ 74709,  75220) |* 
+Info: [ 74709,  75220) |** 
 Info: [ 75220,  75731) | 
-Info: [ 75731,  76242) |* 
-Info: [ 76242,  76753) |********* 
+Info: [ 75731,  76242) | 
+Info: [ 76242,  76753) |********** 
 
 Info: Program finished normally.
 task: Task "mkdir-build" is up to date
 task: [compile:compile-bitgen] bit_gen -genBitstream build/sequential_16bit_en.fasm ../fabrics/nobram/.FABulous/bitStreamSpec.bin build/sequential_16bit_en.bin
-2026-10-20 14:13:30.221 | INFO     | fabulous_bit_gen.bit_gen:_build_csv_and_frame_data:423 - Border rows included in bitstream.
+2026-10-26 17:23:42.739 | INFO     | fabulous_bit_gen.bit_gen:_build_csv_and_frame_data:423 - Border rows included in bitstream.
 task: [run-bitgen] python3 makehex.py build/sequential_16bit_en.bin 16384 build/sequential_16bit_en.hex
 task: Task "mkdir-build" is up to date
 task: [copy-files] find ../fabrics/nobram/Tile/ -name '*.v' -type f -not -path '*/Tile/common/*' -not -path '*/Tile/include/*' -exec cp {} build/fabric_files/ \;
@@ -821,10 +832,17 @@ task: [copy-files] cp ../fabrics/nobram/primitives/*/fabulous/*.v build/fabric_f
 task: [copy-files] find ../Fabric/ ../fabrics/nobram/Fabric/ -type f \( -name '*.v' -o -name '*.sv' \) -exec cp {} build/fabric_files/ \;
 task: [run-simulation] iverilog -g2012  -s sequential_16bit_en_tb -o build/sequential_16bit_en.vvp build/fabric_files/* ../fabrics/nobram/user_design/sequential_16bit_en.v ../fabrics/nobram/user_design/sequential_16bit_en_tb.v
 build/fabric_files/fabric_config.sv:61: sorry: constant selects in always_* processes are not currently supported (all bits will be included).
-task: [run-simulation] vvp build/sequential_16bit_en.vvp +output_waveform=build/sequential_16bit_en.fst +bitstream_hex=build/sequential_16bit_en.hex -fst
-FST info: dumpfile build/sequential_16bit_en.fst opened for output.
-Output waveform set to                                                                                                                                                                                                                                    build/sequential_16bit_en.fst
+# The task run was stopped before vvp finished: its default +waveform_depth=0 dump outgrew the disk.
+# vvp was rerun by hand with +waveform_depth=1 on the same build/sequential_16bit_en.vvp and .hex:
+$ vvp build/sequential_16bit_en.vvp +output_waveform=build/sequential_16bit_en.vcd +waveform_depth=1 +bitstream_hex=build/sequential_16bit_en.hex
+VCD info: dumpfile build/sequential_16bit_en.vcd opened for output.
+Output waveform set to                                                                                                                                                                                                                                    build/sequential_16bit_en.vcd
 Read bitstream hex from                                                                                                                                                                                                                                    build/sequential_16bit_en.hex
+ConfigBusy = 0 @ 0
+Configured = 0 @ 500000
+ConfigBusy = 1 @ 668500000
+Configured = 1 @ 433436500000
+ConfigBusy = 0 @ 433436500000
 fabric(A_IN_top) = 0x004 gold = 0x004, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x008 gold = 0x008, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x00c gold = 0x00c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
@@ -925,4 +943,30 @@ fabric(A_IN_top) = 0x184 gold = 0x184, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x188 gold = 0x188, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x18c gold = 0x18c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x190 gold = 0x190, fabric(A_EN_top) = 0x3fc gold = 0x3fc
-../fabrics/nobram/user_design/sequential_16bit_en_tb.v:161: $finish called at 524531000000 (1ps)
+count: 100 of 100 compares match
+fabric(A_IN_top) = 0x000 gold = 0x000, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x000 gold = 0x000, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x000 gold = 0x000, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x004 gold = 0x004, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x008 gold = 0x008, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x00c gold = 0x00c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x010 gold = 0x010, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x014 gold = 0x014, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x018 gold = 0x018, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x01c gold = 0x01c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x020 gold = 0x020, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x024 gold = 0x024, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x028 gold = 0x028, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x02c gold = 0x02c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x030 gold = 0x030, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x034 gold = 0x034, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x038 gold = 0x038, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x03c gold = 0x03c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x040 gold = 0x040, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x044 gold = 0x044, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x048 gold = 0x048, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x04c gold = 0x04c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+fabric(A_IN_top) = 0x050 gold = 0x050, fabric(A_EN_top) = 0x3fc gold = 0x3fc
+total: 123 of 123 compares match
+../fabrics/nobram/user_design/sequential_16bit_en_tb.v:203: $finish called at 524554000000 (1ps)
+exit 0

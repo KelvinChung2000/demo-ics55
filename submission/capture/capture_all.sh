@@ -9,8 +9,8 @@ IMG=$ROOT/submission/images
 BIT=$FIG/bitstream/sequential_16bit_en.vcd
 SPI=$FIG/spi/config_frontend.vcd
 export SETTLE=8
-# Times in ps. Configured rises at 433.4365 ms; pad_in leaves 0 at 524.426 ms.
-T0=0 T1=524531000000 "$HERE/grab.sh" "$BIT" "$HERE/clock_reset_timing.gtkw" "$IMG/clock_reset_timing.png"
+# Times in ps. Configured rises at 433.4365 ms; pad_in leaves 0 at 524.426 ms; $finish at 524.554 ms.
+T0=0 T1=524554000000 "$HERE/grab.sh" "$BIT" "$HERE/clock_reset_timing.gtkw" "$IMG/clock_reset_timing.png"
 T0=524423000000 T1=524450000000 "$HERE/grab.sh" "$BIT" "$HERE/simulation_waveform.gtkw" "$IMG/simulation_waveform.png"
 T0=0 T1=40000000 "$HERE/grab.sh" "$BIT" "$HERE/reset_release.gtkw" "$IMG/reset_release.png"
 T0=0 T1=7300000 "$HERE/grab.sh" "$SPI" "$HERE/interface_timing.gtkw" "$IMG/interface_timing.png"

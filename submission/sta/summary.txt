@@ -1,10 +1,10 @@
-corner | CLK setup | CLK hold | uclk LUT | uclk IO | uclk MACC | uclk violators
-ff_m40_RCbest | 8.927 | 0.041 | 0.046 | 2.910 | 0.043 | 0
-ff_m40_Cbest | 8.968 | 0.038 | 0.044 | 2.752 | 0.042 | 0
-ff_125_Cbest | 8.817 | 0.045 | 0.058 | 3.138 | 0.052 | 0
-ff1p08_125_RCbest | 8.350 | 0.086 | 0.102 | 4.515 | 0.097 | 0
-ss_125_Cworst | 6.853 | 0.199 | 0.229 | 9.493 | 0.220 | 0
-ss_m40_Cworst | 6.927 | 0.192 | 0.215 | 9.074 | 0.204 | 0
+corner | CLK setup | CLK hold | uclk LUT | uclk IO | uclk MACC | uclk violators | USER_RESET setup | USER_RESET hold
+ff_m40_RCbest | 8.722 | 0.043 | 0.046 | 0.418 | 0.043 | 0 | 9.491 | 0.032
+ff_m40_Cbest | 8.758 | 0.040 | 0.044 | 0.397 | 0.042 | 0 | 9.511 | 0.034
+ff_125_Cbest | 8.605 | 0.050 | 0.058 | 0.465 | 0.052 | 0 | 9.433 | 0.044
+ff1p08_125_RCbest | 8.028 | 0.091 | 0.102 | 0.669 | 0.097 | 0 | 9.154 | 0.076
+ss_125_Cworst | 6.229 | 0.200 | 0.229 | 1.375 | 0.220 | 0 | 8.254 | 0.202
+ss_m40_Cworst | 6.316 | 0.191 | 0.215 | 1.335 | 0.204 | 0 | 8.234 | 0.159
 
 ff_m40_RCbest: 0 DRV violators
 

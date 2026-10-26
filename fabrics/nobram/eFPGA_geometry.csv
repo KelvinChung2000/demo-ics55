@@ -5,7 +5,7 @@ Rows,12
 Columns,13
 Width,3935
 Height,3566
-Lines,98542
+Lines,98543
 
 FABRIC_DEF
 NW_term,N_term,N_term,N_term,N_term,N_term,N_term_MACC,N_term,N_term,N_term,N_term,N_term,NE_term
@@ -43,8 +43,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,E_IO_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/E_IO/E_IO_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/E_IO/E_IO_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/E_IO/E_IO_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/E_IO/E_IO_switch_matrix.list
 RelX,20
 RelY,182
 Width,112
@@ -932,7 +932,7 @@ RelY,11
 
 BEL
 Name,IOBUF
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/E_IO/../../primitives/IOBUF/fabulous/IOBUF.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/E_IO/../../primitives/IOBUF/fabulous/IOBUF.v
 RelX,140
 RelY,186
 Width,32
@@ -1965,8 +1965,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,LUT4x8_ha_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/LUT4x8_ha_switch_matrix.list
 RelX,125
 RelY,34
 Width,152
@@ -5246,7 +5246,7 @@ RelY,171
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,38
 Width,32
@@ -5334,7 +5334,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,60
 Width,32
@@ -5422,7 +5422,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,82
 Width,32
@@ -5510,7 +5510,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,104
 Width,32
@@ -5598,7 +5598,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,126
 Width,32
@@ -5686,7 +5686,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,148
 Width,32
@@ -5774,7 +5774,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,170
 Width,32
@@ -5862,7 +5862,7 @@ RelY,13
 
 BEL
 Name,FABULOUS_LC
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/LUT4x8_ha/../../primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
 RelX,285
 RelY,192
 Width,32
@@ -9561,8 +9561,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,MACC_bot_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/MACC/MACC_bot/MACC_bot_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -12874,7 +12874,7 @@ RelY,68
 
 BEL
 Name,MACC_8x8_20
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/MACC/MACC_bot/../../../primitives/MACC_8x8_20/fabulous/MACC_8x8_20.v
 RelX,313
 RelY,12
 Width,32
@@ -17100,8 +17100,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,MACC_top_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/MACC/MACC_top/MACC_top_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -23228,8 +23228,8 @@ Height,149
 
 SWITCH_MATRIX
 Name,NE_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NE_term/NE_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NE_term/NE_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/NE_term/NE_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/NE_term/NE_term_switch_matrix.list
 RelX,20
 RelY,113
 Width,112
@@ -23310,8 +23310,8 @@ Height,149
 
 SWITCH_MATRIX
 Name,NW_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NW_term/NW_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/NW_term/NW_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/NW_term/NW_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/NW_term/NW_term_switch_matrix.list
 RelX,24
 RelY,109
 Width,112
@@ -23476,8 +23476,8 @@ Height,149
 
 SWITCH_MATRIX
 Name,N_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term/N_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term/N_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/N_term/N_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/N_term/N_term_switch_matrix.list
 RelX,125
 RelY,8
 Width,152
@@ -25359,8 +25359,8 @@ Height,149
 
 SWITCH_MATRIX
 Name,N_term_MACC_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/N_term_MACC/N_term_MACC_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -27226,8 +27226,8 @@ Height,157
 
 SWITCH_MATRIX
 Name,SE_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SE_term/SE_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SE_term/SE_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SE_term/SE_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SE_term/SE_term_switch_matrix.list
 RelX,20
 RelY,113
 Width,112
@@ -27460,12 +27460,12 @@ Height,157
 
 SWITCH_MATRIX
 Name,SW_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/SW_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/SW_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/SW_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/SW_term_switch_matrix.list
 RelX,24
-RelY,60
+RelY,47
 Width,112
-Height,73
+Height,86
 
 JUMP_PORT
 Name,NULL0
@@ -27553,7 +27553,7 @@ Source,NULL0
 Dest,W_GBUF_FEED_END0
 IO,INPUT
 RelX,16
-RelY,73
+RelY,86
 
 PORT
 Name,W_GBUF_FEED_END1
@@ -27561,7 +27561,7 @@ Source,NULL1
 Dest,W_GBUF_FEED_END1
 IO,INPUT
 RelX,15
-RelY,73
+RelY,86
 
 PORT
 Name,W_GBUF_FEED_END2
@@ -27569,7 +27569,7 @@ Source,NULL2
 Dest,W_GBUF_FEED_END2
 IO,INPUT
 RelX,14
-RelY,73
+RelY,86
 
 PORT
 Name,W_GBUF_FEED_END3
@@ -27577,7 +27577,7 @@ Source,NULL3
 Dest,W_GBUF_FEED_END3
 IO,INPUT
 RelX,13
-RelY,73
+RelY,86
 
 PORT
 Name,E_GBUF_BEG0
@@ -27585,7 +27585,7 @@ Source,E_GBUF_BEG0
 Dest,NULL0
 IO,OUTPUT
 RelX,12
-RelY,73
+RelY,86
 
 PORT
 Name,E_GBUF_BEG1
@@ -27593,7 +27593,7 @@ Source,E_GBUF_BEG1
 Dest,NULL1
 IO,OUTPUT
 RelX,11
-RelY,73
+RelY,86
 
 PORT
 Name,E_GBUF_BEG2
@@ -27601,7 +27601,7 @@ Source,E_GBUF_BEG2
 Dest,NULL2
 IO,OUTPUT
 RelX,10
-RelY,73
+RelY,86
 
 PORT
 Name,E_GBUF_BEG3
@@ -27609,7 +27609,7 @@ Source,E_GBUF_BEG3
 Dest,NULL3
 IO,OUTPUT
 RelX,9
-RelY,73
+RelY,86
 
 PORT
 Name,GBUF_A_IN
@@ -27683,11 +27683,19 @@ IO,INPUT
 RelX,112
 RelY,64
 
+PORT
+Name,USER_CLK_CLK
+Source,USER_CLK_CLK
+Dest,USER_CLK_CLK
+IO,INPUT
+RelX,112
+RelY,77
+
 BEL
 Name,GBUF
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
-RelY,64
+RelY,51
 Width,32
 Height,10
 
@@ -27709,9 +27717,9 @@ RelY,5
 
 BEL
 Name,GBUF
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
-RelY,78
+RelY,65
 Width,32
 Height,10
 
@@ -27733,9 +27741,9 @@ RelY,5
 
 BEL
 Name,GBUF
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
-RelY,92
+RelY,79
 Width,32
 Height,10
 
@@ -27757,9 +27765,9 @@ RelY,5
 
 BEL
 Name,GBUF
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/GBUF/fabulous/GBUF.v
 RelX,144
-RelY,106
+RelY,93
 Width,32
 Height,10
 
@@ -27781,9 +27789,9 @@ RelY,5
 
 BEL
 Name,SYS_RESET
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/SYS_RESET/fabulous/SYS_RESET.v
 RelX,144
-RelY,120
+RelY,107
 Width,32
 Height,9
 
@@ -27803,64 +27811,95 @@ IO,INPUT
 RelX,32
 RelY,4
 
+BEL
+Name,USER_CLK
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v
+RelX,144
+RelY,120
+Width,32
+Height,9
+
+BEL_PORT
+Name,USER_CLK_CLK
+Source,USER_CLK_CLK
+Dest,USER_CLK_CLK
+IO,OUTPUT
+RelX,0
+RelY,4
+
+BEL_PORT
+Name,CLK_top
+Source,CLK_top
+Dest,CLK_top
+IO,INPUT
+RelX,32
+RelY,4
+
 WIRE
 Name,GBUF_A_IN ⟶ GBUF_A_IN
 RelX,144
-RelY,68
+RelY,55
 RelX,136
-RelY,68
+RelY,55
 
 WIRE
 Name,GBUF_A_OUT ⟶ GBUF_A_OUT
 RelX,144
-RelY,69
+RelY,56
 RelX,136
-RelY,69
+RelY,56
 
 WIRE
 Name,GBUF_B_IN ⟶ GBUF_B_IN
 RelX,144
-RelY,82
+RelY,69
 RelX,136
-RelY,82
+RelY,69
 
 WIRE
 Name,GBUF_B_OUT ⟶ GBUF_B_OUT
 RelX,144
-RelY,83
+RelY,70
 RelX,136
-RelY,83
+RelY,70
 
 WIRE
 Name,GBUF_C_IN ⟶ GBUF_C_IN
 RelX,144
-RelY,96
+RelY,83
 RelX,136
-RelY,96
+RelY,83
 
 WIRE
 Name,GBUF_C_OUT ⟶ GBUF_C_OUT
 RelX,144
-RelY,97
+RelY,84
 RelX,136
-RelY,97
+RelY,84
 
 WIRE
 Name,GBUF_D_IN ⟶ GBUF_D_IN
 RelX,144
-RelY,110
+RelY,97
 RelX,136
-RelY,110
+RelY,97
 
 WIRE
 Name,GBUF_D_OUT ⟶ GBUF_D_OUT
+RelX,144
+RelY,98
+RelX,136
+RelY,98
+
+WIRE
+Name,SYS_RESET_RESET ⟶ SYS_RESET_RESET
 RelX,144
 RelY,111
 RelX,136
 RelY,111
 
 WIRE
-Name,SYS_RESET_RESET ⟶ SYS_RESET_RESET
+Name,USER_CLK_CLK ⟶ USER_CLK_CLK
 RelX,144
 RelY,124
 RelX,136
@@ -27869,72 +27908,72 @@ RelY,124
 WIRE
 Name,NULL0 ⟶ S_GBUF_FEED_END0
 RelX,24
-RelY,68
+RelY,55
 RelX,16
-RelY,68
+RelY,55
 RelX,16
 RelY,0
 
 WIRE
 Name,NULL1 ⟶ S_GBUF_FEED_END1
 RelX,24
-RelY,69
+RelY,56
 RelX,15
-RelY,69
+RelY,56
 RelX,15
 RelY,0
 
 WIRE
 Name,NULL2 ⟶ S_GBUF_FEED_END2
 RelX,24
-RelY,70
+RelY,57
 RelX,14
-RelY,70
+RelY,57
 RelX,14
 RelY,0
 
 WIRE
 Name,NULL3 ⟶ S_GBUF_FEED_END3
 RelX,24
-RelY,71
+RelY,58
 RelX,13
-RelY,71
+RelY,58
 RelX,13
 RelY,0
 
 WIRE
 Name,N_GBUF_BEG0 ⟶ NULL0
 RelX,24
-RelY,72
+RelY,59
 RelX,12
-RelY,72
+RelY,59
 RelX,12
 RelY,0
 
 WIRE
 Name,N_GBUF_BEG1 ⟶ NULL1
 RelX,24
-RelY,73
+RelY,60
 RelX,11
-RelY,73
+RelY,60
 RelX,11
 RelY,0
 
 WIRE
 Name,N_GBUF_BEG2 ⟶ NULL2
 RelX,24
-RelY,74
+RelY,61
 RelX,10
-RelY,74
+RelY,61
 RelX,10
 RelY,0
 
 WIRE
 Name,N_GBUF_BEG3 ⟶ NULL3
 RelX,24
-RelY,75
+RelY,62
 RelX,9
-RelY,75
+RelY,62
 RelX,9
 RelY,0
 
@@ -28017,8 +28056,8 @@ Height,157
 
 SWITCH_MATRIX
 Name,S_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term/S_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term/S_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/S_term/S_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/S_term/S_term_switch_matrix.list
 RelX,125
 RelY,8
 Width,152
@@ -30172,8 +30211,8 @@ Height,157
 
 SWITCH_MATRIX
 Name,S_term_MACC_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/S_term_MACC/S_term_MACC_switch_matrix.list
 RelX,153
 RelY,8
 Width,152
@@ -32327,8 +32366,8 @@ Height,326
 
 SWITCH_MATRIX
 Name,W_term_switch_matrix
-Src,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/W_term/W_term_switch_matrix.v
-Csv,/home/kelvin/.t3/worktrees/demo-ics55/t3-d63279c1/fabrics/nobram/Tile/W_term/W_term_switch_matrix.list
+Src,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/W_term/W_term_switch_matrix.v
+Csv,/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/W_term/W_term_switch_matrix.list
 RelX,24
 RelY,174
 Width,112

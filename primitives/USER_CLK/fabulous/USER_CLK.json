@@ -1,0 +1,41 @@
+{
+  "creator": "Yosys 0.68 (git sha1 38e001a6ff74ca434bf4cc02c053f53619160ab0, Release, Clang /nix/store/874j5xydsj6nr6i1zdrjvhln5gmxvvrr-clang-wrapper-21.1.8/bin/clang++ 21.1.8)",
+  "modules": {
+    "USER_CLK": {
+      "attributes": {
+        "top": 1,
+        "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:4.1-14.10"
+      },
+      "ports": {
+        "CLK": {
+          "direction": "output",
+          "bits": [ 2 ]
+        },
+        "CLK_top": {
+          "direction": "input",
+          "bits": [ 2 ]
+        }
+      },
+      "cells": {
+      },
+      "netnames": {
+        "CLK": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:6.12-6.15"
+          }
+        },
+        "CLK_top": {
+          "hide_name": 0,
+          "bits": [ 2 ],
+          "attributes": {
+            "EXTERNAL": 1,
+            "FABulous": 1,
+            "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:9.37-9.44"
+          }
+        }
+      }
+    }
+  }
+}

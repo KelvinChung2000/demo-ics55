@@ -17,6 +17,7 @@ module SW_term_switch_matrix
         input  GBUF_C_OUT,
         input  GBUF_D_OUT,
         input  SYS_RESET_RESET,
+        input  USER_CLK_CLK,
         output  N_GBUF_BEG0,
         output  N_GBUF_BEG1,
         output  N_GBUF_BEG2,
@@ -40,10 +41,10 @@ parameter VCC = 1'b1;
 parameter VDD0 = 1'b1;
 parameter VDD = 1'b1;
 
-wire[9-1:0] GBUF_A_IN_input;
-wire[9-1:0] GBUF_B_IN_input;
-wire[9-1:0] GBUF_C_IN_input;
-wire[9-1:0] GBUF_D_IN_input;
+wire[10-1:0] GBUF_A_IN_input;
+wire[10-1:0] GBUF_B_IN_input;
+wire[10-1:0] GBUF_C_IN_input;
+wire[10-1:0] GBUF_D_IN_input;
  //The configuration bits (if any) are just a long shift register
  //This shift register is padded to an even number of flops/latches
  //switch matrix multiplexer N_GBUF_BEG0 MUX-1
@@ -70,8 +71,8 @@ assign E_GBUF_BEG2 = GBUF_C_OUT;
  //switch matrix multiplexer E_GBUF_BEG3 MUX-1
 assign E_GBUF_BEG3 = GBUF_D_OUT;
 
- //switch matrix multiplexer GBUF_A_IN MUX-9
-assign GBUF_A_IN_input = {SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
+ //switch matrix multiplexer GBUF_A_IN MUX-10
+assign GBUF_A_IN_input = {USER_CLK_CLK,SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
 cus_mux161 inst_cus_mux161_GBUF_A_IN (
     .A0(GBUF_A_IN_input[0]),
     .A1(GBUF_A_IN_input[1]),
@@ -82,7 +83,7 @@ cus_mux161 inst_cus_mux161_GBUF_A_IN (
     .A6(GBUF_A_IN_input[6]),
     .A7(GBUF_A_IN_input[7]),
     .A8(GBUF_A_IN_input[8]),
-    .A9(GND0),
+    .A9(GBUF_A_IN_input[9]),
     .A10(GND0),
     .A11(GND0),
     .A12(GND0),
@@ -100,8 +101,8 @@ cus_mux161 inst_cus_mux161_GBUF_A_IN (
     .X(GBUF_A_IN)
 );
 
- //switch matrix multiplexer GBUF_B_IN MUX-9
-assign GBUF_B_IN_input = {SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
+ //switch matrix multiplexer GBUF_B_IN MUX-10
+assign GBUF_B_IN_input = {USER_CLK_CLK,SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
 cus_mux161 inst_cus_mux161_GBUF_B_IN (
     .A0(GBUF_B_IN_input[0]),
     .A1(GBUF_B_IN_input[1]),
@@ -112,7 +113,7 @@ cus_mux161 inst_cus_mux161_GBUF_B_IN (
     .A6(GBUF_B_IN_input[6]),
     .A7(GBUF_B_IN_input[7]),
     .A8(GBUF_B_IN_input[8]),
-    .A9(GND0),
+    .A9(GBUF_B_IN_input[9]),
     .A10(GND0),
     .A11(GND0),
     .A12(GND0),
@@ -130,8 +131,8 @@ cus_mux161 inst_cus_mux161_GBUF_B_IN (
     .X(GBUF_B_IN)
 );
 
- //switch matrix multiplexer GBUF_C_IN MUX-9
-assign GBUF_C_IN_input = {SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
+ //switch matrix multiplexer GBUF_C_IN MUX-10
+assign GBUF_C_IN_input = {USER_CLK_CLK,SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
 cus_mux161 inst_cus_mux161_GBUF_C_IN (
     .A0(GBUF_C_IN_input[0]),
     .A1(GBUF_C_IN_input[1]),
@@ -142,7 +143,7 @@ cus_mux161 inst_cus_mux161_GBUF_C_IN (
     .A6(GBUF_C_IN_input[6]),
     .A7(GBUF_C_IN_input[7]),
     .A8(GBUF_C_IN_input[8]),
-    .A9(GND0),
+    .A9(GBUF_C_IN_input[9]),
     .A10(GND0),
     .A11(GND0),
     .A12(GND0),
@@ -160,8 +161,8 @@ cus_mux161 inst_cus_mux161_GBUF_C_IN (
     .X(GBUF_C_IN)
 );
 
- //switch matrix multiplexer GBUF_D_IN MUX-9
-assign GBUF_D_IN_input = {SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
+ //switch matrix multiplexer GBUF_D_IN MUX-10
+assign GBUF_D_IN_input = {USER_CLK_CLK,SYS_RESET_RESET,W_GBUF_FEED_END3,W_GBUF_FEED_END2,W_GBUF_FEED_END1,W_GBUF_FEED_END0,S_GBUF_FEED_END3,S_GBUF_FEED_END2,S_GBUF_FEED_END1,S_GBUF_FEED_END0};
 cus_mux161 inst_cus_mux161_GBUF_D_IN (
     .A0(GBUF_D_IN_input[0]),
     .A1(GBUF_D_IN_input[1]),
@@ -172,7 +173,7 @@ cus_mux161 inst_cus_mux161_GBUF_D_IN (
     .A6(GBUF_D_IN_input[6]),
     .A7(GBUF_D_IN_input[7]),
     .A8(GBUF_D_IN_input[8]),
-    .A9(GND0),
+    .A9(GBUF_D_IN_input[9]),
     .A10(GND0),
     .A11(GND0),
     .A12(GND0),

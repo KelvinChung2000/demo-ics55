@@ -35,7 +35,7 @@ module eFPGA
         output  Tile_X12Y10_A_IN_top, //EXTERNAL
         output  Tile_X12Y10_A_EN_top, //EXTERNAL
         input  Tile_X0Y11_SYS_RESET_RESET_top, //EXTERNAL
-        input  Tile_X0Y11_USER_CLK_CLK_top, //EXTERNAL
+        input  Tile_X0Y11_USER_CLOCK_top, //EXTERNAL
         input  [(FrameBitsPerRow*12)-1:0] FrameData, //CONFIG_PORT
         input  [(MaxFramesPerCol*13)-1:0] FrameStrobe //CONFIG_PORT
 );
@@ -10425,7 +10425,7 @@ assign Column_X12_FrameStrobe = FrameStrobe[MaxFramesPerCol*(12+1)-1:MaxFramesPe
     .N_GBUF_BEG(Tile_X0Y11_N_GBUF_BEG),
     .E_GBUF_BEG(Tile_X0Y11_E_GBUF_BEG),
     .SYS_RESET_RESET_top(Tile_X0Y11_SYS_RESET_RESET_top),
-    .USER_CLK_CLK_top(Tile_X0Y11_USER_CLK_CLK_top),
+    .USER_CLOCK_top(Tile_X0Y11_USER_CLOCK_top),
     .FrameData(Row_Y11_FrameData),
     .FrameData_O(Tile_X0Y11_FrameData_O),
     .FrameStrobe(Column_X0_FrameStrobe),

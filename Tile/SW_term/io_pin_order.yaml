@@ -65,7 +65,7 @@ X0Y0:
   - max_distance: null
     min_distance: null
     pins:
-    - USER_CLK_CLK_top
+    - USER_CLOCK_top
     reverse_result: false
     sort_mode: bus_major
   WEST:

@@ -4,14 +4,14 @@
     "USER_CLK": {
       "attributes": {
         "top": 1,
-        "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:4.1-14.10"
+        "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:6.1-16.10"
       },
       "ports": {
-        "CLK": {
+        "CLOCK": {
           "direction": "output",
           "bits": [ 2 ]
         },
-        "CLK_top": {
+        "CLOCK_top": {
           "direction": "input",
           "bits": [ 2 ]
         }
@@ -19,20 +19,20 @@
       "cells": {
       },
       "netnames": {
-        "CLK": {
+        "CLOCK": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
-            "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:6.12-6.15"
+            "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:8.12-8.17"
           }
         },
-        "CLK_top": {
+        "CLOCK_top": {
           "hide_name": 0,
           "bits": [ 2 ],
           "attributes": {
             "EXTERNAL": 1,
             "FABulous": 1,
-            "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:9.37-9.44"
+            "src": "/home/kelvin/side-project/demo-ics55/.claude/worktrees/user-clk-reset/fabrics/nobram/Tile/SW_term/../../primitives/USER_CLK/fabulous/USER_CLK.v:11.37-11.46"
           }
         }
       }

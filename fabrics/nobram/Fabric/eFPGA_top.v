@@ -102,7 +102,7 @@ module eFPGA_top (
         .Tile_X12Y2_A_OUT_top(A_OUT_top[8]),
         .Tile_X12Y1_A_OUT_top(A_OUT_top[9]),
         .Tile_X0Y11_SYS_RESET_RESET_top(USER_RESET),
-        .Tile_X0Y11_USER_CLK_CLK_top(USER_CLK),
+        .Tile_X0Y11_USER_CLOCK_top(USER_CLK),
         .FrameData(frame_data),
         .FrameStrobe(frame_strobe)
     );

@@ -37,7 +37,7 @@ CONFIGURED_PORT = "CONFIGURED_top"
 # each reaching the fabric only through the global-buffer input muxes.
 PAD_NAMES = {
     "SYS_RESET_RESET_top": "USER_RESET",
-    "USER_CLK_CLK_top": "USER_CLK",
+    "USER_CLOCK_top": "USER_CLK",
 }
 
 EXTERNAL_RE = re.compile(

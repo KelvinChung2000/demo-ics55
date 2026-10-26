@@ -15,7 +15,7 @@ module SW_term
         input  [3:0] W_GBUF_FEED_END,        //TilePort({E} INPUT W_GBUF_FEED_END[3:0])
         output  [3:0] E_GBUF_BEG,        //TilePort({E} OUTPUT E_GBUF_BEG[3:0])
         input  SYS_RESET_RESET_top,
-        input  USER_CLK_CLK_top,
+        input  USER_CLOCK_top,
     //Tile IO ports from BELs
         input  [FrameBitsPerRow-1:0] FrameData, //CONFIG_PORT
         output  [FrameBitsPerRow-1:0] FrameData_O,
@@ -34,7 +34,7 @@ wire GBUF_C_OUT;
 wire GBUF_D_IN;
 wire GBUF_D_OUT;
 wire SYS_RESET_RESET;
-wire USER_CLK_CLK;
+wire USER_CLOCK;
  //Jump wires
  //internal configuration data signal to daisy-chain all BELs (if any and in the order they are listed in the fabric.csv)
 wire[NoConfigBits-1:0] ConfigBits;
@@ -617,9 +617,9 @@ SYS_RESET Inst_SYS_RESET_SYS_RESET (
     .RESET_top(SYS_RESET_RESET_top)
 );
 
-USER_CLK Inst_USER_CLK_USER_CLK (
-    .CLK(USER_CLK_CLK),
-    .CLK_top(USER_CLK_CLK_top)
+USER_CLK Inst_USER_USER_CLK (
+    .CLOCK(USER_CLOCK),
+    .CLOCK_top(USER_CLOCK_top)
 );
 
 SW_term_switch_matrix Inst_SW_term_switch_matrix (
@@ -636,7 +636,7 @@ SW_term_switch_matrix Inst_SW_term_switch_matrix (
     .GBUF_C_OUT(GBUF_C_OUT),
     .GBUF_D_OUT(GBUF_D_OUT),
     .SYS_RESET_RESET(SYS_RESET_RESET),
-    .USER_CLK_CLK(USER_CLK_CLK),
+    .USER_CLOCK(USER_CLOCK),
     .N_GBUF_BEG0(N_GBUF_BEG[0]),
     .N_GBUF_BEG1(N_GBUF_BEG[1]),
     .N_GBUF_BEG2(N_GBUF_BEG[2]),

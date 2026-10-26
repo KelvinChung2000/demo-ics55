@@ -29,9 +29,23 @@ if {[info exists ::env(IDEAL_GBUF)]} {
   create_clock -name uclk -period 10 $gpins
   set_clock_transition 0.1 [get_clocks uclk]
 } else {
-  create_clock -name uclk -period 10 [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/A]
+  create_clock -name uclk -period 10 [get_ports SYS_RESET_RESET_top]
 }
-set_case_analysis 0 [get_pins Tile_X0Y11_SW_term/Inst_GBUF_A_GBUF.ConfigBits_0___DOL__DLATCH_P__Q/Q]
+# All four GBUF input muxes select the pad and pass it uninverted. Each is a 16:1
+# tree of MUX4X1 (A=00 B=10 C=01 D=11 as S0 S1): level 1 A is the pad, level 2 C is
+# level-1 mux 2. Selects are frame0 bits 16-19 (GBUF A) to 28-31 (GBUF D).
+proc case_pin {val name} {
+  set p [get_pins -quiet $name]
+  if {[llength $p] != 1} { error "case analysis pin not found: $name" }
+  set_case_analysis $val $p
+}
+set sw Tile_X0Y11_SW_term
+foreach {g base} {A 16 B 20 C 24 D 28} {
+  foreach {off val} {0 0 1 0 2 0 3 1} {
+    case_pin $val $sw/Inst_SW_term_ConfigMem.Inst_frame0_bit[expr {$base + $off}].Q__DOL__DLATCH_P__Q/Q
+  }
+  case_pin 0 $sw/Inst_GBUF_${g}_GBUF.ConfigBits_0___DOL__DLATCH_P__Q/Q
+}
 set clkinv [get_pins -hierarchical *MACC_bot_ConfigMem.Inst_frame13_bit30.Q__DOL__DLATCH_P__Q/Q]
 puts "MACC CLK_INV bits: [llength $clkinv]"
 set_case_analysis $::env(CLKINV) $clkinv
@@ -59,8 +73,8 @@ set clkregs [all_registers -clock CLK -clock_pins]
 report_checks -path_delay max -from $clkregs -to [all_registers -clock CLK -data_pins] -group_path_count 1 -digits 3 -format end
 report_checks -path_delay min -from $clkregs -to [all_registers -clock CLK -data_pins] -group_path_count 3 -digits 3 -format end
 
-puts "\n==== uclk hold from the GBUF source pin (clock used as data, e.g. GBUF A into GSR)"
-report_checks -path_delay min -from [get_pins Tile_X0Y11_SW_term/GBUF_A_OUT_XOR2X0P5H7L_Y/A] -group_path_count 1 -format end -digits 3
+puts "\n==== uclk hold from the pad (clock used as data, e.g. a GBUF into GSR)"
+report_checks -path_delay min -from [get_ports SYS_RESET_RESET_top] -group_path_count 1 -format end -digits 3
 puts "\n==== uclk hold, bound mode"
 set uregs [all_registers -clock uclk -clock_pins]
 puts "uclk registers: [llength $uregs]"
@@ -72,7 +86,7 @@ foreach {label pat} {LUT *LUT_flop_reg_p/D IO *IOBUF.*_q_reg_p/D MACC *MACC_8x8_
 report_checks -path_delay min -from $uregs -group_path_count 1000000 -slack_max 0 -format end -digits 3 > hold_violators_$::env(TAG).txt
 report_checks -path_delay min -from $uregs -group_path_count 1 -format full_clock_expanded -fields {slew cap fanout} -digits 3
 report_clock_skew -hold -clock uclk -digits 3
-puts "\n==== uclk spine: insertion delay at every tile's GBUF tap, the clk_buf chain's whole cost"
+puts "\n==== uclk insertion delay from the pad through the GBUF mux, XOR and spine"
 report_clock_latency -clock uclk -digits 3
 report_clock_skew -setup -clock uclk -digits 3
 

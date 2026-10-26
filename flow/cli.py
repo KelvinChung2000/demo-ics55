@@ -261,6 +261,26 @@ def gen_top() -> None:
 
 
 @app.command()
+def chip_top(
+    directory: Path | None = None,
+    out: Path | None = None,
+) -> None:
+    """Write the pad-ring netlist top.v and its top.sdc around the hardened eFPGA_top."""
+    from flow import chiptop
+
+    directory = directory or paths().build / "top"
+    out = out or paths().build / "chip"
+    liberty = directory / "default" / "Harden_ecc" / "output" / "eFPGA_top_Harden.lib"
+    fabric = load_fabric(paths())
+    config = load_config(paths(), tuple(fabric.tile_types))
+    ring = chiptop.write(liberty, out, config_period_ns=1000.0 / config.fabric.frequency_mhz)
+    typer.echo(
+        f"{out}: {len(ring.pads)} pads, {ring.user_bits} bidirectional user IO, "
+        f"{len(ring.inputs)} inputs, {len(ring.outputs)} outputs"
+    )
+
+
+@app.command()
 def check() -> None:
     """Test the plan's four wiring properties without running anything."""
     from flow import verify

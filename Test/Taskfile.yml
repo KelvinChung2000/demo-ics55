@@ -223,17 +223,23 @@ tasks:
     # No X-init: like the RTL run, the configuration latches start X and
     # the bitstream writes them. The wrapper's census reports any still X at Configured.
     # GL_VVP_ARGS passes plusargs through, e.g. +max_cycles=5000 for a smoke run.
+    # GL_CHIP_TOP puts the chip-level top.v and its pads between the testbench and the netlist.
     preconditions:
       - sh: 'test -d "{{.GL_PDK_ROOT}}/IP/STD_cell"'
         msg: 'GL_PDK_ROOT ("{{.GL_PDK_ROOT}}") is not the ICS55 PDK root; set it or FAB_PDK_ROOT'
       - sh: 'test -f "{{.GL_NETLIST_DIR}}/top_full.v.gz"'
         msg: 'GL_NETLIST_DIR ("{{.GL_NETLIST_DIR}}") holds no top_full.v.gz; run submission/collect.py'
+      - sh: 'test -z "{{.GL_CHIP_TOP}}" || test -f "{{.GL_CHIP_TOP}}"'
+        msg: 'GL_CHIP_TOP ("{{.GL_CHIP_TOP}}") is no file; run flow cli chip-top and submission/collect.py'
     vars:
       GL_NETLIST_DIR: '{{.GL_NETLIST_DIR | default "../submission/gl"}}'
       GL_BUILD_DIR: '{{.GL_BUILD_DIR | default (printf "%s/gl" .BUILD_DIR)}}'
       GL_PDK_ROOT: '{{.GL_PDK_ROOT | default .FAB_PDK_ROOT}}'
       GL_BITSTREAM_HEX: '{{.GL_BITSTREAM_HEX | default (printf "%s/%s.hex" .BUILD_DIR .DESIGN)}}'
       GL_VVP_ARGS: '{{.GL_VVP_ARGS | default ""}}'
+      GL_CHIP_TOP: '{{.GL_CHIP_TOP | default ""}}'
+      GL_IO_MODEL: '{{.GL_PDK_ROOT}}/IP/IO/ICsprout_55LLULP1233_IO_251013/verilog/icsIOA_N55_3P3.v'
+      GL_LEVEL: '{{if .GL_CHIP_TOP}}chip{{else}}top{{end}}'
       # The netlist uses the L and R threshold flavours; H is read too so a re-harden
       # that reaches for it still links.
       LLSC: '{{.GL_PDK_ROOT}}/IP/STD_cell/ics55_LLSC_H7C_V1p10C100'
@@ -246,26 +252,37 @@ tasks:
         --rtl {{.FAB_PROJ_ROOT}}/Fabric/eFPGA_top.v
         --netlist {{.GL_BUILD_DIR}}/top_full.v {{.GL_BUILD_DIR}}/tile_*.v
         --liberty {{range $f := splitList " " .FLAVOURS}}{{$.LLSC}}/ics55_LLSC_{{$f}}/liberty/ics55_LLSC_{{$f}}_typ_tt_1p2_25_nldm.lib {{end}}
+        {{if .GL_CHIP_TOP}}--chip {{.GL_CHIP_TOP}}{{end}}
+        --lc-cell {{.FAB_PROJ_ROOT}}/primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+        --lc-tile {{.FAB_PROJ_ROOT}}/Tile/LUT4x8_ha
         --out {{.GL_BUILD_DIR}}/eFPGA_top_gl.v
       # The tile netlists carry no timescale; the token is only honoured in a command file.
       - echo '+timescale+1ns/1ps' > {{.GL_BUILD_DIR}}/timescale.f
       # -Dfunctional compiles the specify blocks out: zero-delay cells. The three
       # model files repeat the same UDPs, which iverilog accepts only as libraries (-l).
       - >-
-        iverilog -g2012 -Dfunctional -DGL_TOP
+        iverilog -g2012 -Dfunctional -DGL_TOP {{if .GL_CHIP_TOP}}-DGL_CHIP{{end}}
         -f {{.GL_BUILD_DIR}}/timescale.f
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}
-        -o {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_top.vvp
+        -o {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_{{.GL_LEVEL}}.vvp
         {{.GL_BUILD_DIR}}/eFPGA_top_gl.v
+        {{if .GL_CHIP_TOP}}{{.GL_CHIP_TOP}} {{.GL_IO_MODEL}}{{end}}
         {{.GL_BUILD_DIR}}/top_full.v {{.GL_BUILD_DIR}}/tile_*.v
         {{range $f := splitList " " .FLAVOURS}}-l {{$.LLSC}}/ics55_LLSC_{{$f}}/verilog/ics55_LLSC_{{$f}}.v {{end}}
         {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
         {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
       - >-
-        vvp -n {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_top.vvp
+        vvp -n {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_{{.GL_LEVEL}}.vvp
         +bitstream_hex={{.GL_BITSTREAM_HEX}}
         {{.GL_VVP_ARGS}}
+
+  run-gl-chip:
+    desc: Zero-delay gate-level simulation from the chip pads (submission/chip/top.v around the hardened eFPGA_top)
+    cmds:
+      - task: run-gl-top
+        vars:
+          GL_CHIP_TOP: '{{.GL_CHIP_TOP | default "../submission/chip/top.v"}}'
 
   run-emulation:
     desc: Run emulation using Icarus Verilog (iverilog)

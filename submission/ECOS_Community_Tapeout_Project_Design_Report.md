@@ -26,11 +26,9 @@ All figures are for the `nobram` variant at `20f8422` on PDK `v1.10.103` (2026-1
 
 ### 1.1 Project Summary
 
-The design is an island-style FABulous eFPGA hardened on ICS55 for an OpenECOS MPW die. Its array `eFPGA` abuts 151 hard tiles of 12 types in a 13 × 12 grid of 947.0 × 884.8 µm. The top level `eFPGA_top` adds the configuration controller in 999.0 × 912.6 µm and needs 26 of the MPW's 36 pads, 22 signal and 4 supply. This `nobram` variant omits the block RAM of the `bram` variant.
+The design is a FABulous eFPGA hardened on ICS55 for an OpenECOS MPW die. Its array `eFPGA` abuts 151 hard tiles of 12 types in a 13 × 12 grid of 947.0 × 884.8 µm. The top level `eFPGA_top` adds the configuration controller in 999.0 × 912.6 µm with 26 top-level IO pads, 22 signal and 4 supply. This `nobram` variant omits the block RAM of the `bram` variant.
 
-ECC hardens each tile type once to a routed macro. Abutment connects the 31,760 tile-to-tile nets through coincident pins, so the `eFPGA_top` run routes only the 3,442 nets of the controller, the IO and the configuration buses.
-
-The RTL, the 12 tile types and `eFPGA_top` are hardened and signed off on ECC abstracts (Section 6.3). An RTL bitstream simulation runs a counter on the fabric and clears it from the user reset pad (Section 5.3). A chip-level netlist joins `eFPGA_top` to 22 `P65_1233_PBMUX` pads, with an SDC that times the configuration ports through the pads (Section 2.3). Outstanding are a mask-layer GDS of the whole macro with DRC and LVS (Section 7), the placement of the pads in the ring, the seal ring and a timed user design.
+ECC hardens each tile type once to a routed macro. Abutment connects the 31,760 tile-to-tile nets through coincident pins, so the `eFPGA_top` run routes only the 3,442 nets of the controller, the IO and the configuration buses. The RTL, the 12 tile types and `eFPGA_top` are hardened and signed off on ECC (Section 6.3). An RTL bitstream simulation runs a counter on the fabric and clears it from the user reset pad (Section 5.3). A chip-level netlist joins `eFPGA_top` to 22 `P65_1233_PBMUX` pads, with an SDC that times the configuration ports through the pads (Section 2.3).
 
 ### 1.2 Main Features
 
@@ -106,7 +104,7 @@ The ports below come from `fabrics/nobram/Fabric/eFPGA_top.v` and the loader sou
 | `ConfigBusy` | out | 1 | `CLK` | High | N/A | `fabric_config` is out of idle |
 | `Configured` | out | 1 | `CLK` | High | N/A | Cleared by the start word, set by the desync header |
 
-The die needs 26 of the MPW's 36 pads. One `P65_1233_PBMUX` bidirectional pad joins the three macro pins of each user IO bit, so the 42 signal pins take 22 signal pads, 10 bidirectional, 8 input and 4 output. Four supply pads carry VDD, VSS, VDDIO and VSSIO. The core rails feed the macro's two supply pins in `eFPGA_top_Harden.lef`.
+One `P65_1233_PBMUX` bidirectional pad joins the three macro pins of each user IO bit, so the 42 signal pins take 22 signal pads, 10 bidirectional, 8 input and 4 output. Four supply pads carry VDD, VSS, VDDIO and VSSIO. The core rails feed the macro's two supply pins in `eFPGA_top_Harden.lef`.
 
 | Pad | Type | `eFPGA_top` pins | Function |
 |---|---|---|---|

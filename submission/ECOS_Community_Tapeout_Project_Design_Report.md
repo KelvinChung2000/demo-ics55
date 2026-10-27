@@ -5,7 +5,7 @@ All figures are for the `nobram` variant at `20f8422` on PDK `v1.10.103` (2026-1
 | Stage | Tools | Build date |
 |---|---|---|
 | Synthesis | Yosys 0.68 (`38e001a`) inside ECC | as physical |
-| Physical | ECC `main` `14be467`, built from source with local edits, one run per tile type and one for `eFPGA_top`. OpenROAD `dcf3613` repairs before routing. | 2026-10-26 for `SW_term` and `eFPGA_top`. 2026-10-20 for `LUT4x8_ha`, `MACC`, `E_IO`, `S_term` and `S_term_MACC`. 2026-10-19 for `W_term` and `N_term`. 2026-10-17 for the other four tile types. |
+| Physical | ECC `main` `14be467`, built from source with local edits, one run per tile type and one for `eFPGA_top`. OpenROAD `dcf3613` repairs before routing. | 2026-10-27 for `SW_term` and `eFPGA_top`. 2026-10-20 for `LUT4x8_ha`, `MACC`, `E_IO`, `S_term` and `S_term_MACC`. 2026-10-19 for `W_term` and `N_term`. 2026-10-17 for the other four tile types. |
 | Signoff | ECC DRC, iLVS and iSTA, with full-chip OpenSTA where stated | as physical |
 
 ## Submission Information
@@ -269,7 +269,7 @@ The build runs as eight stages, each stopping at the first failure.
 |---|---|
 | `task harden`, all 12 tile types (2026-10-17) | [time] |
 | `task harden`, `W_term`, `N_term` and `S_term` (2026-10-19; `S_term` re-hardened 2026-10-20) | 5 minutes at three jobs |
-| `integrate` (2026-10-26) | 62 minutes, 56 of them from RCX through Harden |
+| `integrate` (2026-10-27) | 64 minutes, 58 of them from RCX through Harden |
 | Full-chip OpenSTA | about 8.5 minutes and 2.7 GB per corner |
 | Extracted model | about 2 minutes and 7.9 GB per corner |
 | Chip-level STA | under 1 second and 36 MB per corner |
@@ -632,7 +632,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 | `physical/eFPGA_top/` | built from `20f8422` | Filler DEF, netlist, ECC GDS, SPEF at nine RC corners, Harden LEF, Liberty and GDS | Yes |
 | `physical/tiles/<type>/` | `SW_term` built from `20f8422`, the other 11 types from `f82fb9a` | Filler DEF, netlist, ECC GDS, SPEF at nine RC corners, abstract LEF, extracted Liberty | Yes |
 | `physical/fabric_plan.json` | built from `20f8422` | Dies, pin offsets, seams | Yes |
-| `signoff/<block>/` | as `physical/` | ECC DRC, iLVS and iSTA summaries | Yes |
+| `signoff/<block>/` | as `physical/` | ECC DRC count and per-layer table, iLVS report and the iSTA reports of every corner | Yes |
 | `sta/` | built from `20f8422` | Full-chip OpenSTA scripts, logs, reports and `summary.txt` | Yes |
 | `gl/` | built from `20f8422` | `top_full.v` with all seam nets and the 12 tile netlists, the inputs of the gate-level simulation of Section 5.3, which ran on the `871d91a` netlists | Yes |
 | `chip/` | `c680d08` | `top.v` and `top.sdc` from `flow cli chip-top`, the extracted `eFPGA_top` model `etm/eFPGA_top_ss_125_Cworst.lib` and the chip-level STA log of Section 6.3 | Yes |

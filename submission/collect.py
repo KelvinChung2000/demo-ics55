@@ -188,16 +188,21 @@ def collect_signoff(tiles: list[str]) -> None:
         t: BUILD / "tiles" / t / "default" for t in sorted({tile_dir(n).name for n in tiles})
     }
     for name, run in runs.items():
-        copy(run / "drc_ecc" / "report" / "drc.db.rpt", out / name / "drc.rpt")
+        # ECC's drc.db.rpt and sta.db.rpt are database summaries with no result in
+        # them. The DRC count is in the step feature and its per-layer table.
+        copy(run / "drc_ecc" / "feature" / "drc.step.json", out / name / "drc.json")
+        copy(run / "drc_ecc" / "analysis" / "drc_statis.csv", out / name / "drc.csv")
         copy(run / "lvs_ecc" / "report" / "lvs.rpt", out / name / "lvs.rpt")
-        # sta.db.rpt is ECC's database summary; the timing sits in one directory
-        # per library corner and RC corner.
+        # The timing sits in one directory per library corner and RC corner.
         corners = sorted(p.parent for p in (run / "sta_ecc" / "report").glob("*/*/qor_summary.rpt"))
         if not corners:
             raise FileNotFoundError(f"{run / 'sta_ecc' / 'report'} holds no per-corner iSTA report")
         for corner in corners:
-            for f in (corner / "qor_summary.rpt", *sorted(corner.glob("timing_*.rpt"))):
-                copy(f, out / name / "sta" / f"{corner.parent.name}_{corner.name}" / f.name)
+            dst = out / name / "sta" / f"{corner.parent.name}_{corner.name}"
+            copy(corner / "qor_summary.rpt", dst / "qor_summary.rpt")
+            # Path listings reach 15 MB a corner.
+            for f in sorted(corner.glob("timing_*.rpt")):
+                copy_gz(f, dst)
 
 
 def collect_sta() -> None:

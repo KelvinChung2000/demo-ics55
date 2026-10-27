@@ -9,12 +9,13 @@ The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells,
 | Directory | Contents |
 |---|---|
 | `images/` | Report figures and their `.drawio` sources. The waveform and floorplan figures are GTKWave and KLayout captures made by `capture/` |
-| `rtl/` | The 51 source files of `eFPGA_top`; `rtl/filelist.f` lists them relative to this directory. `rtl/config/` holds the grid, dies, pin orders and ECC settings. |
+| `rtl/` | The 52 source files of `eFPGA_top`; `rtl/filelist.f` lists them relative to this directory. `rtl/config/` holds the grid, dies, pin orders and ECC settings. |
 | `sim/` | The counter test design and testbench, its prebuilt bitstream, the passing simulation log, and the nextpnr model and bitstream specification (`fabulous_model/`, gzipped) |
 | `physical/` | `eFPGA_top` and per-tile DEF, netlist, GDS, SPEF at nine RC corners, LEF and Liberty, and `fabric_plan.json` |
-| `signoff/` | ECC DRC, iLVS and iSTA summaries for `eFPGA_top` and each tile type |
+| `signoff/` | For `eFPGA_top` and each tile type, the ECC DRC count (`drc.json`) and per-layer table (`drc.csv`), the iLVS report (`lvs.rpt`) and the iSTA reports of every corner (`sta/<library corner>_<RC corner>/`) |
 | `sta/` | Full-chip OpenSTA scripts, per-corner reports and `summary.txt` |
-| `gl/` | Gate-level netlists and the X-initialisation generator, not yet simulated |
+| `gl/` | Gate-level netlists and the X-initialisation generator; the gate-level simulation of the report ran on the `871d91a` netlists |
+| `chip/` | The pad-ring netlist `top.v` and `top.sdc`, the extracted `eFPGA_top` timing model and the chip-level STA log |
 
 Every GDS here holds standard cells and tile macros as LEF abstracts, so none of them is a mask-ready layout.
 
@@ -54,4 +55,4 @@ Two pieces are missing before the testbench can drive it. `top_full.v` declares 
 
 ## Rebuilding this directory
 
-`python3 submission/collect.py` from the repository root replaces `rtl/`, `sim/`, `physical/`, `signoff/`, `sta/` and `gl/` from the working tree and `build/nobram/`. It takes the RTL as the module closure of `eFPGA_top` that Yosys resolves, so primitives the variant does not instantiate stay out. The report, `images/` and this file are edited by hand.
+`python3 submission/collect.py` from the repository root replaces `rtl/`, `sim/`, `physical/`, `signoff/`, `sta/`, `gl/` and `chip/` from the working tree and `build/nobram/`. It takes the RTL as the module closure of `eFPGA_top` that Yosys resolves, so primitives the variant does not instantiate stay out. The report, `images/` and this file are edited by hand.

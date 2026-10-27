@@ -1,0 +1,18 @@
+{
+    "drc": {
+        "number": 0,
+        "distribution": {}
+    },
+    "run": {
+        "state": "Success",
+        "runtime_seconds": 1.615,
+        "peak_memory_mb": 166.809
+    },
+    "constraints": {
+        "sdc": {
+            "availability": "available",
+            "sha256": "e3b6aee00515f58e6d80d8f56d84206a7fddaa1a549e516691cca9f2a6b203c2",
+            "size_bytes": 1671
+        }
+    }
+}

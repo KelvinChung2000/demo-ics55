@@ -190,7 +190,14 @@ def collect_signoff(tiles: list[str]) -> None:
     for name, run in runs.items():
         copy(run / "drc_ecc" / "report" / "drc.db.rpt", out / name / "drc.rpt")
         copy(run / "lvs_ecc" / "report" / "lvs.rpt", out / name / "lvs.rpt")
-        copy(run / "sta_ecc" / "report" / "sta.db.rpt", out / name / "sta.rpt")
+        # sta.db.rpt is ECC's database summary; the timing sits in one directory
+        # per library corner and RC corner.
+        corners = sorted(p.parent for p in (run / "sta_ecc" / "report").glob("*/*/qor_summary.rpt"))
+        if not corners:
+            raise FileNotFoundError(f"{run / 'sta_ecc' / 'report'} holds no per-corner iSTA report")
+        for corner in corners:
+            for f in (corner / "qor_summary.rpt", *sorted(corner.glob("timing_*.rpt"))):
+                copy(f, out / name / "sta" / f"{corner.parent.name}_{corner.name}" / f.name)
 
 
 def collect_sta() -> None:

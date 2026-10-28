@@ -1,4 +1,4 @@
-[*] resetn pulse and SPI chip select at the start of the Test/ bitstream sim (zoom of clock_reset_timing)
+[*] resetn pulse and SPI chip select at the start of the submission/test bitstream sim (zoom of clock_reset_timing)
 [size] 1600 340
 [pos] 0 0
 [signals_width] 340

@@ -12,7 +12,7 @@ from pathlib import Path
 from cocotb_tools.runner import get_runner
 
 ROOT = Path(__file__).resolve().parents[2]
-TB = ROOT / "Test" / "config"
+TB = ROOT / "submission" / "test" / "config"
 OUT = ROOT / "build" / "figures" / "spi"
 sys.path.insert(0, str(TB))
 

@@ -1,6 +1,6 @@
 # Community Tapeout Project Proposal and Design Report
 
-All figures are for the `nobram` variant, every block built from the RTL and pin plans of `20f8422` on PDK `v1.10.103`.
+Every block is built from the RTL and pin plans of `20f8422` on PDK `v1.10.103`.
 
 | Stage | Tools | Build date |
 |---|---|---|
@@ -26,7 +26,7 @@ All figures are for the `nobram` variant, every block built from the RTL and pin
 
 ### 1.1 Project Summary
 
-The design is a FABulous eFPGA hardened on ICS55 for an OpenECOS MPW die. Its array `eFPGA` abuts 151 hard tiles of 12 types in a 13 × 12 grid of 947.0 × 884.8 µm. The top level `eFPGA_top` adds the configuration controller in 999.0 × 912.6 µm and takes 26 pads, 22 signal and 4 supply. This `nobram` variant omits the block RAM of the `bram` variant.
+The design is a FABulous eFPGA. Its array `eFPGA` abuts 151 hard tiles of 12 types in a 13 × 12 grid of 947.0 × 884.8 µm. The top level `eFPGA_top` adds the configuration controller in 999.0 × 912.6 µm and takes 26 pads, 22 signal and 4 supply.
 
 ECC hardens each tile type once to a routed macro. Abutment connects the 31,760 tile-to-tile nets through coincident pins, so the `eFPGA_top` run routes only the 3,442 nets of the controller, IO and configuration buses. An RTL bitstream simulation runs a counter on the fabric. A zero-delay gate-level simulation of the hardened netlists repeats it from the chip pads (Section 5.3). A chip-level netlist joins `eFPGA_top` to 22 `P65_1233_PBMUX` pads, with an SDC that times the configuration ports through them (Section 2.3).
 
@@ -144,7 +144,7 @@ Because of the FABulous header `00AAFF01000000010000000000000000FAB0FAB1`, a `.b
 
 `CLK` clocks the configuration logic only and is constrained at 10 ns (100 MHz, `fabric.frequency_mhz` in `Fabric/ecc_config.toml`). The UART divisor `ComRate` keeps its default 217, set for 115,200 baud at 25 MHz, so at 100 MHz the UART runs at 458,716 baud and needs `ComRate` = 867 for 115,200. SPI oversamples `spi_sck` on `CLK` and needs `CLK` above twice `spi_sck`, with four times recommended (`Fabric/config_spi.v`).
 
-With `DisableUserCLK` set in `fabric.csv` the fabric has no clock port, so the user clock enters on the `USER_CLK` pad. Its `USER_CLK` BEL in `SW_term` drives only input 9 of each of the four `GBUF` input multiplexers. The `SYS_RESET` BEL drives input 8 from the `USER_RESET` pad. Fabric routing reaches the other inputs through the `S_term` and `W_term` feed wires, giving up to four global nets. Each `GBUF` drives `E_GBUF` wires along the bottom row and `N_GBUF` wires up every column, buffered at every tile hop. A user design takes its reset into the logic cells' `GSR` through a `GBUF`, as `fabrics/nobram/user_design/top_wrapper.v` does on `GBUF` B.
+With `DisableUserCLK` set in `fabric.csv` the fabric has no clock port, so the user clock enters on the `USER_CLK` pad. Its `USER_CLK` BEL in `SW_term` drives only input 9 of each of the four `GBUF` input multiplexers. The `SYS_RESET` BEL drives input 8 from the `USER_RESET` pad. Fabric routing reaches the other inputs through the `S_term` and `W_term` feed wires, giving up to four global nets. Each `GBUF` drives `E_GBUF` wires along the bottom row and `N_GBUF` wires up every column, buffered at every tile hop. A user design takes its reset into the logic cells' `GSR` through a `GBUF`, as `submission/test/user_design/top_wrapper.v` does on `GBUF` B.
 
 Minimum reset duration, reset release requirements and power-up sequencing are not specified. `resetn` has no deassertion synchroniser. The configuration latches have no reset, so from power-up until configuration ends each `A_EN_top` bit follows whatever its latches hold and its pad may drive. [to be taken from `fabric_config` and the MPW board's reset circuit].
 
@@ -152,7 +152,7 @@ Minimum reset duration, reset release requirements and power-up sequencing are n
 
 ![Reset release](images/reset_release.png)
 
-**Figure 2-4. Bitstream simulation. Top, the whole 524.6 ms run, with `frame_strobe` pulsing while `config_busy` is high. Bottom, the first 40 µs, from reset release to the start of SPI.**
+**Figure 2-4. Bitstream simulation. Top, the whole 433.7 ms run, with `frame_strobe` pulsing while `config_busy` is high. Bottom, the first 40 µs, from reset release to the start of SPI.**
 
 ### 2.6 Device Programming
 
@@ -161,7 +161,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 | Part replaced | Replacement for this fabric |
 |---|---|
 | nextpnr model and bitstream specification | `fabrics/nobram/.FABulous/` (`pips.txt`, `bel.v2.txt`, `bitStreamSpec.bin`) |
-| IO constraints (written) | `fabrics/nobram/user_design/pads.pcf` on the 10 `IOBUF` BELs, `iobuf_map.v` for the `-iopad` cells, clock through `USER_CLK` at `X0Y11.F` into `GBUF` A and reset through `SYS_RESET` at `X0Y11.E` into `GBUF` B as in `top_wrapper.v` |
+| IO constraints (written) | `submission/test/user_design/pads.pcf` on the 10 `IOBUF` BELs, `iobuf_map.v` for the `-iopad` cells, clock through `USER_CLK` at `X0Y11.F` into `GBUF` A and reset through `SYS_RESET` at `X0Y11.E` into `GBUF` B as in `top_wrapper.v` |
 | Techmaps | Without the register-file and SRAM mappings |
 | Pico upload pins | `spi_cs_n`, `spi_sck`, `spi_mosi`, with `ConfigBusy` and `Configured` as status, in place of gf180's `FPGA_MODE`, `FPGA_BUSY`, `CS_N`, `SCLK`, `MOSI` |
 | Pico pin assignment | Depends on the MPW test board |
@@ -189,7 +189,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 | Processing latency | Not applicable | Not applicable | Set by the configured user design |
 | Throughput | Not applicable | Not applicable | Set by the configured user design |
 | Standard-cell count/area | ≤ 1 mm² footprint | 911,687 µm² `eFPGA_top`; synthesis 179,772 cells, 682,405 µm² | Breakdown in Sections 6.1 and 6.2 |
-| SRAM/ROM/macro resources | none | none | No hard macro in this variant |
+| SRAM/ROM/macro resources | none | none | No hard macro in the fabric |
 | Power | Not applicable | Not reported | Not assessed for this submission |
 
 ## 4. IP Reuse and Standardization
@@ -201,7 +201,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 - [x] A standalone digital IP block, hard macro, logic tile, programmable fabric, accelerator, processor, or peripheral.
 - [ ] A design intended only for validation in this tapeout, with no current plan for reuse across projects.
 
-Another project can take the hardened `eFPGA_top`, the abutted `eFPGA` array with its own controller or the 12 tile types abutted into a different grid (interface in Section 4.4). A new grid in `fabrics/<variant>/fabric.csv` keeps one width per column and one height per row. It needs `eFPGA.v` and each `io_pin_order.yaml` regenerated through FABulous and the Section 4.6 flow re-run, but no tile re-hardened unless a die changes.
+Another project can take the hardened `eFPGA_top`, the abutted `eFPGA` array with its own controller or the 12 tile types abutted into a different grid (interface in Section 4.4). A new grid in `fabrics/nobram/fabric.csv` keeps one width per column and one height per row. It needs `eFPGA.v` and each `io_pin_order.yaml` regenerated through FABulous and the Section 4.6 flow re-run, but no tile re-hardened unless a die changes.
 
 ### 4.2 Supported Reuse Levels
 
@@ -245,8 +245,8 @@ Another project can take the hardened `eFPGA_top`, the abutted `eFPGA` array wit
 | Physical views | When applicable | Section 4.2; `eFPGA_top` filler DEF in `build/nobram/top/default/filler_ecc/output/`, SPEF in `RCX_ecc/output/`. Mask-layer GDS of `SE_term` only (Section 7). |
 | I/O pin-placement file | When applicable | `Tile/<type>/io_pin_order.yaml` for edge order; `build/nobram/fabric_plan.json` for coordinates |
 | PDN configuration | When applicable | `Fabric/ecc_config.toml`; `flow/integrate.py` draws the top's channel and strip PDN |
-| Verification environment | Yes | Section 5.1; testbench `fabrics/nobram/user_design/sequential_16bit_en_tb.v`, gate-level wrapper generator `Test/gen_gl_top.py` behind `task run-gl-chip` and `run-gl-top`, cocotb tests in `Test/config/`, STA and model extraction (`etm.tcl`) in `flow/sta/` |
-| Example project | Recommended | `fabrics/nobram/user_design/sequential_16bit_en.v` with its testbench |
+| Verification environment | Yes | Section 5.1; testbench `submission/test/user_design/sequential_16bit_en_tb.v`, gate-level wrapper generator `submission/test/gen_gl_top.py` behind `task run-gl-chip` and `run-gl-top`, cocotb tests in `submission/test/config/`, STA and model extraction (`etm.tcl`) in `flow/sta/` |
+| Example project | Recommended | `submission/test/user_design/sequential_16bit_en.v` with its testbench |
 | Documentation | Yes | `README.md`, `SPEC.md` |
 | License and third-party inventory | Yes | Section 11.2. The repository has no top-level licence file. |
 
@@ -279,7 +279,7 @@ Logs go to `build/nobram/logs/`. A clean checkout does not yet reproduce the bui
 1. ECC `main` at `14be467` needs two uncommitted edits, a Nix flake override for boost and a `YOSYS_TECHMAP_FILES` block in `yosys_synthesis.tcl` (ecc#302).
 2. RTL and pin orders need the two FABulous checkouts of Section 4.2.
 3. The PDK liberty and GDS come from a GitHub release fetched by `make` in `pdk/`.
-4. The bitstream simulation needs Yosys 0.62 (Section 5.1).
+4. Rebuilding the submitted bitstream byte for byte needs Yosys 0.62. Yosys 0.68 builds a different bitstream that passes the same simulations (Section 5.1).
 5. The gitignored `fabrics/nobram/.FABulous/` (`pips.txt`, `bel.v2.txt`, `bitStreamSpec.bin`) is regenerated by FABulous `c0ca476` with `load_fabric`, `gen_model_npnr` and `gen_bitStream_spec`.
 
 ### 4.7 Reuse Acceptance Criteria
@@ -308,12 +308,12 @@ Changing a tile die, an edge pin order, the signal or PDN layers or the stripe p
 | Per-tile signoff | ECC | iEDA DRC, iLVS of routed DEF connectivity against the netlist, 13-corner iSTA |
 | `eFPGA_top` signoff | ECC | The same checks, after refusing any tile whose LEF pins differ from the netlist ports and fixing all 151 tiles at their planned coordinates |
 | Full-chip STA | OpenSTA, six corners | `eFPGA_top` netlist written from the filler DEF (the only view with the tile-to-tile nets), the 12 tile netlists and per-instance tile SPEF |
-| Bitstream simulation | Yosys 0.62 `synth_fabulous`, `nextpnr-generic --uarch fabulous`, FABulous `bit_gen`, Icarus Verilog | `sequential_16bit_en` loaded into the `eFPGA_top` RTL over SPI, clocked from `USER_CLK` and cleared from `USER_RESET`, all 10 IO bits compared against the design simulated directly |
-| Gate-level bitstream simulation | Icarus Verilog with the ICS55 cell and `P65_1233_PBMUX` models, `-Dfunctional`, `Test/gen_gl_top.py` | The same bitstream and compares on the routed tile and `eFPGA_top` netlists inside the chip-level `top.v`, driven and read only at the pads |
-| Loader tests | cocotb 2.0.1 on Icarus, `Test/config/test_config_frontend.py` | A bitstream through each of the UART, bitbang, SPI and parallel loaders of `config_frontend` arrives in order, the last two being the paths `eFPGA_top` ties off. A 7-bit SPI fragment yields no word. |
+| Bitstream simulation | Yosys `synth_fabulous` (0.62 for the submitted bitstream), `nextpnr-generic --uarch fabulous`, FABulous `bit_gen`, Icarus Verilog | `sequential_16bit_en` loaded into the `eFPGA_top` RTL over SPI, clocked from `USER_CLK` and cleared from `USER_RESET`, the eight output pads compared against the design simulated directly |
+| Gate-level bitstream simulation | Icarus Verilog with the ICS55 cell and `P65_1233_PBMUX` models, `-Dfunctional`, `submission/test/gen_gl_top.py` | The same bitstream and compares on the routed tile and `eFPGA_top` netlists inside the chip-level `top.v`, driven and read only at the pads |
+| Loader tests | cocotb 2.0.1 on Icarus, `submission/test/config/test_config_frontend.py` | A bitstream through each of the UART, bitbang, SPI and parallel loaders of `config_frontend` arrives in order, the last two being the paths `eFPGA_top` ties off. A 7-bit SPI fragment yields no word. |
 | Chip-level STA | OpenSTA 2.7.0, cross-checked with iSTA (ECC `14be467`), `build/nobram/chip/top.sdc` | `top.v` with the ICS55 IO ss Liberty and the extracted `eFPGA_top` model, `CLK` paths from the input pads to the output pads |
 
-The bitstream simulation runs as `task VARIANT=nobram WAVEFORM_TYPE=vcd YOSYS_PATH=<yosys 0.62> build-test-design run-simulation` in `Test/`. It shifts 4,096 words (the bitstream padded to `MAX_BITBYTES`) at 128 cycles per word, with `spi_sck` at a quarter of the 1 MHz clock, over 524,554 cycles. Its VCD at `+waveform_depth=1` is 19.6 MB, while the task passes no depth and writes a full-depth VCD that grows by about 1.6 GB per minute.
+The bitstream simulation runs as `task WAVEFORM_TYPE=vcd VVP_ARGS=+waveform_depth=1 run-simulation` in `submission/test/`, on the submitted bitstream and the files of the appendix only. `task YOSYS_PATH=<yosys 0.62> build-test-design` there rebuilds that bitstream from `test/fabulous_model/` byte for byte. Under Yosys 0.68, which no longer bundles the FABulous primitives and technology maps, the task passes the copies in `test/yosys/`; the counter maps onto the same 8 `LUTFF_ESR`, 10 `IOBUF` and 2 `GBUF`, places differently, and passes the RTL and gate-level chip simulations (2026-10-28). The testbench reads the hex file to its end and shifts its 3,386 words at 128 cycles per word, with `spi_sck` at a quarter of the 1 MHz clock, over 433,674 cycles. Its VCD at `+waveform_depth=1` is 16.2 MB; without a depth the task writes a full-depth VCD that grows by about 1.6 GB per minute.
 
 ![Verification environment](images/verification_environment.png)
 
@@ -336,13 +336,13 @@ DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streame
 | Chip-level STA through the pads (OpenSTA) | 1 corner | 1 | 0 | ss 125 °C Cworst only, the one corner extracted so far (Section 6.3) |
 | Chip-level STA through the pads (iSTA cross-check) | 1 corner | 1 | 0 | ss 125 °C Cworst, no SPEF. iSTA is more pessimistic at every endpoint, worst setup +0.254 ns against OpenSTA's +4.494 ns, because it ignores Liberty `when` on the pad arcs (Section 6.3) |
 | Antenna | 0 | 0 | 0 | Not run; the ECC flow reports no antenna result |
-| Bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | No compare error (2026-10-26). `Configured` rises at 433,436.5 µs, then 100 compares follow configuration and 23 a `USER_RESET` pulse. The design uses 12 of 800 `FABULOUS_LC`, 10 `IOBUF` and 2 `GBUF`, with `USER_CLK` on `GBUF` A and `USER_RESET` on `GBUF` B. `A_EN_top[9:2]` rising as the `E_IO` frames load and the counter running on `GBUF` A show rows 1 to 8 and 11 configured. Log in `submission/sim/results/bitstream_sim.log`. |
-| Gate-level bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | Zero-delay `-Dfunctional` run of the hardened netlists inside `top.v` (`task run-gl-chip`, 2026-10-27, 4 min 24 s), driven and read only at the 22 pads. The SPI load matches RTL timing and defines all 69,746 configuration latches. The gate-level LUT turns an X on an unused input into an X on its output, and that X circulates through unused LUTs and default routing that no reset reaches. The wrapper therefore forces the 788 `FABULOUS_LC` whose loaded configuration is constant to that constant, and a `USER_RESET` pulse clears the power-up X of the flip-flops. The force masks a gate-level fault inside an unused LUT, which no equivalence check covers. On a pad the testbench drives, an enabled output shows only as contention. `task run-gl-top` on the bare macro also passes. Logs in `submission/sim/results/gl_chip_sim.log` and `gl_top_sim.log`. |
+| Bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | No compare error (2026-10-28). `Configured` rises at 433,436.5 µs, then 100 compares follow configuration and 23 a `USER_RESET` pulse. The design uses 12 of 800 `FABULOUS_LC`, 10 `IOBUF` and 2 `GBUF`, with `USER_CLK` on `GBUF` A and `USER_RESET` on `GBUF` B. `A_EN_top[9:2]` rising as the `E_IO` frames load and the counter running on `GBUF` A show rows 1 to 8 and 11 configured. Log in `submission/test/results/bitstream_sim.log`. |
+| Gate-level bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | Zero-delay `-Dfunctional` run of the hardened netlists inside `top.v` (`task run-gl-chip`, 2026-10-28, about 4 min), driven and read only at the 22 pads. The SPI load matches RTL timing and defines all 69,746 configuration latches. The gate-level LUT turns an X on an unused input into an X on its output, and that X circulates through unused LUTs and default routing that no reset reaches. The wrapper therefore forces the 788 `FABULOUS_LC` whose loaded configuration is constant to that constant, and a `USER_RESET` pulse clears the power-up X of the flip-flops. The force masks a gate-level fault inside an unused LUT, which no equivalence check covers. On a pad the testbench drives, an enabled output shows only as contention. `task run-gl-top` on the bare macro also passes. Logs in `submission/test/results/gl_chip_sim.log` and `gl_top_sim.log`. |
 | cocotb loader tests | 4 loaders | 4 | 0 | 94 s, 2026-10-26 |
 
 ![Key simulation waveform](images/simulation_waveform.png)
 
-**Figure 5-2. User mode at 524,423 to 524,450 µs. `pad_in` goes 0, 3 (reset), 2 (run), `A_IN_top` counts with `A_IN_top_gold` and `A_EN_top` equals the gold `3FC`.**
+**Figure 5-2. User mode at 433,543 to 433,570 µs. `pad_in` goes 0, 3 (reset), 2 (run), `A_IN_top` counts with `A_IN_top_gold`, `count` and `count_gold` give the counter bits 9:2 of each in decimal and `A_EN_top` equals the gold `3FC`.**
 
 ## 6. Synthesis and Physical Implementation Results
 
@@ -553,7 +553,7 @@ To the best of the authors' knowledge, this project is the first fully open FPGA
 1. A hook for a user techmap before ECC's `flatten` (ecc#302), so FABulous `my_buf` buffers survive as cells.
 2. A tagged ECC release with the file-driven IO placer (`io_placer.mode = "file"`), which is on `main` only and not on `v0.1.0-alpha.12`.
 3. Harden outputs with the routed layout and port timing, in place of the LEF-abstract GDS and 2-arc timing model ECC writes for `eFPGA_top`.
-4. A way to mark abutment-connected nets in iRT. On the 122-tile `bram` fabric 27,390 such nets grew the shape database to 49 GB before routing.
+4. A way to mark abutment-connected nets in iRT. On a 122-tile fabric 27,390 such nets grew the shape database to 49 GB before routing.
 5. A flag to stream full standard-cell layouts into iEDA's GDS, which now holds LEF abstracts.
 6. Escaping of `$` in iRCX SPEF and netlist names, which OpenSTA rejects.
 7. iSTA support for the Liberty `when` condition, a case-insensitive `capacitive_load_unit`, inout ports and a multi-file or hierarchical SPEF, without which iSTA cannot time the pad ring or the full chip (Section 6.3).
@@ -597,7 +597,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 - 278 power opens in `eFPGA_top` iLVS (Section 6.3).
 - iRT ends the `eFPGA_top` route with 620 MET3 and MET4 metal shorts and 52 spacing violations in its among-net table, while iDRC reports 0 on the same DEF. No independent check has resolved which is right (Section 6.2).
 - No block RAM or multi-port storage. `FABULOUS_LC` has no LUT RAM because only the configuration chain writes its truth table.
-- A plain `git archive` of the branch ships three primitives this variant does not instantiate (`ICS55_SRAM_512x32_1RW` with its vendor Liberty, `IHP_SRAM_1024x32_1RW`, `RAM_32x4_2R_1W`), so they must be stripped before release.
+- A plain `git archive` of the branch ships three primitives the design does not instantiate (`ICS55_SRAM_512x32_1RW` with its vendor Liberty, `IHP_SRAM_1024x32_1RW`, `RAM_32x4_2R_1W`), so they must be stripped before release.
 - Device programming and the post-silicon setup are plans (Sections 2.6 and 8.1).
 
 ### 11.2 Open-Source Projects, Third-Party IP, and Licenses
@@ -626,14 +626,15 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 | `ECOS_Community_Tapeout_Project_Design_Report.md`, `images/` | this report | Report, figures and `.drawio` sources; the GTKWave and KLayout capture scripts for Figures 2-3, 2-4, 5-2 and 6-1 are in `capture/` | Yes |
 | `rtl/` with `rtl/filelist.f` | `20f8422` | The 52 source files of `eFPGA_top` in Icarus compile order | Yes |
 | `rtl/config/` | `20f8422` | `fabric.csv`, `dies.toml`, per-tile `io_pin_order.yaml` and `ecc_config.toml` | Yes |
-| `sim/` | `20f8422`, testbench `3a0507a` | Counter design, testbench, bitstream, the Section 5.3 RTL and gate-level logs, nextpnr model and bitstream specification (cocotb tests stay in `Test/config/`) | Yes |
+| `fabric/` | `20f8422` | FABulous project of the fabric with the 12 tile types, `Tile/common`, `Tile/include` and the six instantiated primitives, symlinks resolved | Yes |
 | `physical/eFPGA_top/` | built from `20f8422` | Filler DEF, netlist, ECC GDS, SPEF at nine RC corners, Harden LEF, Liberty and GDS | Yes |
 | `physical/tiles/<type>/` | `SW_term` built from `20f8422`, the other 11 types from `f82fb9a` | Filler DEF, netlist, ECC GDS, SPEF at nine RC corners, abstract LEF, extracted Liberty | Yes |
 | `physical/fabric_plan.json` | built from `20f8422` | Dies, pin offsets, seams | Yes |
 | `signoff/<block>/` | as `physical/` | ECC DRC count and per-layer table, iLVS report and the iSTA reports of every corner | Yes |
 | `sta/` | built from `20f8422` | Full-chip OpenSTA scripts, logs, reports and `summary.txt` | Yes |
-| `gl/` | built from `20f8422` | `top_full.v` with all seam nets and the 12 tile netlists, the inputs of the gate-level simulation of Section 5.3, and its wrapper generator `gen_gl_top.py` | Yes |
+| `gl/` | built from `20f8422` | `top_full.v` with all seam nets and the 12 tile netlists, the inputs of the gate-level simulation of Section 5.3 | Yes |
 | `chip/` | `c680d08` | `top.v` and `top.sdc` from `flow cli chip-top`, the extracted `eFPGA_top` model `etm/eFPGA_top_ss_125_Cworst.lib` and the chip-level STA log of Section 6.3 | Yes |
+| `test/` | design `20f8422`, testbench `3a0507a`, harness this report | `Taskfile.yml` running the RTL and gate-level simulations of Section 5.3 and the bitstream build on the files of this appendix only; the counter design, testbench and PCF in `user_design/`; the submitted bitstream in `bitstream/`; the Section 5.3 logs in `results/`; the nextpnr model and bitstream specification in `fabulous_model/`; the FABulous primitives and technology maps for Yosys 0.67 and newer in `yosys/`; the gate-level wrapper generator `gen_gl_top.py` and the cocotb loader tests in `config/` | Yes |
 
 Every appendix GDS is an ECC abstract (Section 7). The build flow and documentation stay in the repository.
 

@@ -1,0 +1,6 @@
+# W_IO without its IOBUF, so column 0 carries no pad. The die is W_IO's frozen
+# one, kept so the column width, the row heights and every seam pin offset stay
+# where the hardened neighbours were built to meet them.
+[die]
+width_micron = 28.8
+height_micron = 84.0   # rows 1 to 14, the height the 82.5 anchor scaled them to

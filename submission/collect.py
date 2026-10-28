@@ -1,14 +1,18 @@
 """Assemble the submission appendix from the working tree and build/nobram.
 
 The appendix is a snapshot, so it is rebuilt from its sources rather than
-edited by hand: every file under rtl/, sim/, physical/, signoff/, sta/ and gl/
-and chip/ is copied (and large text views gzipped) by this script, and a rerun replaces
-those directories. The report, images/ and the README are hand-written and are
-left alone.
+edited by hand: every file under rtl/, fabric/, physical/, signoff/, sta/, gl/
+and chip/, and test/bitstream, test/results and test/fabulous_model, is copied (and large
+text views gzipped) by this script, and a rerun replaces those directories. The
+report, images/, the README and the rest of test/ are hand-written and are left
+alone; test/user_design is the design's only copy, which fabrics/nobram links to.
+The bitstream and logs come from the harness's own runs in test/build.
 
 The RTL set is the module closure of `eFPGA_top` as Yosys `hierarchy` resolves
 it, so primitives the variant does not instantiate (the ICS55 SRAM with its
-vendor model among them) never enter the appendix.
+vendor model among them) never enter the appendix. fabric/ is the FABulous
+project of the fabric with its symlinks resolved, holding the grid's tiles and
+only the primitives that closure reaches, so it survives a zip.
 
     python3 submission/collect.py
 """
@@ -30,8 +34,12 @@ TOP = BUILD / "top" / "default"
 FULLSTA = BUILD / "fullsta"
 CHIP = BUILD / "chip"
 STA_RECIPE = ROOT / "flow" / "sta"
-SIM_BUILD = ROOT / "Test" / "build"
-GENERATED = ("rtl", "sim", "physical", "signoff", "sta", "gl", "chip")
+TEST = OUT / "test"
+SIM_BUILD = TEST / "build"
+GENERATED = (
+    *(OUT / d for d in ("rtl", "fabric", "physical", "signoff", "sta", "gl", "chip")),
+    *(TEST / d for d in ("bitstream", "results", "fabulous_model")),
+)
 RC_CORNERS = (
     "Cbest_125C", "Cbest_m40C", "Cworst_125C", "Cworst_m40C", "RCbest_125C",
     "RCbest_m40C", "RCworst_125C", "RCworst_m40C", "TYPICAL_25C",
@@ -124,7 +132,8 @@ def rtl_closure(tile_dirs: list[Path]) -> list[Path]:
     return sorted(files)
 
 
-def collect_rtl(tiles: list[str]) -> None:
+def collect_rtl(tiles: list[str]) -> list[Path]:
+    """Copy the RTL closure and its configs, returning the closure's files."""
     dirs = sorted({tile_dir(t) for t in tiles})
     files = rtl_closure(dirs)
     out = OUT / "rtl"
@@ -142,21 +151,37 @@ def collect_rtl(tiles: list[str]) -> None:
         copy(VARIANT / f, out / "config" / f)
     copy(ROOT / "Fabric" / "ecc_config.toml", out / "config" / "Fabric_ecc_config.toml")
     copy(ROOT / "Tile" / "include" / "ecc_config.toml", out / "config" / "Tile_include_ecc_config.toml")
+    return files
 
 
-def collect_sim() -> None:
-    out = OUT / "sim"
-    for f in (VARIANT / "user_design").iterdir():
-        # Hidden entries are editor or sandbox state, not design sources.
-        if not f.name.startswith("."):
-            copy(f, out / "user_design" / f.name)
+def collect_fabric(tiles: list[str], rtl: list[Path]) -> None:
+    out = OUT / "fabric"
+    for name in ("fabric.csv", "dies.toml", "eFPGA_geometry.csv"):
+        copy(VARIANT / name, out / name)
+    for f in sorted((VARIANT / "Fabric").glob("*.v")):
+        copy(f, out / "Fabric" / f.name)
+    # Tile CSVs name Tile/common and primitives/ by relative path, so both keep
+    # their place beside Tile/<type>; Tile/include is the ECC defaults layer.
+    prims = ROOT / "primitives"
+    dirs = [
+        *sorted({tile_dir(t) for t in tiles}),
+        ROOT / "Tile" / "common",
+        ROOT / "Tile" / "include",
+        *sorted({prims / f.relative_to(prims).parts[0] for f in rtl if f.is_relative_to(prims)}),
+    ]
+    for d in dirs:
+        for f in sorted(p for p in d.rglob("*") if p.is_file()):
+            copy(f, out / f.relative_to(ROOT))
+
+
+def collect_test() -> None:
     for ext in ("bin", "hex", "fasm"):
-        copy(SIM_BUILD / f"sequential_16bit_en.{ext}", out / "bitstream" / f"sequential_16bit_en.{ext}")
+        copy(SIM_BUILD / f"sequential_16bit_en.{ext}", TEST / "bitstream" / f"sequential_16bit_en.{ext}")
     for log in ("bitstream_sim.log", "gl_chip_sim.log", "gl_top_sim.log"):
-        copy(SIM_BUILD / log, out / "results" / log)
+        copy(SIM_BUILD / log, TEST / "results" / log)
     model = VARIANT / ".FABulous"
     for name in ("pips.txt", "bel.txt", "bel.v2.txt", "bel.v3.txt", "bitStreamSpec.bin"):
-        copy_gz(model / name, out / "fabulous_model")
+        copy_gz(model / name, TEST / "fabulous_model")
 
 
 def collect_physical(tiles: list[str]) -> None:
@@ -226,8 +251,6 @@ def collect_gl() -> None:
     copy_gz(FULLSTA / "top_full.v", out)
     for f in sorted(FULLSTA.glob("tile_*.v")):
         copy_gz(f, out)
-    for script in ("gen_gl_top.py", "gen_gl_xinit.py"):
-        copy(ROOT / "Test" / script, out / script)
 
 
 def collect_chip() -> None:
@@ -245,17 +268,18 @@ def collect_chip() -> None:
 
 def main() -> None:
     for d in GENERATED:
-        shutil.rmtree(OUT / d, ignore_errors=True)
+        shutil.rmtree(d, ignore_errors=True)
     tiles = grid_tiles()
-    collect_rtl(tiles)
-    collect_sim()
+    rtl = collect_rtl(tiles)
+    collect_fabric(tiles, rtl)
+    collect_test()
     collect_physical(tiles)
     collect_signoff(tiles)
     collect_sta()
     collect_gl()
     collect_chip()
-    total = sum(f.stat().st_size for d in GENERATED for f in (OUT / d).rglob("*") if f.is_file())
-    largest = max((f for d in GENERATED for f in (OUT / d).rglob("*") if f.is_file()),
+    total = sum(f.stat().st_size for d in GENERATED for f in d.rglob("*") if f.is_file())
+    largest = max((f for d in GENERATED for f in d.rglob("*") if f.is_file()),
                   key=lambda f: f.stat().st_size)
     print(f"collected {total / 1e6:.1f} MB; largest {largest.relative_to(OUT)} "
           f"{largest.stat().st_size / 1e6:.1f} MB")

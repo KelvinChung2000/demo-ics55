@@ -1,0 +1,39 @@
+# The ECC parameters every tile type is hardened with. A `Tile/<type>/ecc_config.toml`
+# replaces individual entries here for one type and leaves the rest standing.
+# Every type carries one, because every type's die is frozen in it.
+#
+# Every key has to be one `ecc param list` prints in a project directory, spelled
+# `[params.<section>]` with the bare name under it. `flow.config.PARAM_REGISTRY`
+# holds that list and refuses anything outside it at load, before a run starts.
+# The registry is small: utilisation, aspect ratio, fanout, the placer's density
+# and padding, the routing layer range and the STA path count. A setting outside
+# it, the die size above all, is not expressible here and is patched into the
+# workspace step config instead.
+#
+# Two registry entries are deliberately absent. `design.frequency_mhz` and
+# `floorplan.core_margin` are fabric-wide and come from Fabric/ecc_config.toml,
+# so setting either here is an error rather than an override.
+#
+# A tile type's die is set in its own file rather than here, as a `[die]` table
+# carrying `width_micron`, `height_micron` or both. It is refused in this file
+# and in Fabric/ecc_config.toml, since both cover every type at once and a die
+# belongs to one. `flow.plan` binds a width to every column that type occupies
+# and a height to every row, so the types sharing them follow, and it refuses two
+# types in one column or row asking for different sizes.
+
+[params.floorplan]
+core_util = 0.8
+
+# DreamPlace's own bin density, which it reads on every run, unlike
+# core_util above. ECC's template ships 0.2, far below anything these
+# cores are filled to.
+[params.place]
+target_density = 0.8
+
+# ECC defaults this off, so DreamPlace does global placement and legalisation
+# and never detail-places. On LUT4x8_ha at 0.93 core usage the router then
+# oscillated across all nine of its detailed-routing iterations, 2134 to 2643
+# violations, where with detailed placement it went 687, 72, 21, 3, 0 and
+# stopped at the fifth. Every tile in this fabric is the same mux and
+# configuration-latch structure, so the setting is shared rather than per type.
+detailed_place_flag = 1

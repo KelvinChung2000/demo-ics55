@@ -1,4 +1,4 @@
-[*] resetn release, SPI configuration load and user mode: Test/ bitstream sim of sequential_16bit_en on eFPGA_top
+[*] resetn release, SPI configuration load and user mode: submission/test bitstream sim of sequential_16bit_en on eFPGA_top
 [size] 1600 400
 [pos] 0 0
 [signals_width] 340

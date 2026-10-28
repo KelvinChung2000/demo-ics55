@@ -11,8 +11,10 @@ DUMP=$1 SAVE=$2 OUT=$3
 read -r W H < <(sed -n "s/^\[size\] //p" "$SAVE")
 TMP=$(mktemp -d)
 trap 'rm -rf "$TMP"' EXIT
+# GTK3 prefers Wayland when WAYLAND_DISPLAY is set and would draw on the
+# desktop, leaving the Xvfb screen white.
 xvfb-run -a -s "-screen 0 ${W}x${H}x24" bash -c '
-    gtkwave -a "$1" -S "$2/zoom.tcl" "$3" >"$4/gtkwave.log" 2>&1 &
+    env -u WAYLAND_DISPLAY GDK_BACKEND=x11 gtkwave -a "$1" -S "$2/zoom.tcl" "$3" >"$4/gtkwave.log" 2>&1 &
     pid=$!
     xdotool search --sync --onlyvisible --class gtkwave >/dev/null
     sleep "${SETTLE:-5}"

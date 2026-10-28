@@ -1,0 +1,251 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# https://taskfile.dev
+#
+# Verification of the submission, run from this directory. Every input is a file
+# of the submission (user_design/, bitstream/, fabulous_model/, ../rtl, ../gl,
+# ../chip); the gate-level tasks also need the ICS55 PDK, which the submission
+# does not carry.
+# Override any variable via CLI: task run-simulation WAVEFORM_TYPE=vcd
+version: "3"
+
+includes:
+  compile:
+    taskfile: "./compile.Taskfile.yml"
+
+vars:
+  MAX_BITBYTES: '{{.MAX_BITBYTES | default "16384"}}'
+  BUILD_DIR: '{{.BUILD_DIR | default "build"}}'
+  DESIGN: '{{.DESIGN | default "sequential_16bit_en"}}'
+  TESTBENCH: "{{.DESIGN}}_tb"
+  TOP_WRAPPER: '{{.TOP_WRAPPER | default "top_wrapper"}}'
+  USER_DESIGN_DIR: user_design
+  # The submitted bitstream. A design built here lands in BUILD_DIR, so pass
+  # BITSTREAM_HEX=build/<design>.hex to simulate it instead.
+  BITSTREAM_HEX: '{{.BITSTREAM_HEX | default (printf "bitstream/%s.hex" .DESIGN)}}'
+  # fabulous_model/ unpacked into the .FABulous/ that nextpnr's FAB_ROOT and bit_gen read.
+  FAB_PROJ_ROOT: "{{.BUILD_DIR}}/fabulous"
+  # ../rtl/filelist.f names files relative to the submission root.
+  RTL_FILELIST: "{{.BUILD_DIR}}/rtl.f"
+  WAVEFORM_TYPE: '{{.WAVEFORM_TYPE | default "fst"}}'
+  EXTRA_IVERILOG_FLAGS: '{{.EXTRA_IVERILOG_FLAGS | default ""}}'
+  # Plusargs for vvp, e.g. +waveform_depth=1 or +max_cycles=5000.
+  VVP_ARGS: '{{.VVP_ARGS | default ""}}'
+
+tasks:
+  build-test-design:
+    desc: Synthesize, place & route and generate the bitstream into BUILD_DIR
+    cmds:
+      - task: run-yosys
+      - task: run-nextpnr
+      - task: run-bitgen
+
+  run-yosys:
+    desc: Run Yosys synthesis
+    deps: [mkdir-build]
+    vars:
+      CUSTOM_PRIMS:
+        sh: '[ -f "{{.USER_DESIGN_DIR}}/custom_prims.v" ] && echo "-extra-plib {{.USER_DESIGN_DIR}}/custom_prims.v" || true'
+      # Yosys 0.67 reworked synth_fabulous: it no longer bundles the FABulous
+      # library, so yosys/ (from FABulous PR #1085) supplies it, and pads are
+      # inserted by default. Older Yosys rejects these options, so the form is
+      # chosen by whether synth_fabulous accepts -cells-map. Both forms keep
+      # flops with enable and sync set/reset whole, the only way a reset taken
+      # through a GBUF and GSR reaches a flop.
+      SYNTH_LIB_ARGS:
+        sh: |
+          yosys='{{.YOSYS_PATH | default .FAB_YOSYS_PATH | default "yosys"}}'
+          if ! help=$($yosys -p "help synth_fabulous"); then
+            echo "ERROR: $yosys -p \"help synth_fabulous\" failed" >&2
+            exit 1
+          fi
+          if printf '%s\n' "$help" | grep -q -- -cells-map; then
+            echo "-extra-plib yosys/primitives/prims.v" \
+              "-cells-map yosys/techmap/cells_map.v" \
+              "-arith-map yosys/techmap/arith_map.v" \
+              "-extra-map yosys/techmap/ff_map.v" \
+              "-extra-map yosys/techmap/latches_map.v" \
+              "-extra-mlibmap yosys/memlib/ram_regfile.txt" \
+              "-extra-map yosys/techmap/regfile_map.v" \
+              '-ff \$_DFF_P_ 0 -ff \$_DFFE_PP_ 0 -ff \$_SDFF_PP?_ 0 -ff \$_SDFFCE_PP?P_ 0 -ff \$_DLATCH_?_ x'
+          else
+            echo "-iopad -complex-dff"
+          fi
+      RESOLVED_DESIGN_FILES: '{{.DESIGN_FILES | default (printf "%s/%s.v" .USER_DESIGN_DIR .DESIGN)}}'
+      RESOLVED_TOP_WRAPPER_FILE: '{{.TOP_WRAPPER_FILE | default (printf "%s/%s.v" .USER_DESIGN_DIR .TOP_WRAPPER)}}'
+      RESOLVED_JSON_FILE: '{{.JSON_FILE | default (printf "%s/%s.json" .BUILD_DIR .DESIGN)}}'
+    cmds:
+      - task: compile:compile-yosys
+        vars:
+          YOSYS_EXTRA_ARGS: '{{.YOSYS_EXTRA_ARGS | default ""}}'
+          SYNTH_CMD: 'synth_fabulous -top {{.TOP_WRAPPER}} -json {{.RESOLVED_JSON_FILE}} {{.SYNTH_LIB_ARGS}} {{.CUSTOM_PRIMS}} {{.SYNTH_EXTRA_ARGS | default ""}}'
+          DESIGN_FILES: "{{.RESOLVED_DESIGN_FILES}}"
+          TOP_WRAPPER_FILE: "{{.RESOLVED_TOP_WRAPPER_FILE}}"
+
+  run-nextpnr:
+    desc: Run nextpnr place and route
+    deps: [mkdir-build, fabulous-model]
+    cmds:
+      - task: compile:compile-nextpnr
+        vars:
+          FAB_PROJ_ROOT: "{{.FAB_PROJ_ROOT}}"
+          JSON_FILE: '{{.JSON_FILE | default (printf "%s/%s.json" .BUILD_DIR .DESIGN)}}'
+          FASM_FILE: '{{.FASM_FILE | default (printf "%s/%s.fasm" .BUILD_DIR .DESIGN)}}'
+          LOG_FILE: '{{.LOG_FILE | default ""}}'
+          NEXTPNR_EXTRA_ARGS: '{{.NEXTPNR_EXTRA_ARGS | default ""}}'
+          NEXTPNR_VERBOSE: '{{.NEXTPNR_VERBOSE | default ""}}'
+
+  run-bitgen:
+    desc: Generate bitstream and hex file
+    deps: [mkdir-build, fabulous-model]
+    vars:
+      RESOLVED_FASM_FILE: '{{.FASM_FILE | default (printf "%s/%s.fasm" .BUILD_DIR .DESIGN)}}'
+      RESOLVED_BIN_FILE: '{{.BIN_FILE | default (printf "%s/%s.bin" .BUILD_DIR .DESIGN)}}'
+    cmds:
+      - task: compile:compile-bitgen
+        vars:
+          FAB_PROJ_ROOT: "{{.FAB_PROJ_ROOT}}"
+          FASM_FILE: "{{.RESOLVED_FASM_FILE}}"
+          BIN_FILE: "{{.RESOLVED_BIN_FILE}}"
+      - >-
+        python3 makehex.py
+        {{.RESOLVED_BIN_FILE}}
+        {{.MAX_BITBYTES}}
+        {{.BUILD_DIR}}/{{.DESIGN}}.hex
+
+  fabulous-model:
+    internal: true
+    deps: [mkdir-build]
+    cmds:
+      - mkdir -p {{.FAB_PROJ_ROOT}}/.FABulous
+      - for f in fabulous_model/*.gz; do gunzip -c "$f" > "{{.FAB_PROJ_ROOT}}/.FABulous/$(basename "$f" .gz)"; done
+
+  rtl-filelist:
+    internal: true
+    deps: [mkdir-build]
+    cmds:
+      - awk 'NF {print "../" $0}' ../rtl/filelist.f > {{.RTL_FILELIST}}
+
+  run-simulation:
+    desc: RTL simulation of the fabric loading BITSTREAM_HEX, logged to BUILD_DIR/bitstream_sim.log
+    deps: [mkdir-build, rtl-filelist]
+    preconditions:
+      - sh: 'test -f "{{.BITSTREAM_HEX}}"'
+        msg: 'BITSTREAM_HEX ("{{.BITSTREAM_HEX}}") is no file; run build-test-design and pass BITSTREAM_HEX=build/<design>.hex'
+    cmds:
+      - >-
+        iverilog -g2012
+        {{.EXTRA_IVERILOG_FLAGS}}
+        -s {{.TESTBENCH}}
+        -o {{.BUILD_DIR}}/{{.DESIGN}}.vvp
+        -c {{.RTL_FILELIST}}
+        {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
+        {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
+      - >-
+        set -o pipefail;
+        vvp {{.BUILD_DIR}}/{{.DESIGN}}.vvp
+        +output_waveform={{.BUILD_DIR}}/{{.DESIGN}}.{{.WAVEFORM_TYPE}}
+        +bitstream_hex={{.BITSTREAM_HEX}}
+        {{.VVP_ARGS}}
+        {{if eq .WAVEFORM_TYPE "fst"}}-fst{{end}}
+        | tee {{.BUILD_DIR}}/bitstream_sim.log
+
+  run-emulation:
+    desc: Run emulation using Icarus Verilog (iverilog)
+    deps: [mkdir-build, rtl-filelist]
+    cmds:
+      - >-
+        iverilog -g2012 -D EMULATION
+        {{.EXTRA_IVERILOG_FLAGS}}
+        -s {{.TESTBENCH}}
+        -o {{.BUILD_DIR}}/{{.DESIGN}}.vvp
+        {{.BUILD_DIR}}/{{.DESIGN}}.vh
+        -c {{.RTL_FILELIST}}
+        {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
+        {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
+      - >-
+        vvp {{.BUILD_DIR}}/{{.DESIGN}}.vvp
+        +output_waveform={{.BUILD_DIR}}/{{.DESIGN}}.{{.WAVEFORM_TYPE}}
+        +bitstream_hex={{.BITSTREAM_HEX}}
+        {{.VVP_ARGS}}
+        {{if eq .WAVEFORM_TYPE "fst"}}-fst{{end}}
+
+  run-gl-top:
+    desc: Zero-delay gate-level simulation of the hardened eFPGA_top (../gl), logged to BUILD_DIR/gl_top_sim.log
+    # No X-init: like the RTL run, the configuration latches start X and
+    # the bitstream writes them. The wrapper's census reports any still X at Configured.
+    # GL_CHIP_TOP puts the chip-level top.v and its pads between the testbench and the netlist.
+    preconditions:
+      - sh: 'test -d "{{.GL_PDK_ROOT}}/IP/STD_cell"'
+        msg: 'GL_PDK_ROOT ("{{.GL_PDK_ROOT}}") is not the ICS55 PDK root; pass GL_PDK_ROOT=<ICS55 PDK root>'
+      - sh: 'test -f "{{.BITSTREAM_HEX}}"'
+        msg: 'BITSTREAM_HEX ("{{.BITSTREAM_HEX}}") is no file'
+      - sh: 'test -z "{{.GL_CHIP_TOP}}" || test -f "{{.GL_CHIP_TOP}}"'
+        msg: 'GL_CHIP_TOP ("{{.GL_CHIP_TOP}}") is no file'
+    vars:
+      GL_PDK_ROOT: '{{.GL_PDK_ROOT | default ""}}'
+      GL_CHIP_TOP: '{{.GL_CHIP_TOP | default ""}}'
+      GL_LEVEL: '{{if .GL_CHIP_TOP}}chip{{else}}top{{end}}'
+      GL_BUILD_DIR: '{{.GL_BUILD_DIR | default (printf "%s/gl_%s" .BUILD_DIR .GL_LEVEL)}}'
+      GL_IO_MODEL: '{{.GL_PDK_ROOT}}/IP/IO/ICsprout_55LLULP1233_IO_251013/verilog/icsIOA_N55_3P3.v'
+      # The netlist uses the L and R threshold flavours; H is read too so a re-harden
+      # that reaches for it still links.
+      LLSC: '{{.GL_PDK_ROOT}}/IP/STD_cell/ics55_LLSC_H7C_V1p10C100'
+      FLAVOURS: H7CL H7CR H7CH
+    cmds:
+      - mkdir -p {{.GL_BUILD_DIR}}
+      - for f in ../gl/*.v.gz; do gunzip -c "$f" > "{{.GL_BUILD_DIR}}/$(basename "$f" .gz)"; done
+      - >-
+        python3 gen_gl_top.py
+        --rtl ../rtl/eFPGA/eFPGA_top.v
+        --netlist {{.GL_BUILD_DIR}}/top_full.v {{.GL_BUILD_DIR}}/tile_*.v
+        --liberty {{range $f := splitList " " .FLAVOURS}}{{$.LLSC}}/ics55_LLSC_{{$f}}/liberty/ics55_LLSC_{{$f}}_typ_tt_1p2_25_nldm.lib {{end}}
+        {{if .GL_CHIP_TOP}}--chip {{.GL_CHIP_TOP}}{{end}}
+        --lc-cell ../rtl/primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v
+        --lc-tile ../rtl/Tile/LUT4x8_ha
+        --out {{.GL_BUILD_DIR}}/eFPGA_top_gl.v
+      # The tile netlists carry no timescale; the token is only honoured in a command file.
+      - echo '+timescale+1ns/1ps' > {{.GL_BUILD_DIR}}/timescale.f
+      # -Dfunctional compiles the specify blocks out: zero-delay cells. The three
+      # model files repeat the same UDPs, which iverilog accepts only as libraries (-l).
+      - >-
+        iverilog -g2012 -Dfunctional -DGL_TOP {{if .GL_CHIP_TOP}}-DGL_CHIP{{end}}
+        -f {{.GL_BUILD_DIR}}/timescale.f
+        {{.EXTRA_IVERILOG_FLAGS}}
+        -s {{.TESTBENCH}}
+        -o {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_{{.GL_LEVEL}}.vvp
+        {{.GL_BUILD_DIR}}/eFPGA_top_gl.v
+        {{if .GL_CHIP_TOP}}{{.GL_CHIP_TOP}} {{.GL_IO_MODEL}}{{end}}
+        {{.GL_BUILD_DIR}}/top_full.v {{.GL_BUILD_DIR}}/tile_*.v
+        {{range $f := splitList " " .FLAVOURS}}-l {{$.LLSC}}/ics55_LLSC_{{$f}}/verilog/ics55_LLSC_{{$f}}.v {{end}}
+        {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
+        {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
+      - >-
+        set -o pipefail;
+        vvp -n {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_{{.GL_LEVEL}}.vvp
+        +bitstream_hex={{.BITSTREAM_HEX}}
+        {{.VVP_ARGS}}
+        | tee {{.BUILD_DIR}}/gl_{{.GL_LEVEL}}_sim.log
+
+  run-gl-chip:
+    desc: Zero-delay gate-level simulation from the chip pads (../chip/top.v around the hardened eFPGA_top)
+    cmds:
+      - task: run-gl-top
+        vars:
+          GL_CHIP_TOP: '{{.GL_CHIP_TOP | default "../chip/top.v"}}'
+
+  gtkwave:
+    desc: Open waveform in GTKWave
+    cmds:
+      - gtkwave {{.BUILD_DIR}}/{{.DESIGN}}.{{.WAVEFORM_TYPE}}
+
+  mkdir-build:
+    internal: true
+    cmds:
+      - mkdir -p {{.BUILD_DIR}}
+    status:
+      - test -d {{.BUILD_DIR}}
+
+  clean:
+    desc: Remove build directory
+    cmds:
+      - rm -rf {{.BUILD_DIR}}

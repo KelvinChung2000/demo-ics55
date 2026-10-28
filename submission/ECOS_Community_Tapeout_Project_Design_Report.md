@@ -320,7 +320,7 @@ The bitstream simulation runs as `task VARIANT=nobram WAVEFORM_TYPE=vcd YOSYS_PA
 
 ### 5.2 Verification Scope and Methods
 
-DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streamed GDS of Section 7 has no mask-geometry check, because the PDK's decks in `pdk/pv/` are Calibre, unlicensed here, while `pdk/` holds no open deck (KLayout `.lydrc` or `.lylvs`, Magic tech file or netgen setup). Whether the MPW organisers run Calibre DRC and LVS on submitted GDS is unconfirmed. There are no random, formal or FPGA-prototype tests, and the one gate-level simulation fails on X (Section 5.3).
+DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streamed GDS of Section 7 has no mask-geometry check, because the PDK's decks in `pdk/pv/` are Calibre, unlicensed here, while `pdk/` holds no open deck (KLayout `.lydrc` or `.lylvs`, Magic tech file or netgen setup). Whether the MPW organisers run Calibre DRC and LVS on submitted GDS is unconfirmed. There are no random, formal or FPGA-prototype tests. The gate-level simulation passes only with the constant logic cells forced to their configured value (Section 5.3).
 
 ### 5.3 Verification Results
 
@@ -335,7 +335,7 @@ DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streame
 | Chip-level STA through the pads (OpenSTA) | 1 corner | 1 | 0 | ss 125 °C Cworst only, the one corner extracted so far (Section 6.3) |
 | Antenna | 0 | 0 | 0 | Not run; the ECC flow reports no antenna result |
 | Bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | No compare error (2026-10-26, `20f8422`). `ConfigBusy` rose at 668.5 µs and `Configured` at 433,436.5 µs. 100 compares follow configuration and 23 follow a `USER_RESET` pulse. The design uses 12 of 800 `FABULOUS_LC`, 10 of 10 `IOBUF` and 2 of 4 `GBUF`, with `USER_CLK` on `GBUF` A and `USER_RESET` on `GBUF` B. `A_EN_top[9:2]` rising as the `E_IO` frames load and the counter running on `GBUF` A show rows 1 to 8 and 11 configured. Log in `submission/sim/results/bitstream_sim.log`. |
-| Gate-level bitstream simulation | 1 design, 100 compared cycles | 0 | 1 | Zero-delay `-Dfunctional` run of the hardened `eFPGA_top` netlist, `task run-gl-top` (2026-10-21, `871d91a`). The SPI load matches RTL, with `ConfigBusy` at 668.5 µs and `Configured` at 433,436.5 µs and every configuration latch defined. All 100 compares fail with `A_IN_top` at X while `A_EN_top` matches. Unused LUT inputs sit on combinational loops through unconfigured routing and stay X; the AOI-mapped LUT propagates that X where the RTL multiplexer does not. A real fault under the X is not excluded. Logs in `build/gl-functional-2026-10-21/`. |
+| Gate-level bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | Zero-delay `-Dfunctional` run of the hardened `20f8422` netlists inside the chip-level `top.v`, `task run-gl-chip` (2026-10-27, `3a0507a`, 4 min 24 s). The testbench drives and reads only the 22 `PAD_*` ports, through the `P65_1233_PBMUX` models. The SPI load matches RTL, with `ConfigBusy` at 668.5 µs and `Configured` at 433,436.5 µs and all 69,746 configuration latches defined. The gate-level LUT turns an X on an unused input into an X on its output, and that X circulates through unused LUTs and default routing that no reset reaches. The wrapper therefore forces the 788 of 800 `FABULOUS_LC` whose loaded configuration is constant to that constant, and a `USER_RESET` pulse clears the power-up X of the flip-flops. The force masks a gate-level fault inside an unused LUT, which no equivalence check covers. On a pad the testbench drives, an enabled output shows only as contention. `task run-gl-top` on the bare macro also passes 123 of 123. Logs in `build/gl-chip-fix-2026-10-27/`. |
 | cocotb loader tests | 4 loaders | 4 | 0 | 94 s, 2026-10-26 |
 
 ![Key simulation waveform](images/simulation_waveform.png)
@@ -590,7 +590,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 - User-mode Fmax is unmeasured. The tile-level `sta_frequency_mhz` 40 on `LUT4x8_ha` reflects a loop through the unconfigured switch matrix.
 - RTL simulation shows `GBUF` A carrying the user clock and `GBUF` B the user reset into `GSR`. A counter clocked through `GBUF` C stays X although nextpnr routes the clock to every flip-flop, for a reason not yet found. `GBUF` B as a clock and `GBUF` D are untested.
 - `A_EN_top` is not gated by `Configured`. The configuration latches have no reset, so before and during configuration any of the 10 IO pads may drive (Section 2.5).
-- Gate-level simulation configures the fabric but fails every user-mode compare on X (Section 5.3). No partial-reconfiguration run exists.
+- Gate-level simulation passes only with the 788 constant logic cells forced, which masks a fault inside an unused LUT. No equivalence check of the tile netlists against RTL exists (Section 5.3). No partial-reconfiguration run exists.
 - `ComRate` = 217 is mismatched to the 100 MHz `CLK` (Section 2.5).
 - Mask-layer GDS for `SE_term` only, with no cell boundary layer, pad ring or seal ring. The PDK's Calibre decks have not been run and no open deck exists (Sections 5.2 and 7).
 - 10 user IO bits in total, all in column 12.
@@ -634,7 +634,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 | `physical/fabric_plan.json` | built from `20f8422` | Dies, pin offsets, seams | Yes |
 | `signoff/<block>/` | as `physical/` | ECC DRC count and per-layer table, iLVS report and the iSTA reports of every corner | Yes |
 | `sta/` | built from `20f8422` | Full-chip OpenSTA scripts, logs, reports and `summary.txt` | Yes |
-| `gl/` | built from `20f8422` | `top_full.v` with all seam nets and the 12 tile netlists, the inputs of the gate-level simulation of Section 5.3, which ran on the `871d91a` netlists | Yes |
+| `gl/` | built from `20f8422` | `top_full.v` with all seam nets and the 12 tile netlists, the inputs of the gate-level simulation of Section 5.3 | Yes |
 | `chip/` | `c680d08` | `top.v` and `top.sdc` from `flow cli chip-top`, the extracted `eFPGA_top` model `etm/eFPGA_top_ss_125_Cworst.lib` and the chip-level STA log of Section 6.3 | Yes |
 
 Every appendix GDS is an ECC abstract (Section 7). The build flow and documentation stay in the repository.

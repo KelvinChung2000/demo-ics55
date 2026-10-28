@@ -14,7 +14,7 @@ The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells,
 | `physical/` | `eFPGA_top` and per-tile DEF, netlist, GDS, SPEF at nine RC corners, LEF and Liberty, and `fabric_plan.json` |
 | `signoff/` | For `eFPGA_top` and each tile type, the ECC DRC count (`drc.json`) and per-layer table (`drc.csv`), the iLVS report (`lvs.rpt`) and the iSTA reports of every corner (`sta/<library corner>_<RC corner>/`) |
 | `sta/` | Full-chip OpenSTA scripts, per-corner reports and `summary.txt` |
-| `gl/` | Gate-level netlists and the X-initialisation generator; the gate-level simulation of the report ran on the `871d91a` netlists |
+| `gl/` | Gate-level netlists, the inputs of the report's gate-level simulation, and the older X-initialisation generator `gen_gl_xinit.py`, which that simulation does not use |
 | `chip/` | The pad-ring netlist `top.v` and `top.sdc`, the extracted `eFPGA_top` timing model and the chip-level STA log |
 
 Every GDS here holds standard cells and tile macros as LEF abstracts, so none of them is a mask-ready layout.
@@ -47,11 +47,11 @@ Pins are placed with a PCF. The design's top-level ports are the pads, `-iopad` 
 
 A clock has to reach the fabric through a `GBUF`, so a design instantiates one on its clock pad as `sequential_16bit_en_pcf.v` does, pinned to `X0Y11.A`. A counter clocked through `GBUF` C stays X in RTL simulation, and `GBUF` B and D are untested. The older route, `top_wrapper.v` with one `IOBUF` per pad and a `(* BEL *)` attribute on each, still builds and passes.
 
-## Gate-level simulation, not yet run
+## Gate-level simulation
 
-`gl/top_full.v.gz` is `eFPGA_top` written from the routed filler DEF. It is the only netlist that carries all 32,404 tile-to-tile nets, and it instantiates the 12 routed tile netlists in `gl/tile_*.v.gz`. The cell models are in the ICS55 PDK at `IP/STD_cell/ics55_LLSC_H7C_V1p10C100/ics55_LLSC_H7C{R,L,H}/verilog/`.
+`gl/top_full.v.gz` is `eFPGA_top` written from the routed filler DEF. It is the only netlist that carries all 32,404 tile-to-tile nets, and it instantiates the 12 routed tile netlists in `gl/tile_*.v.gz`. The cell models are in the ICS55 PDK at `IP/STD_cell/ics55_LLSC_H7C_V1p10C100/ics55_LLSC_H7C{R,L,H}/verilog/` and the pad model at `IP/IO/ICsprout_55LLULP1233_IO_251013/verilog/icsIOA_N55_3P3.v`.
 
-Two pieces are missing before the testbench can drive it. `top_full.v` declares its 43 ports as scalars (`A_EN_top_0` and so on), so the vector ports the testbench connects need a wrapper. The configuration latches power up X, so `gl/gen_gl_xinit.py --pdk ics55` has to generate a `force_block.vh` that the testbench includes under `-DGL_SIM`. A zero-delay run (`-Dfunctional`) is the intended first step, since full-chip timing is covered by `sta/`. The run length is unknown; the RTL run spans 524,531 `CLK` cycles, almost all of them the SPI load.
+`task run-gl-chip VARIANT=nobram GL_PDK_ROOT=<pdk> GL_BITSTREAM_HEX=<hex>`, run from the repository's `Test/`, simulates these netlists inside `chip/top.v` with zero-delay cells (`-Dfunctional`). `task run-gl-top` simulates the bare macro. `Test/gen_gl_top.py` writes the wrapper. It maps the 42 scalar netlist ports back to the RTL vectors and onto the pads of `top.v`, and once `Configured` rises it forces each logic cell whose loaded configuration is constant to that constant. Section 5.3 of the report gives the reason and what the force masks. Each run takes about 4.5 minutes and passes 123 of 123 compares.
 
 ## Rebuilding this directory
 

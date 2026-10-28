@@ -10,11 +10,11 @@ The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells,
 |---|---|
 | `images/` | Report figures and their `.drawio` sources. The waveform and floorplan figures are GTKWave and KLayout captures made by `capture/` |
 | `rtl/` | The 52 source files of `eFPGA_top`; `rtl/filelist.f` lists them relative to this directory. `rtl/config/` holds the grid, dies, pin orders and ECC settings. |
-| `sim/` | The counter test design and testbench, its prebuilt bitstream, the passing simulation log, and the nextpnr model and bitstream specification (`fabulous_model/`, gzipped) |
+| `sim/` | The counter test design and testbench, its prebuilt bitstream, the passing RTL and gate-level simulation logs, and the nextpnr model and bitstream specification (`fabulous_model/`, gzipped) |
 | `physical/` | `eFPGA_top` and per-tile DEF, netlist, GDS, SPEF at nine RC corners, LEF and Liberty, and `fabric_plan.json` |
 | `signoff/` | For `eFPGA_top` and each tile type, the ECC DRC count (`drc.json`) and per-layer table (`drc.csv`), the iLVS report (`lvs.rpt`) and the iSTA reports of every corner (`sta/<library corner>_<RC corner>/`) |
 | `sta/` | Full-chip OpenSTA scripts, per-corner reports and `summary.txt` |
-| `gl/` | Gate-level netlists, the inputs of the report's gate-level simulation, and the older X-initialisation generator `gen_gl_xinit.py`, which that simulation does not use |
+| `gl/` | Gate-level netlists, the inputs of the report's gate-level simulation, its wrapper generator `gen_gl_top.py`, and the older X-initialisation generator `gen_gl_xinit.py`, which that simulation does not use |
 | `chip/` | The pad-ring netlist `top.v` and `top.sdc`, the extracted `eFPGA_top` timing model and the chip-level STA log |
 
 Every GDS here holds standard cells and tile macros as LEF abstracts, so none of them is a mask-ready layout.
@@ -51,7 +51,7 @@ A clock has to reach the fabric through a `GBUF`, so a design instantiates one o
 
 `gl/top_full.v.gz` is `eFPGA_top` written from the routed filler DEF. It is the only netlist that carries all 32,404 tile-to-tile nets, and it instantiates the 12 routed tile netlists in `gl/tile_*.v.gz`. The cell models are in the ICS55 PDK at `IP/STD_cell/ics55_LLSC_H7C_V1p10C100/ics55_LLSC_H7C{R,L,H}/verilog/` and the pad model at `IP/IO/ICsprout_55LLULP1233_IO_251013/verilog/icsIOA_N55_3P3.v`.
 
-`task run-gl-chip VARIANT=nobram GL_PDK_ROOT=<pdk> GL_BITSTREAM_HEX=<hex>`, run from the repository's `Test/`, simulates these netlists inside `chip/top.v` with zero-delay cells (`-Dfunctional`). `task run-gl-top` simulates the bare macro. `Test/gen_gl_top.py` writes the wrapper. It maps the 42 scalar netlist ports back to the RTL vectors and onto the pads of `top.v`, and once `Configured` rises it forces each logic cell whose loaded configuration is constant to that constant. Section 5.3 of the report gives the reason and what the force masks. Each run takes about 4.5 minutes and passes 123 of 123 compares.
+`task run-gl-chip VARIANT=nobram GL_PDK_ROOT=<pdk> GL_BITSTREAM_HEX=<hex>`, run from the repository's `Test/`, simulates these netlists inside `chip/top.v` with zero-delay cells (`-Dfunctional`). `task run-gl-top` simulates the bare macro. `gen_gl_top.py`, copied here from `Test/`, writes the wrapper. It maps the 42 scalar netlist ports back to the RTL vectors and onto the pads of `top.v`, and once `Configured` rises it forces each logic cell whose loaded configuration is constant to that constant. Section 5.3 of the report gives the reason and what the force masks. Each run takes about 4.5 minutes and passes 123 of 123 compares, as `sim/results/gl_chip_sim.log` and `gl_top_sim.log` show.
 
 ## Rebuilding this directory
 

@@ -23,8 +23,15 @@ module sequential_16bit_en_tb ();
 
     assign A_OUT_top = pad_in;
 
+    wire [9:0] A_IN_top_gold, oeb_gold, A_EN_top_gold;
+
     // Instantiate both the fabric and the reference DUT
-`ifdef GL_TOP
+`ifdef GL_CHIP
+    // Every signal crosses a pad of submission/chip/top.v. The tester drives
+    // only the user pins the reference design reads.
+    eFPGA_chip_gl top_i (
+        .A_OUT_top_drive    (oeb_gold         ),
+`elsif GL_TOP
     // The hardened netlist's ports are per bit; Test/gen_gl_top.py's wrapper restores the vectors.
     eFPGA_top_gl top_i (
 `else
@@ -49,7 +56,6 @@ module sequential_16bit_en_tb ();
     );
 
 
-    wire [9:0] A_IN_top_gold, oeb_gold, A_EN_top_gold;
     sequential_16bit_en dut_i (
         .clk   (CLK          ),
         .user_reset(user_reset),
@@ -177,6 +183,14 @@ module sequential_16bit_en_tb ();
         end
 `endif
         config_done = 1'b1;  // configuration upload complete -> trigger GL X-init
+`ifdef GL_TOP
+        // Gate-level flops power up X, and the gate-level LUT does not mask X the
+        // way the design's synchronous reset needs, so clear them through
+        // USER_RESET (GBUF and GSR) first, as a bring-up would.
+        user_reset = 1'b1;
+        repeat (2) @(posedge CLK);
+        user_reset = 1'b0;
+`endif
         repeat (100) @(posedge CLK);
         // Pads change on the falling edge so the gold and the fabric (whose
         // clock arrives through the GBUF) sample the same value.

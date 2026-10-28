@@ -152,7 +152,8 @@ def collect_sim() -> None:
             copy(f, out / "user_design" / f.name)
     for ext in ("bin", "hex", "fasm"):
         copy(SIM_BUILD / f"sequential_16bit_en.{ext}", out / "bitstream" / f"sequential_16bit_en.{ext}")
-    copy(SIM_BUILD / "bitstream_sim.log", out / "results" / "bitstream_sim.log")
+    for log in ("bitstream_sim.log", "gl_chip_sim.log", "gl_top_sim.log"):
+        copy(SIM_BUILD / log, out / "results" / log)
     model = VARIANT / ".FABulous"
     for name in ("pips.txt", "bel.txt", "bel.v2.txt", "bel.v3.txt", "bitStreamSpec.bin"):
         copy_gz(model / name, out / "fabulous_model")
@@ -225,7 +226,8 @@ def collect_gl() -> None:
     copy_gz(FULLSTA / "top_full.v", out)
     for f in sorted(FULLSTA.glob("tile_*.v")):
         copy_gz(f, out)
-    copy(ROOT / "Test" / "gen_gl_xinit.py", out / "gen_gl_xinit.py")
+    for script in ("gen_gl_top.py", "gen_gl_xinit.py"):
+        copy(ROOT / "Test" / script, out / script)
 
 
 def collect_chip() -> None:

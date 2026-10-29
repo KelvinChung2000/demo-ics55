@@ -233,6 +233,75 @@ tasks:
         vars:
           GL_CHIP_TOP: '{{.GL_CHIP_TOP | default "../chip/top.v"}}'
 
+  run-timing-sim:
+    desc: Post-route SDF timing simulation of the user design on a characterised timing model, one run per TIMING_PERIODS entry
+    # TIMING_MODEL holds the pips.txt, bel.v3.txt and placement_estimate.txt the
+    # FABulous timing model (FABulous PR #982) produces; the submission does not carry them.
+    # Only hausdinge/nextpnr reads bel.v3.txt and writes per-pip delays into the SDF.
+    deps: [mkdir-build, fabulous-model]
+    preconditions:
+      - sh: 'test -f "{{.TIMING_MODEL}}/pips.txt" && test -f "{{.TIMING_MODEL}}/bel.v3.txt" && test -f "{{.TIMING_MODEL}}/placement_estimate.txt"'
+        msg: 'TIMING_MODEL ("{{.TIMING_MODEL}}") lacks pips.txt, bel.v3.txt or placement_estimate.txt; pass TIMING_MODEL=<timing model dir>'
+      - sh: 'grep -q "^pipDelayScale=" "{{.TIMING_MODEL}}/placement_estimate.txt"'
+        msg: 'TIMING_MODEL/placement_estimate.txt sets no pipDelayScale, and nextpnr would scale the pips by its 0.05 default'
+      - sh: 'grep -q bel.v3.txt "$(command -v {{.NEXTPNR_PATH}})"'
+        msg: 'NEXTPNR_PATH ("{{.NEXTPNR_PATH}}") does not read bel.v3.txt; pass NEXTPNR_PATH=<hausdinge/nextpnr nextpnr-generic>'
+      - sh: 'test -f "{{.BUILD_DIR}}/{{.DESIGN}}.json"'
+        msg: '{{.BUILD_DIR}}/{{.DESIGN}}.json is missing; run task run-yosys first'
+      - sh: 'test -n "{{.TIMING_PERIODS}}"'
+        msg: 'TIMING_PERIODS is empty; pass clock periods in ps, e.g. TIMING_PERIODS="8200 8100"'
+    vars:
+      TIMING_MODEL: '{{.TIMING_MODEL | default ""}}'
+      TIMING_PERIODS: '{{.TIMING_PERIODS | default ""}}'
+      # gen_refs.py times the testbench checks off the CLK pin of the flop driving this net.
+      TIMING_REF_NET: '{{.TIMING_REF_NET | default "io_out[2]"}}'
+      TIMING_TESTBENCH: "{{.DESIGN}}_timing_tb"
+      TIMING_BUILD_DIR: '{{.TIMING_BUILD_DIR | default (printf "%s/timing" .BUILD_DIR)}}'
+      YOSYS_PATH: '{{.YOSYS_PATH | default .FAB_YOSYS_PATH | default "yosys"}}'
+      NEXTPNR_PATH: '{{.NEXTPNR_PATH | default .FAB_NEXTPNR_PATH | default "nextpnr-generic"}}'
+    cmds:
+      - rm -rf {{.TIMING_BUILD_DIR}}/fabroot
+      - mkdir -p {{.TIMING_BUILD_DIR}}/fabroot
+      - cp -r {{.FAB_PROJ_ROOT}}/.FABulous {{.TIMING_BUILD_DIR}}/fabroot/.FABulous
+      - cp {{.TIMING_MODEL}}/pips.txt {{.TIMING_MODEL}}/bel.v3.txt {{.TIMING_MODEL}}/placement_estimate.txt {{.TIMING_BUILD_DIR}}/fabroot/.FABulous/
+      # Icarus's SDF reader rejects nextpnr's escaped $abc cell names.
+      - >-
+        {{.YOSYS_PATH}} -q -p "read_json {{.BUILD_DIR}}/{{.DESIGN}}.json;
+        rename -enumerate -pattern c%_ t:*;
+        write_json {{.TIMING_BUILD_DIR}}/design.json"
+      - >-
+        FAB_ROOT={{.TIMING_BUILD_DIR}}/fabroot {{.NEXTPNR_PATH}}
+        --uarch fabulous
+        --json {{.TIMING_BUILD_DIR}}/design.json
+        -o fasm={{.TIMING_BUILD_DIR}}/design.fasm
+        --write {{.TIMING_BUILD_DIR}}/routed.json
+        --sdf {{.TIMING_BUILD_DIR}}/design.sdf
+        --report {{.TIMING_BUILD_DIR}}/report.json
+        --log {{.TIMING_BUILD_DIR}}/nextpnr.log
+        > /dev/null
+      - grep "Max frequency" {{.TIMING_BUILD_DIR}}/nextpnr.log | tail -1
+      # -norename keeps the cell names the SDF was written against.
+      - '{{.YOSYS_PATH}} -q -p "read_json {{.TIMING_BUILD_DIR}}/routed.json; write_verilog -noattr -norename {{.TIMING_BUILD_DIR}}/gl.v"'
+      - python3 timing/gen_refs.py {{.TIMING_BUILD_DIR}}/routed.json '{{.TIMING_REF_NET}}' {{.TIMING_BUILD_DIR}}/refs.vh
+      # Every period runs; the task fails after the last if any failed.
+      - >-
+        failed="";
+        for period in {{.TIMING_PERIODS}}; do
+        iverilog -g2012 -gspecify -ginterconnect
+        {{.EXTRA_IVERILOG_FLAGS}}
+        -I {{.TIMING_BUILD_DIR}}
+        -s {{.TIMING_TESTBENCH}}
+        -P{{.TIMING_TESTBENCH}}.SDF=\"{{.TIMING_BUILD_DIR}}/design.sdf\"
+        -P{{.TIMING_TESTBENCH}}.PERIOD=$period
+        -o {{.TIMING_BUILD_DIR}}/sim_$period.vvp
+        {{.USER_DESIGN_DIR}}/{{.TIMING_TESTBENCH}}.v timing/cells.v {{.TIMING_BUILD_DIR}}/gl.v
+        || exit 1;
+        vvp -n {{.TIMING_BUILD_DIR}}/sim_$period.vvp {{.VVP_ARGS}} > {{.TIMING_BUILD_DIR}}/sim_$period.log 2>&1
+        || failed="$failed $period";
+        grep -h "^PERIOD\|clock-to-pad\|^PASS\|FAIL" {{.TIMING_BUILD_DIR}}/sim_$period.log;
+        done;
+        test -z "$failed" || { echo "Failed at period(s)$failed ps; logs in {{.TIMING_BUILD_DIR}}/sim_<period>.log"; exit 1; }
+
   gtkwave:
     desc: Open waveform in GTKWave
     cmds:

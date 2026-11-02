@@ -1,4 +1,4 @@
-// Written by flow/topwrap.py from fabrics/bram/Fabric/eFPGA.v; regenerate with `flow gen-top`.
+// Written by flow/topwrap.py from the fabric project's Fabric/eFPGA.v; regenerate with `flow gen-top`.
 `default_nettype none
 
 module eFPGA_top (

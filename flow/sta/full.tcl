@@ -1,6 +1,6 @@
 # Full-chip STA of eFPGA_top: hierarchical tile netlists with per-instance SPEF.
 # Run by run.sh in <build>/fullsta after prepare.sh. The GBUF and CLK_INV pins
-# are the nobram fabric's.
+# are this fabric's.
 # env: PDK, LIBC (liberty corner), RC (SPEF corner), PERIOD (config clock ns),
 #      CLKINV (MACC CLK_INV bit), HOLD_UNC (hold uncertainty ns), TAG
 set L $::env(PDK)/IP/STD_cell/ics55_LLSC_H7C_V1p10C100

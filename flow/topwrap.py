@@ -179,7 +179,7 @@ def render(fabric: Fabric, text: str, source: str, netlist: Netlist | None = Non
         )
     ]
     body = _rtl_body(text) if netlist is None else _hard_body(text, netlist, frame_bits, frames)
-    return f"""// Written by flow/topwrap.py from {source}; regenerate with `flow gen-top`.
+    return f"""// Written by flow/topwrap.py from the fabric project's Fabric/eFPGA.v; regenerate with `flow gen-top`.
 `default_nettype none
 
 module eFPGA_top (

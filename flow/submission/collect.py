@@ -8,27 +8,33 @@ report, images/, the README and the rest of test/ are hand-written and are left
 alone; test/user_design is the design's only copy, which fabrics/nobram links to.
 The bitstream and logs come from the harness's own runs in test/build.
 
+FABulous and Yosys write absolute source paths into eFPGA_geometry.csv and the
+primitive JSON models. The copies in fabric/ name them from the directory that
+holds Tile/, so they resolve inside fabric/ and carry no checkout path.
+
 The RTL set is the module closure of `eFPGA_top` as Yosys `hierarchy` resolves
-it, so primitives the variant does not instantiate (the ICS55 SRAM with its
+it, so primitives the fabric does not instantiate (the ICS55 SRAM with its
 vendor model among them) never enter the appendix. fabric/ is the FABulous
 project of the fabric with its symlinks resolved, holding the grid's tiles and
 only the primitives that closure reaches, so it survives a zip.
 
-    python3 submission/collect.py
+    python3 flow/submission/collect.py
 """
 
 import csv
 import gzip
+import io
 import json
 import shutil
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
+from collections.abc import Iterator
+from pathlib import Path, PurePosixPath
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 OUT = ROOT / "submission"
-VARIANT = ROOT / "fabrics" / "nobram"
+FABRIC = ROOT / "fabrics" / "nobram"
 BUILD = ROOT / "build" / "nobram"
 TOP = BUILD / "top" / "default"
 FULLSTA = BUILD / "fullsta"
@@ -73,7 +79,7 @@ def grid_tiles() -> list[str]:
     """Tile types named in fabric.csv between FabricBegin and FabricEnd."""
     names: set[str] = set()
     inside = False
-    with need(VARIANT / "fabric.csv").open() as f:
+    with need(FABRIC / "fabric.csv").open() as f:
         for row in csv.reader(f):
             head = row[0].strip() if row else ""
             if head == "FabricBegin":
@@ -100,7 +106,7 @@ def rtl_closure(tile_dirs: list[Path]) -> list[Path]:
     """Source files of every module eFPGA_top reaches, from Yosys hierarchy."""
     candidates = sorted(
         {*(ROOT / "Fabric").glob("*.v"), *(ROOT / "Fabric").glob("*.sv"),
-         *(VARIANT / "Fabric").glob("*.v"), *(ROOT / "primitives").glob("*/fabulous/*.v"),
+         *(FABRIC / "Fabric").glob("*.v"), *(ROOT / "primitives").glob("*/fabulous/*.v"),
          *(f for d in tile_dirs for f in d.rglob("*.v"))}
     )
     with tempfile.TemporaryDirectory() as tmp:
@@ -139,8 +145,8 @@ def collect_rtl(tiles: list[str]) -> list[Path]:
     out = OUT / "rtl"
     listed: list[str] = []
     for f in files:
-        rel = f.relative_to(VARIANT / "Fabric") if f.is_relative_to(VARIANT / "Fabric") else f.relative_to(ROOT)
-        dst = out / ("eFPGA" / rel if f.is_relative_to(VARIANT / "Fabric") else rel)
+        rel = f.relative_to(FABRIC / "Fabric") if f.is_relative_to(FABRIC / "Fabric") else f.relative_to(ROOT)
+        dst = out / ("eFPGA" / rel if f.is_relative_to(FABRIC / "Fabric") else rel)
         copy(f, dst)
         listed.append(str(dst.relative_to(OUT)))
     (out / "filelist.f").write_text("\n".join(listed) + "\n")
@@ -148,7 +154,7 @@ def collect_rtl(tiles: list[str]) -> list[Path]:
         for name in ("io_pin_order.yaml", "ecc_config.toml"):
             copy(d / name, out / "config" / d.name / name)
     for f in ("fabric.csv", "dies.toml"):
-        copy(VARIANT / f, out / "config" / f)
+        copy(FABRIC / f, out / "config" / f)
     copy(ROOT / "Fabric" / "ecc_config.toml", out / "config" / "Fabric_ecc_config.toml")
     copy(ROOT / "Tile" / "include" / "ecc_config.toml", out / "config" / "Tile_include_ecc_config.toml")
     return files
@@ -157,8 +163,8 @@ def collect_rtl(tiles: list[str]) -> list[Path]:
 def collect_fabric(tiles: list[str], rtl: list[Path]) -> None:
     out = OUT / "fabric"
     for name in ("fabric.csv", "dies.toml", "eFPGA_geometry.csv"):
-        copy(VARIANT / name, out / name)
-    for f in sorted((VARIANT / "Fabric").glob("*.v")):
+        copy(FABRIC / name, out / name)
+    for f in sorted((FABRIC / "Fabric").glob("*.v")):
         copy(f, out / "Fabric" / f.name)
     # Tile CSVs name Tile/common and primitives/ by relative path, so both keep
     # their place beside Tile/<type>; Tile/include is the ECC defaults layer.
@@ -172,6 +178,49 @@ def collect_fabric(tiles: list[str], rtl: list[Path]) -> None:
     for d in dirs:
         for f in sorted(p for p in d.rglob("*") if p.is_file()):
             copy(f, out / f.relative_to(ROOT))
+    relativise_fabric(out)
+
+
+def project_prefix(path: str) -> str | None:
+    """The absolute directory above Tile/ in path, or None for a relative path."""
+    parts = PurePosixPath(path).parts
+    if parts[0] != "/":
+        return None
+    if "Tile" not in parts:
+        raise ValueError(f"{path} is absolute but names no Tile/ directory")
+    return str(PurePosixPath(*parts[: parts.index("Tile")])) + "/"
+
+
+def json_srcs(node: object) -> Iterator[str]:
+    """Every path in the Yosys `src` attributes under node, without line ranges."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            if key == "src" and isinstance(value, str):
+                yield from (s.rsplit(":", 1)[0] for s in value.split("|"))
+            else:
+                yield from json_srcs(value)
+    elif isinstance(node, list):
+        for value in node:
+            yield from json_srcs(value)
+
+
+def strip_prefixes(path: Path, sources: Iterator[str]) -> None:
+    """Rewrite path's text with every absolute project prefix in sources removed."""
+    # newline="" keeps FABulous's CRLF line ends.
+    with path.open(newline="") as f:
+        text = f.read()
+    for prefix in {p for s in sources if (p := project_prefix(s)) is not None}:
+        text = text.replace(prefix, "")
+    with path.open("w", newline="") as f:
+        f.write(text)
+
+
+def relativise_fabric(out: Path) -> None:
+    geometry = out / "eFPGA_geometry.csv"
+    rows = csv.reader(io.StringIO(geometry.read_text()))
+    strip_prefixes(geometry, (row[1] for row in rows if row and row[0] in ("Src", "Csv")))
+    for model in sorted((out / "primitives").glob("*/fabulous/*.json")):
+        strip_prefixes(model, json_srcs(json.loads(model.read_text())))
 
 
 def collect_test() -> None:
@@ -179,7 +228,7 @@ def collect_test() -> None:
         copy(SIM_BUILD / f"sequential_16bit_en.{ext}", TEST / "bitstream" / f"sequential_16bit_en.{ext}")
     for log in ("bitstream_sim.log", "gl_chip_sim.log", "gl_top_sim.log"):
         copy(SIM_BUILD / log, TEST / "results" / log)
-    model = VARIANT / ".FABulous"
+    model = FABRIC / ".FABulous"
     for name in ("pips.txt", "bel.txt", "bel.v2.txt", "bel.v3.txt", "bitStreamSpec.bin"):
         copy_gz(model / name, TEST / "fabulous_model")
 

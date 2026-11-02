@@ -1,6 +1,6 @@
 """Rerun the cocotb config_frontend test_stream/port=SPI case with waves on.
 
-    uv run --with 'cocotb>=2' --with pytest python submission/capture/sim_spi.py
+    uv run --with 'cocotb>=2' --with pytest python flow/submission/capture/sim_spi.py
 
 Icarus under cocotb writes FST; fst2vcd turns it into build/figures/spi/config_frontend.vcd.
 """
@@ -11,7 +11,7 @@ from pathlib import Path
 
 from cocotb_tools.runner import get_runner
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 TB = ROOT / "submission" / "test" / "config"
 OUT = ROOT / "build" / "figures" / "spi"
 sys.path.insert(0, str(TB))

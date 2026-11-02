@@ -1,0 +1,166 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# https://taskfile.dev
+#
+# The paddle_ball demo, run from this directory. run-rtl, run-rtl-verilator and
+# live simulate the design alone. build takes paddle_ball_pcf through the
+# bitstream flow of ../../test, and run-fabric loads a bitstream into the
+# eFPGA_top RTL and compares its pads with the design simulated directly.
+# Override any variable via CLI: task run-rtl-verilator FRAMES=1200 STRIDE=4
+version: "3"
+
+includes:
+  test:
+    taskfile: ../../test/Taskfile.yml
+    dir: ../../test
+    internal: true
+
+vars:
+  # The test tasks run in ../../test, so paths handed to them start from there.
+  FROM_TEST: ../demo/paddle_ball
+  OUT: build
+  RTL_FILES: paddle_ball.v macc_model.v vga_monitor.v paddle_ball_rtl_tb.v
+  VERILATOR_OBJ: "{{.OUT}}/verilator/obj"
+  # 600 frames (10 s of play) score on both sides; every 8th makes 75 frames.
+  FRAMES: '{{.FRAMES | default "600"}}'
+  STRIDE: '{{.STRIDE | default "8"}}'
+  SHEET_TILES: '{{.SHEET_TILES | default "4x3"}}'
+  # 36000 frames is 10 min of play at 60 Hz.
+  LIVE_FRAMES: '{{.LIVE_FRAMES | default "36000"}}'
+  # The shipped bitstream. build writes build/fabric/paddle_ball.hex; pass
+  # BITSTREAM=build/fabric/paddle_ball.hex to simulate that instead.
+  BITSTREAM: '{{.BITSTREAM | default "bitstream/paddle_ball.hex"}}'
+  # Icarus runs the fabric at about 200 cycles/s: the SPI load and 2 frames take an hour.
+  FABRIC_FRAMES: '{{.FABRIC_FRAMES | default "2"}}'
+  SIM_ARGS: '{{.SIM_ARGS | default ""}}'
+
+tasks:
+  run-rtl:
+    desc: Icarus RTL simulation of paddle_ball alone for FRAMES frames; VGA frames, GIF and contact sheet in build/rtl
+    vars:
+      DIR: "{{.OUT}}/rtl"
+    cmds:
+      - rm -rf {{.DIR}}/frames && mkdir -p {{.DIR}}/frames
+      - iverilog -g2012 -s paddle_ball_rtl_tb -o {{.DIR}}/paddle_ball_rtl.vvp {{.RTL_FILES}}
+      - >-
+        set -o pipefail;
+        vvp -n {{.DIR}}/paddle_ball_rtl.vvp
+        +frames={{.FRAMES}}
+        +frame_stride={{.STRIDE}}
+        +out_dir={{.DIR}}/frames
+        {{.SIM_ARGS}}
+        | tee {{.DIR}}/sim.log
+      - task: media
+        vars: { DIR: "{{.DIR}}" }
+
+  run-rtl-verilator:
+    desc: Verilator RTL simulation of paddle_ball alone, about 45x faster than Icarus; outputs as run-rtl, in build/verilator
+    deps: [build-verilator]
+    vars:
+      DIR: "{{.OUT}}/verilator"
+    cmds:
+      - rm -rf {{.DIR}}/frames && mkdir -p {{.DIR}}/frames
+      - >-
+        set -o pipefail;
+        {{.VERILATOR_OBJ}}/Vpaddle_ball_rtl_tb
+        +frames={{.FRAMES}}
+        +frame_stride={{.STRIDE}}
+        +out_dir={{.DIR}}/frames
+        {{.SIM_ARGS}}
+        | tee {{.DIR}}/sim.log
+      - task: media
+        vars: { DIR: "{{.DIR}}" }
+
+  live:
+    desc: Play the Verilator RTL simulation live in an ffplay window for LIVE_FRAMES frames; view only, the testbench drives the buttons
+    deps: [build-verilator]
+    cmds:
+      - bash live_view.sh {{.VERILATOR_OBJ}}/Vpaddle_ball_rtl_tb {{.OUT}}/live {{.LIVE_FRAMES}}
+
+  build:
+    desc: Synthesise, place and route paddle_ball_pcf at its 6.29375 MHz pixel clock, pads from paddle_ball.pcf; bitstream in build/fabric
+    cmds:
+      - mkdir -p {{.OUT}}/fabric
+      - task: test:run-yosys
+        vars:
+          DESIGN: paddle_ball
+          BUILD_DIR: "{{.FROM_TEST}}/{{.OUT}}/fabric"
+          TOP_WRAPPER: paddle_ball_pcf
+          TOP_WRAPPER_FILE: "{{.FROM_TEST}}/paddle_ball_pcf.v"
+          DESIGN_FILES: "{{.FROM_TEST}}/paddle_ball.v"
+          SYNTH_EXTRA_ARGS: -extra-map user_design/iobuf_map.v
+      - task: test:run-nextpnr
+        vars:
+          DESIGN: paddle_ball
+          BUILD_DIR: "{{.FROM_TEST}}/{{.OUT}}/fabric"
+          NEXTPNR_EXTRA_ARGS: "-o pcf={{.FROM_TEST}}/paddle_ball.pcf --freq 6.29375"
+          LOG_FILE: "{{.FROM_TEST}}/{{.OUT}}/fabric/nextpnr.log"
+      - task: test:run-bitgen
+        vars:
+          DESIGN: paddle_ball
+          BUILD_DIR: "{{.FROM_TEST}}/{{.OUT}}/fabric"
+
+  run-fabric:
+    desc: Load BITSTREAM into the eFPGA_top RTL over SPI, then compare all ten pads with the RTL design every cycle for FABRIC_FRAMES frames; log and frames in FABRIC_SIM_DIR, default build/fabric_sim
+    vars:
+      DIR: '{{.FABRIC_SIM_DIR | default (printf "%s/fabric_sim" .OUT)}}'
+    preconditions:
+      - sh: 'test -f "{{.BITSTREAM}}"'
+        msg: 'BITSTREAM ("{{.BITSTREAM}}") is no file; run build and pass BITSTREAM=build/fabric/paddle_ball.hex'
+    cmds:
+      - rm -rf {{.DIR}}/frames && mkdir -p {{.DIR}}/frames
+      # ../../rtl/filelist.f names files relative to the submission root.
+      - awk 'NF {print "../../" $0}' ../../rtl/filelist.f > {{.DIR}}/rtl.f
+      # The fabric RTL defines the real MACC_8x8_20, so the reference design's model takes another name.
+      - sed 's/\bMACC_8x8_20\b/MACC_8x8_20_gold/g' paddle_ball.v macc_model.v > {{.DIR}}/gold.v
+      - >-
+        iverilog -g2012
+        -s paddle_ball_fabric_tb
+        -o {{.DIR}}/paddle_ball_fabric.vvp
+        -c {{.DIR}}/rtl.f
+        {{.DIR}}/gold.v
+        vga_monitor.v
+        paddle_ball_fabric_tb.v
+      - >-
+        set -o pipefail;
+        vvp -n {{.DIR}}/paddle_ball_fabric.vvp
+        +bitstream_hex={{.BITSTREAM}}
+        +frames={{.FABRIC_FRAMES}}
+        +frame_stride=1
+        +out_dir={{.DIR}}/frames
+        {{.SIM_ARGS}}
+        | tee {{.DIR}}/fabric_sim.log
+
+  build-verilator:
+    internal: true
+    sources: ["*.v"]
+    generates: ["{{.VERILATOR_OBJ}}/Vpaddle_ball_rtl_tb"]
+    # The sandbox cannot write ccache's cache under $HOME, and Verilator's make fails on it.
+    env:
+      CCACHE_DISABLE: "1"
+    cmds:
+      - mkdir -p {{.VERILATOR_OBJ}}
+      - >-
+        verilator --binary --timing -j 0 -Wno-fatal
+        --top-module paddle_ball_rtl_tb
+        -Mdir {{.VERILATOR_OBJ}}
+        {{.RTL_FILES}}
+
+  media:
+    internal: true
+    cmds:
+      # The GIF plays at game speed: 60 Hz over the stride.
+      - >-
+        ffmpeg -y -loglevel error
+        -framerate 60/{{.STRIDE}} -pattern_type glob -i '{{.DIR}}/frames/frame_*.ppm'
+        -vf 'scale=640:480:flags=neighbor,split[a][b];[a]palettegen[p];[b][p]paletteuse'
+        {{.DIR}}/paddle_ball.gif
+      - >-
+        n=$(ls {{.DIR}}/frames | wc -l);
+        tiles=$(( {{replace "x" " * " .SHEET_TILES}} ));
+        every=$(( n / tiles ));
+        if [ "$every" -lt 1 ]; then
+        echo "ERROR: $n frames cannot fill a {{.SHEET_TILES}} contact sheet; raise FRAMES or lower STRIDE" >&2; exit 1; fi;
+        ffmpeg -y -loglevel error
+        -pattern_type glob -i '{{.DIR}}/frames/frame_*.ppm'
+        -vf "select='not(mod(n,$every))',scale=640:480:flags=neighbor,tile={{.SHEET_TILES}}:padding=8:color=gray"
+        -frames:v 1 {{.DIR}}/contact_sheet.png

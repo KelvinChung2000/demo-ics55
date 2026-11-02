@@ -30,6 +30,8 @@ The design is a FABulous eFPGA. Its array `eFPGA` abuts 151 hard tiles of 12 typ
 
 ECC hardens each tile type once to a routed macro. Abutment connects the 31,760 tile-to-tile nets through coincident pins, so the `eFPGA_top` run routes only the 3,442 nets of the controller, IO and configuration buses. An RTL bitstream simulation runs a counter on the fabric. A zero-delay gate-level simulation of the hardened netlists repeats it from the chip pads (Section 5.3). A chip-level netlist joins `eFPGA_top` to 22 `P65_1233_PBMUX` pads, with an SDC that times the configuration ports through them (Section 2.3).
 
+A demonstration design, the two-player VGA game `paddle_ball`, places 651 of 800 `FABULOUS_LC`, all 5 `MACC_8x8_20`, all 10 `IOBUF` and 2 of 4 `GBUF`. Its bitstream, loaded over SPI into the `eFPGA_top` RTL, drives all ten pads identically to the design simulated directly on every cycle checked (Section 5.3).
+
 ### 1.2 Main Features
 
 | Feature | Description | Implemented in this tapeout? |
@@ -179,6 +181,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 | Seam connectivity | all declared links meet | 31,760 of 31,760 links over 282 seams | Plan check on the fabric plan; the `eFPGA_top` DEF holds the same 31,760 nets (Section 7) |
 | Configuration reaches every row | all 12 rows | 384 of 384 `FrameData` and 260 of 260 `FrameStrobe` bits routed | Routed DEF. Simulation shows rows 1 to 8 and 11 configured (Section 5.3). No simulated design observes row 0. |
 | User design on the fabric | runs a test design | 123 of 123 compares match on all 10 IO bits, 23 of them after a `USER_RESET` pulse | Section 5.3 |
+| Demonstration design on the fabric | uses every block type | 651 of 800 `FABULOUS_LC`, 5 of 5 `MACC_8x8_20`, 10 of 10 `IOBUF`, 2 of 4 `GBUF`; 308,404 of 308,404 compares match on all 10 pads over 2 VGA frames | nextpnr utilisation; RTL bitstream simulation (Section 5.3) |
 
 ### 3.2 Performance, Resource, and Power Metrics
 
@@ -246,7 +249,7 @@ Another project can take the hardened `eFPGA_top`, the abutted `eFPGA` array wit
 | I/O pin-placement file | When applicable | Each tile's `io_pin_order.yaml` for edge order; `fabric_plan.json` for coordinates |
 | PDN configuration | When applicable | The fabric-level `ecc_config.toml`; the flow's integration step draws the top's channel and strip PDN |
 | Verification environment | Yes | Section 5.1; testbench `sequential_16bit_en_tb.v`, gate-level wrapper generator `gen_gl_top.py` behind `task run-gl-chip` and `run-gl-top`, cocotb loader tests, full-chip STA and model-extraction scripts |
-| Example project | Recommended | `sequential_16bit_en.v` with its testbench |
+| Example project | Recommended | `sequential_16bit_en.v` with its testbench; the demonstration design `paddle_ball`, a VGA game that uses every block type, with its PCF, bitstream, RTL and fabric testbenches (Section 5.3) |
 | Documentation | Yes | `README.md`, `SPEC.md` |
 | License and third-party inventory | Yes | Section 11.2. The repository has no top-level licence file. |
 
@@ -307,6 +310,7 @@ Changing a tile die, an edge pin order, the signal or PDN layers or the stripe p
 | `eFPGA_top` signoff | ECC | The same checks, after refusing any tile whose LEF pins differ from the netlist ports and fixing all 151 tiles at their planned coordinates |
 | Full-chip STA | OpenSTA, six corners | `eFPGA_top` netlist written from the filler DEF (the only view with the tile-to-tile nets), the 12 tile netlists and per-instance tile SPEF |
 | Bitstream simulation | Yosys `synth_fabulous`, `nextpnr-generic --uarch fabulous`, FABulous `bit_gen`, Icarus Verilog | `sequential_16bit_en` loaded into the `eFPGA_top` RTL over SPI, clocked from `USER_CLK` and cleared from `USER_RESET`, the eight output pads compared against the design simulated directly |
+| Demonstration simulation | Verilator and Icarus Verilog, `vga_monitor.v`; the bitstream flow above with `iobuf_map.v` and a PCF | `paddle_ball` alone at RTL, then its bitstream loaded into the `eFPGA_top` RTL over SPI beside the design simulated directly, all ten pads compared every cycle. A VGA monitor on the five video pins checks the line and frame timing and rebuilds each frame |
 | Gate-level bitstream simulation | Icarus Verilog with the ICS55 cell and `P65_1233_PBMUX` models, `-Dfunctional`, wrapper from `gen_gl_top.py` | The same bitstream and compares on the routed tile and `eFPGA_top` netlists inside the chip-level `top.v`, driven and read only at the pads |
 | Loader tests | cocotb on Icarus, `test_config_frontend.py` | A bitstream through each of the UART, bitbang, SPI and parallel loaders of `config_frontend` arrives in order, the last two being the paths `eFPGA_top` ties off. A 7-bit SPI fragment yields no word. |
 | Chip-level STA | OpenSTA, cross-checked with iSTA, `top.sdc` | `top.v` with the ICS55 IO ss Liberty and the extracted `eFPGA_top` model, `CLK` paths from the input pads to the output pads |
@@ -336,11 +340,20 @@ DRC and LVS are iEDA's checks on LEF abstracts and DEF connectivity. The streame
 | Antenna | 0 | 0 | 0 | Not run; the ECC flow reports no antenna result |
 | Bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | No compare error (2026-10-28). `Configured` rises at 433,436.5 µs, then 100 compares follow configuration and 23 a `USER_RESET` pulse. The design uses 12 of 800 `FABULOUS_LC`, 10 `IOBUF` and 2 `GBUF`, with `USER_CLK` on `GBUF` A and `USER_RESET` on `GBUF` B. `A_EN_top[9:2]` rising as the `E_IO` frames load and the counter running on `GBUF` A show rows 1 to 8 and 11 configured. Log `bitstream_sim.log` in the appendix. |
 | Gate-level bitstream simulation | 1 design, 123 compared cycles | 1 | 0 | Zero-delay `-Dfunctional` run of the hardened netlists inside `top.v` (`task run-gl-chip`, 2026-10-28, about 4 min), driven and read only at the 22 pads. The SPI load matches RTL timing and defines all 69,746 configuration latches. The gate-level LUT turns an X on an unused input into an X on its output, and that X circulates through unused LUTs and default routing that no reset reaches. The wrapper therefore forces the 788 `FABULOUS_LC` whose loaded configuration is constant to that constant, and a `USER_RESET` pulse clears the power-up X of the flip-flops. The force masks a gate-level fault inside an unused LUT, which no equivalence check covers. On a pad the testbench drives, an enabled output shows only as contention. `task run-gl-top` on the bare macro also passes. Logs `gl_chip_sim.log` and `gl_top_sim.log` in the appendix. |
+| Demonstration bitstream simulation | 1 design, 308,404 compared cycles | 1 | 0 | No compare error (`task run-fabric` in `demo/paddle_ball/`, 2026-11-02, 3,510 s). `paddle_ball` is loaded over SPI into the `eFPGA_top` RTL, then all ten pads are compared with the design simulated directly on every cycle of 2 VGA frames, with the buttons released. `USER_CLK` runs at the 6.29375 MHz pixel clock in simulation only, which is no timing result. The VGA monitor rebuilds frames 0 and 1 from the fabric's video pads, and both are byte-identical to the RTL frames. These frames hold the playfield, the score and both paddles but no ball. A 120-frame run of the same bitstream, still running on 2026-11-02, matched all 1,043,404 compares up to the start of frame 9. Its frame 8 shows ball A drawn by the MACC disc test and is byte-identical to RTL frame 8 (Figure 5-3). The first wall hit, paddle hit, button press and point fall in frames 66 to 130 of that run. Log `demo/paddle_ball/results/fabric_sim.log` in the appendix. |
 | cocotb loader tests | 4 loaders | 4 | 0 | 94 s, 2026-10-26 |
 
 ![Key simulation waveform](images/simulation_waveform.png)
 
 **Figure 5-2. User mode at 433,543 to 433,570 µs. `pad_in` goes 0, 3 (reset), 2 (run), `A_IN_top` counts with `A_IN_top_gold`, `count` and `count_gold` give the counter bits 9:2 of each in decimal and `A_EN_top` equals the gold `3FC`.**
+
+![paddle_ball frame 8 from the fabric](images/paddle_ball_fabric_frame.png)
+
+**Figure 5-3. `paddle_ball` frame 8 as the VGA monitor rebuilt it from the video pads of the `eFPGA_top` RTL, scaled to 640 × 480. Ball A waits at the centre to serve and both paddles move from the top towards mid-field, where the AI holds them while no ball is in play. The frame is byte-identical to frame 8 of the design simulated directly.**
+
+![paddle_ball RTL contact sheet](images/paddle_ball_rtl_contact_sheet.png)
+
+**Figure 5-4. `paddle_ball` alone at RTL, frames 0 to 528 at every 48th frame. Both balls are in play and the score rises from 0:0 to 4:1.**
 
 ## 6. Synthesis and Physical Implementation Results
 
@@ -586,6 +599,7 @@ The next revision targets a mask-ready GDS with the pad ring and seal ring, a pa
 - RTL simulation shows `GBUF` A carrying the user clock and `GBUF` B the user reset into `GSR`. A counter clocked through `GBUF` C stays X although nextpnr routes the clock to every flip-flop, for a reason not yet found. `GBUF` B as a clock and `GBUF` D are untested.
 - `A_EN_top` is not gated by `Configured`. The configuration latches have no reset, so before and during configuration any of the 10 IO pads may drive (Section 2.5).
 - Gate-level simulation passes only with the 788 constant logic cells forced, which masks a fault inside an unused LUT. No equivalence check of the tile netlists against RTL exists (Section 5.3). No partial-reconfiguration run exists.
+- `paddle_ball` has run on the fabric only as an untimed RTL simulation of `eFPGA_top`, over 2 frames in the appendix log and 9 frames of a run still going (Section 5.3). No gate-level run of it exists, and its nextpnr maximum frequency rests on placeholder pip delays (Section 5.3).
 - `ComRate` = 217 is mismatched to the 100 MHz `CLK` (Section 2.5).
 - Mask-layer GDS for `SE_term` only, with no cell boundary layer, pad ring or seal ring. The PDK's Calibre decks have not been run and no open deck exists (Sections 5.2 and 7).
 - 10 user IO bits in total, all in column 12.
@@ -621,7 +635,7 @@ The appendix is self-contained. Its RTL is the Yosys module closure of `eFPGA_to
 
 | File/Directory | Revision | Purpose | Submitted? |
 |---|---|---|---|
-| `ECOS_Community_Tapeout_Project_Design_Report.md`, `images/` | v4.0 | Report, figures and `.drawio` sources; Figures 2-3, 2-4, 5-2 and 6-1 are GTKWave and KLayout captures | Yes |
+| `ECOS_Community_Tapeout_Project_Design_Report.md`, `images/` | v4.0 | Report, figures and `.drawio` sources; Figures 2-3, 2-4, 5-2 and 6-1 are GTKWave and KLayout captures, and Figures 5-3 and 5-4 are frames the VGA monitor rebuilt in simulation | Yes |
 | `rtl/` with `rtl/filelist.f` | v4.0 | The 52 source files of `eFPGA_top` in Icarus compile order | Yes |
 | `rtl/config/` | v4.0 | `fabric.csv`, `dies.toml`, per-tile `io_pin_order.yaml` and `ecc_config.toml` | Yes |
 | `fabric/` | v4.0 | FABulous project of the fabric with the 12 tile types, `Tile/common`, `Tile/include` and the six instantiated primitives, symlinks resolved | Yes |
@@ -633,6 +647,7 @@ The appendix is self-contained. Its RTL is the Yosys module closure of `eFPGA_to
 | `gl/` | v4.0 | `top_full.v` with all seam nets and the 12 tile netlists, the inputs of the gate-level simulation of Section 5.3 | Yes |
 | `chip/` | v4.0 | `top.v` and `top.sdc`, the extracted `eFPGA_top` model `etm/eFPGA_top_ss_125_Cworst.lib` and the chip-level STA log of Section 6.3 | Yes |
 | `test/` | v4.0 | `Taskfile.yml` running the RTL and gate-level simulations of Section 5.3 and the bitstream build on the files of this appendix only; the counter design, testbench and PCF in `user_design/`; the submitted bitstream in `bitstream/`; the Section 5.3 logs in `results/`; the nextpnr model and bitstream specification in `fabulous_model/`; the FABulous primitives and technology maps that newer Yosys releases no longer bundle, in `yosys/`; the gate-level wrapper generator `gen_gl_top.py` and the cocotb loader tests in `config/` | Yes |
+| `demo/paddle_ball/` | v4.0 | The demonstration design of Section 5.3: RTL, the PCF top `paddle_ball_pcf.v` and `paddle_ball.pcf`, the RTL and fabric testbenches, `Taskfile.yml` building and simulating it through the bitstream flow of `test/`, the bitstream in `bitstream/`, and the simulation logs, GIF and contact sheet in `results/` | Yes |
 
 Every appendix GDS is an ECC abstract (Section 7). The build flow and documentation stay in the repository.
 

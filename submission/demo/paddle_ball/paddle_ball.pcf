@@ -1,0 +1,13 @@
+# Places the ports of paddle_ball_pcf on the fabric's pads. Pad i, the IOBUF
+# behind A_IN_top[i], A_EN_top[i] and A_OUT_top[i], is the site
+# test/user_design/pads.pcf lists for pad[i].
+set_io hsync_n X12Y10/A  # pad 0
+set_io vsync_n X12Y9/A  # pad 1
+set_io red X12Y8/A  # pad 2
+set_io green X12Y7/A  # pad 3
+set_io blue X12Y6/A  # pad 4
+set_io p1_up X12Y5/A  # pad 5
+set_io p1_down X12Y4/A  # pad 6
+set_io p2_up X12Y3/A  # pad 7
+set_io p2_down X12Y2/A  # pad 8
+set_io sound X12Y1/A  # pad 9

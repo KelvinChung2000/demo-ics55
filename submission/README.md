@@ -17,6 +17,7 @@ The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells,
 | `gl/` | Gate-level netlists, the inputs of the report's gate-level simulation |
 | `chip/` | The pad-ring netlist `top.v` and `top.sdc`, the extracted `eFPGA_top` timing model and the chip-level OpenSTA log |
 | `test/` | The verification harness and what it runs on. `Taskfile.yml` runs the RTL and gate-level simulations and the bitstream build on the files of this directory only. `user_design/` holds the counter design, testbench and PCF, `bitstream/` the submitted bitstream, `results/` the passing RTL and gate-level simulation logs, `fabulous_model/` the gzipped nextpnr model and bitstream specification, `yosys/` the FABulous primitives and technology maps that newer Yosys releases no longer bundle, `config/` the cocotb loader test and `timing_model/Cworst_125C/` the delay model of FABulous PR #982 at `ss_rcworst_1p08_125` with the Cworst_125C SPEF. Only hausdinge/nextpnr reads that model, and the post-route SDF simulation that uses it is not part of this harness. Its pip delays are integer ps, scaled by `pipDelayScale=0.001`, because that nextpnr parses the delay column as an integer |
+| `demo/` | `paddle_ball/`, a VGA game that uses every block type of the fabric, with its PCF, bitstream, RTL and fabric testbenches, a `Taskfile.yml` that builds it through the flow of `test/`, and its simulation logs, GIF and contact sheet. Its `README.md` describes the design and how to run it |
 
 Every GDS here holds standard cells and tile macros as LEF abstracts, so none of them is a mask-ready layout.
 
@@ -32,6 +33,8 @@ Every GDS here holds standard cells and tile macros as LEF abstracts, so none of
 | Yosys `synth_fabulous` | 0.62 | Synthesis of the test design; 0.62 rebuilds `test/bitstream/` byte for byte |
 | nextpnr-generic `--uarch fabulous` | [version] | Place and route of the test design |
 | Icarus Verilog | [version] | RTL and gate-level simulation |
+| Verilator | 5.032 | RTL simulation and live view of the demonstration design |
+| FFmpeg | 6.1.1 | GIF, contact sheet and live view of the demonstration design |
 | cocotb and pytest | cocotb 2.0.1 | Loader tests |
 | Task | 3.50.0 | Runs the harness in `test/` |
 | GTKWave, KLayout | 3.3.121, 0.30.7 | Waveform and floorplan figures |
@@ -73,3 +76,13 @@ A clock has to reach the fabric through a `GBUF`, so a design instantiates one o
 
 `run-gl-chip` simulates these netlists inside `chip/top.v` with zero-delay cells (`-Dfunctional`), and `run-gl-top` simulates the bare macro. `test/gen_gl_top.py` writes the wrapper. It maps the 42 scalar netlist ports of `gl/top_full.v` back to the vectors of `rtl/eFPGA/eFPGA_top.v` and onto the pads of `chip/top.v`, and once `Configured` rises it forces each logic cell whose loaded configuration is constant to that constant. Section 5.3 of the report gives the reason and what the force masks. Each run takes about 4 minutes and passes 123 of 123 compares into `test/build/gl_chip_sim.log` or `gl_top_sim.log`, the logs `test/results/` holds. `VVP_ARGS="+waveform_depth=2 +output_waveform=build/gl_chip.fst -fst"` adds a waveform of the testbench, the pads and `eFPGA_top`; `+max_cycles=<n>` stops the run early.
 
+## Demonstration design
+
+`demo/paddle_ball/` is a two-player VGA paddle-and-ball game written to occupy the fabric: 651 of 800 `FABULOUS_LC`, all 5 `MACC_8x8_20`, all 10 `IOBUF` and 2 of 4 `GBUF`. Its pads are top-level ports placed by `paddle_ball.pcf`, as the PCF flow above describes. Every task runs from that directory.
+
+    cd demo/paddle_ball
+    task run-rtl-verilator      # 600 frames of the design alone, GIF and contact sheet
+    task live                   # the same simulation streamed into an ffplay window
+    task run-fabric             # the shipped bitstream on the eFPGA_top RTL, every pad compared each cycle
+
+Section 5.3 of the report gives the results, and `demo/paddle_ball/README.md` the design, the pad map and the run times.

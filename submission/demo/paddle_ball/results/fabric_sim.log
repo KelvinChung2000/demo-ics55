@@ -1,0 +1,39 @@
+Read 13544 bitstream bytes from bitstream/paddle_ball.hex
+Configured = 0 @ 79444
+Configured = 1 @ 68867425176
+10000 compares match @ 70458916811
+20000 compares match @ 72047786811
+30000 compares match @ 73636656811
+40000 compares match @ 75225526811
+50000 compares match @ 76814396811
+60000 compares match @ 78403266811
+70000 compares match @ 79992136811
+80000 compares match @ 81581006811
+90000 compares match @ 83169876811
+frame 0 @ 84505163159, 98404 compares match
+100000 compares match @ 84758746811
+110000 compares match @ 86347616811
+120000 compares match @ 87936486811
+130000 compares match @ 89525356811
+140000 compares match @ 91114226811
+150000 compares match @ 92703096811
+160000 compares match @ 94291966811
+170000 compares match @ 95880836811
+180000 compares match @ 97469706811
+190000 compares match @ 99058576811
+200000 compares match @ 100647446811
+frame 1 @ 101188298159, 203404 compares match
+210000 compares match @ 102236316811
+220000 compares match @ 103825186811
+230000 compares match @ 105414056811
+240000 compares match @ 107002926811
+250000 compares match @ 108591796811
+260000 compares match @ 110180666811
+270000 compares match @ 111769536811
+280000 compares match @ 113358406811
+290000 compares match @ 114947276811
+300000 compares match @ 116536146811
+frame 2 @ 117871433159, 308404 compares match
+SUMMARY frames=2 written=2 compares=308404 mismatches=0 score=0:0
+PASS
+paddle_ball_fabric_tb.v:130: $finish called at 117871433159 (1ps)

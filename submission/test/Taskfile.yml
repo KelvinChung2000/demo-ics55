@@ -76,7 +76,8 @@ tasks:
     cmds:
       - task: compile:compile-yosys
         vars:
-          YOSYS_EXTRA_ARGS: '{{.YOSYS_EXTRA_ARGS | default ""}}'
+          # top_wrapper.v instantiates the design named by USER_DESIGN.
+          YOSYS_EXTRA_ARGS: '-D USER_DESIGN={{.DESIGN}} {{.YOSYS_EXTRA_ARGS | default ""}}'
           SYNTH_CMD: 'synth_fabulous -top {{.TOP_WRAPPER}} -json {{.RESOLVED_JSON_FILE}} {{.SYNTH_LIB_ARGS}} {{.CUSTOM_PRIMS}} {{.SYNTH_EXTRA_ARGS | default ""}}'
           DESIGN_FILES: "{{.RESOLVED_DESIGN_FILES}}"
           TOP_WRAPPER_FILE: "{{.RESOLVED_TOP_WRAPPER_FILE}}"
@@ -133,7 +134,7 @@ tasks:
         msg: 'BITSTREAM_HEX ("{{.BITSTREAM_HEX}}") is no file; run build-test-design and pass BITSTREAM_HEX=build/<design>.hex'
     cmds:
       - >-
-        iverilog -g2012
+        iverilog -g2012 -I {{.USER_DESIGN_DIR}}
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}
         -o {{.BUILD_DIR}}/{{.DESIGN}}.vvp
@@ -154,7 +155,7 @@ tasks:
     deps: [mkdir-build, rtl-filelist]
     cmds:
       - >-
-        iverilog -g2012 -D EMULATION
+        iverilog -g2012 -D EMULATION -I {{.USER_DESIGN_DIR}}
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}
         -o {{.BUILD_DIR}}/{{.DESIGN}}.vvp
@@ -208,7 +209,7 @@ tasks:
       # -Dfunctional compiles the specify blocks out: zero-delay cells. The three
       # model files repeat the same UDPs, which iverilog accepts only as libraries (-l).
       - >-
-        iverilog -g2012 -Dfunctional -DGL_TOP {{if .GL_CHIP_TOP}}-DGL_CHIP{{end}}
+        iverilog -g2012 -Dfunctional -DGL_TOP {{if .GL_CHIP_TOP}}-DGL_CHIP{{end}} -I {{.USER_DESIGN_DIR}}
         -f {{.GL_BUILD_DIR}}/timescale.f
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}

@@ -76,7 +76,8 @@ module top_wrapper;
         .OUT(reset)
     );
 
-    sequential_16bit_en top_i (
+    // USER_DESIGN names the design; run-yosys passes -D USER_DESIGN=<DESIGN>.
+    `USER_DESIGN top_i (
         .clk(clk),
         .user_reset(reset),
         .io_in(io_in),

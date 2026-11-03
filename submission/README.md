@@ -16,8 +16,8 @@ The design is `eFPGA_top`, a 13 × 12 tile FABulous fabric with 800 logic cells,
 | `sta/` | Full-chip OpenSTA scripts, per-corner reports and `summary.txt` |
 | `gl/` | Gate-level netlists, the inputs of the report's gate-level simulation |
 | `chip/` | The pad-ring netlist `top.v` and `top.sdc`, the extracted `eFPGA_top` timing model and the chip-level OpenSTA log |
-| `test/` | The verification harness and what it runs on. `Taskfile.yml` runs the RTL and gate-level simulations and the bitstream build on the files of this directory only. `designs/<name>/` holds one design and its testbench each, the counter `sequential_16bit_en` and the seven FABulous integration-test designs `test_designs.py` runs. `harness/` holds what every design shares, the PCF top `pcf_top.v`, `pads.pcf`, the pad techmap `iobuf_map.v`, the BEL blackboxes `custom_prims.v` and the testbench body `fabric_tb.vh`. `scripts/` holds `gen_pcf.py`, `gen_gl_top.py` and `makehex.py`. `bitstream/` holds the submitted bitstream, `results/` the passing RTL and gate-level simulation logs, `model/fabulous/` the gzipped nextpnr model and bitstream specification, `yosys/` the FABulous primitives and technology maps that newer Yosys releases no longer bundle, `config/` the cocotb loader test and `model/timing/Cworst_125C/` the delay model of FABulous PR #982 at `ss_rcworst_1p08_125` with the Cworst_125C SPEF. Only hausdinge/nextpnr reads that model, and the post-route SDF simulation that uses it is not part of this harness. Its pip delays are integer ps, scaled by `pipDelayScale=0.001`, because that nextpnr parses the delay column as an integer |
-| `demo/` | `paddle_ball/`, a VGA game that uses every block type of the fabric, with its PCF, bitstream, RTL and fabric testbenches, a `Taskfile.yml` that builds it through the flow of `test/`, and its simulation logs, GIF and contact sheet. Its `README.md` describes the design and how to run it |
+| `test/` | The verification harness and what it runs on. `Taskfile.yml` runs the RTL and gate-level simulations and the bitstream build on the files of this directory only. |
+| `demo/` | `paddle_ball/`, a VGA game that exercises the full fabric, with its PCF, bitstream, RTL and fabric testbenches. Its `README.md` describes the design and how to run it |
 
 Every GDS here holds standard cells and tile macros as LEF abstracts, so none of them is a mask-ready layout.
 
@@ -55,15 +55,13 @@ The cocotb test drives each of the four configuration loaders in `rtl/Fabric/` a
 
     cd test/config && python3 -m pytest test_config_frontend.py
 
-A new user design goes through Yosys `synth_fabulous`, `nextpnr-generic --uarch fabulous` and FABulous `bit_gen`. `task build-test-design` runs all three into `test/build/`, with `test/model/fabulous/` gunzipped into `test/build/fabulous/.FABulous/` as the FABulous project root that nextpnr and `bit_gen` read. Newer Yosys releases rework `synth_fabulous` and no longer bundle the FABulous primitives and technology maps, so `test/yosys/`, taken from FABulous PR #1085, supplies them; `run-yosys` passes that library when `synth_fabulous` accepts `-cells-map`, and `-iopad -complex-dff` otherwise. The Yosys of the Tools table rebuilds `bitstream/` byte for byte. A newer Yosys maps the counter onto the same 8 `LUTFF_ESR`, 10 `IOBUF` and 2 `GBUF` but places it differently, and that bitstream also passes the RTL and gate-level chip simulations. The simulations take the submitted bitstream unless given `BITSTREAM_HEX=build/<design>.hex`.
-
 Pins are placed with a PCF, the only pin route of the harness. `test/harness/pcf_top.v` is the synthesis top of every design in `designs/`. Its ports are the 10 pads, each through one `IOBUF` whose `EN` is the inverted `io_oeb`, and it instantiates the design that `DESIGN` names. nextpnr places each `IOBUF` through its `PAD` pin where `test/harness/pads.pcf` says. The `IOBUF` is instantiated rather than inferred from a tristate, because a design that wires one pad straight to another, as `passthrough` does, aliases the two `inout` bits and Yosys then takes the pad directions from the alias. A top that leaves its pads to `synth_fabulous` gets a pad cell on each port, which `iobuf_map.v` turns into an `IOBUF`. `test/scripts/gen_pcf.py` writes `pads.pcf` from `rtl/` and lists all 10 pads as `set_io pad[i] X<x>Y<y>/A`, where `pad[i]` is the bit `eFPGA_top` exposes as `A_IN_top[i]`, `A_EN_top[i]` and `A_OUT_top[i]`. A design with a top of its own passes `TOP`, `TOP_FILE` and `PCF`, as `demo/paddle_ball/` does. Any design in `designs/` builds and simulates from `test/` with:
 
     task WAVEFORM_TYPE=vcd VVP_ARGS=+waveform_depth=1 \
         DESIGN=counter BITSTREAM_HEX=build/counter.hex \
         build-test-design run-simulation
 
-A clock has to reach the fabric through a `GBUF`. `pcf_top.v` takes the clock through `GBUF` A and the reset through `GBUF` B, or through C and D when Yosys is given `YOSYS_EXTRA_ARGS="-D GBUF_CD"`. A clock on `GBUF` B, C or D needs `MultiClkDomains` set in `fabric.csv` and bit_gen 0.4.0, because older bit_gen releases drop every FASM feature that names `CLK`, so each tile's clock multiplexer stays on its default input, `GBUF` A.
+A clock has to reach the fabric through a `GBUF`. `pcf_top.v` takes the clock through `GBUF` A and the reset through `GBUF` B, or through C and D when Yosys is given `YOSYS_EXTRA_ARGS="-D GBUF_CD"`. A clock on `GBUF` B, C or D needs `MultiClkDomains` set in `fabric.csv`.
 
 ## Gate-level simulation
 

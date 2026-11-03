@@ -14,7 +14,7 @@ Every block is built from the RTL and pin plans of this submission.
 |---|---|
 | Project name | FABulous eFPGA |
 | Project lead | King Lok (Kelvin) Chung, kelvin.chung@manchester.ac.uk |
-| Contributors | [Names and responsibilities] |
+| Contributors | King Lok (Kelvin) Chung (The full chip implementation) |
 | Source repository | `github.com/KelvinChung2000/demo-ics55` |
 | Tapeout run | MPW |
 | Process and PDK | ICS55 (55 nm), ECOS PDK `v1.10.103`, standard cells `ics55_LLSC_H7C_V1p10C100` (`H7CR` and `H7CL`) |

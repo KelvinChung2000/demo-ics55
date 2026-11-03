@@ -37,7 +37,7 @@ each bit from the tile RTL and its ConfigMem.
 
 Both designs are read by yosys; nothing here parses Verilog.
 
-    python3 gen_gl_top.py --rtl ../rtl/eFPGA/eFPGA_top.v \
+    python3 scripts/gen_gl_top.py --rtl ../rtl/eFPGA/eFPGA_top.v \
         --netlist build/gl_chip/top_full.v build/gl_chip/tile_*.v \
         --liberty <pdk>/<lib>.lib ... [--chip ../chip/top.v] \
         --lc-cell ../rtl/primitives/FABULOUS_LC/fabulous/FABULOUS_LC.v \
@@ -503,7 +503,7 @@ def chip_wrapper(
     conns = ",\n".join(f"        .{n}({n})" for n in top_ports)
     return "\n".join(
         [
-            f"// Written by test/gen_gl_top.py from {sources}; do not edit by hand.",
+            f"// Written by test/scripts/gen_gl_top.py from {sources}; do not edit by hand.",
             "`timescale 1ns / 1ps",
             "`default_nettype none",
             "",
@@ -551,7 +551,7 @@ def wrapper(
     conns = ",\n".join(f"        .{ident(g)}({r})" for g, r in pairs)
     return "\n".join(
         [
-            f"// Written by test/gen_gl_top.py from {sources}; do not edit by hand.",
+            f"// Written by test/scripts/gen_gl_top.py from {sources}; do not edit by hand.",
             "`timescale 1ns / 1ps",
             "`default_nettype none",
             "",

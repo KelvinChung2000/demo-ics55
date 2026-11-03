@@ -2,9 +2,11 @@
 # https://taskfile.dev
 #
 # Verification of the submission, run from this directory. Every input is a file
-# of the submission (user_design/, bitstream/, fabulous_model/, ../rtl, ../gl,
-# ../chip); the gate-level tasks also need the ICS55 PDK, which the submission
-# does not carry.
+# of the submission (designs/, harness/, bitstream/, model/fabulous/, ../rtl,
+# ../gl, ../chip); the gate-level tasks also need the ICS55 PDK, which the
+# submission does not carry. A design is designs/<DESIGN>/<DESIGN>.v with its
+# testbench <DESIGN>_tb.v beside it; harness/pcf_top.v is its synthesis top and
+# harness/pads.pcf places its pads.
 # Override any variable via CLI: task run-simulation WAVEFORM_TYPE=vcd
 version: "3"
 
@@ -17,12 +19,14 @@ vars:
   BUILD_DIR: '{{.BUILD_DIR | default "build"}}'
   DESIGN: '{{.DESIGN | default "sequential_16bit_en"}}'
   TESTBENCH: "{{.DESIGN}}_tb"
-  TOP_WRAPPER: '{{.TOP_WRAPPER | default "top_wrapper"}}'
-  USER_DESIGN_DIR: user_design
+  DESIGN_DIR: '{{.DESIGN_DIR | default (printf "designs/%s" .DESIGN)}}'
+  HARNESS_DIR: harness
+  TOP: '{{.TOP | default "pcf_top"}}'
+  PCF: '{{.PCF | default (printf "%s/pads.pcf" .HARNESS_DIR)}}'
   # The submitted bitstream. A design built here lands in BUILD_DIR, so pass
   # BITSTREAM_HEX=build/<design>.hex to simulate it instead.
   BITSTREAM_HEX: '{{.BITSTREAM_HEX | default (printf "bitstream/%s.hex" .DESIGN)}}'
-  # fabulous_model/ unpacked into the .FABulous/ that nextpnr's FAB_ROOT and bit_gen read.
+  # model/fabulous/ unpacked into the .FABulous/ that nextpnr's FAB_ROOT and bit_gen read.
   FAB_PROJ_ROOT: "{{.BUILD_DIR}}/fabulous"
   # ../rtl/filelist.f names files relative to the submission root.
   RTL_FILELIST: "{{.BUILD_DIR}}/rtl.f"
@@ -33,7 +37,7 @@ vars:
 
 tasks:
   build-test-design:
-    desc: Synthesize, place & route and generate the bitstream into BUILD_DIR
+    desc: Synthesize, place & route with PCF pads and generate the bitstream into BUILD_DIR
     cmds:
       - task: run-yosys
       - task: run-nextpnr
@@ -43,8 +47,6 @@ tasks:
     desc: Run Yosys synthesis
     deps: [mkdir-build]
     vars:
-      CUSTOM_PRIMS:
-        sh: '[ -f "{{.USER_DESIGN_DIR}}/custom_prims.v" ] && echo "-extra-plib {{.USER_DESIGN_DIR}}/custom_prims.v" || true'
       # Yosys 0.67 reworked synth_fabulous: it no longer bundles the FABulous
       # library, so yosys/ (from FABulous PR #1085) supplies it, and pads are
       # inserted by default. Older Yosys rejects these options, so the form is
@@ -70,17 +72,20 @@ tasks:
           else
             echo "-iopad -complex-dff"
           fi
-      RESOLVED_DESIGN_FILES: '{{.DESIGN_FILES | default (printf "%s/%s.v" .USER_DESIGN_DIR .DESIGN)}}'
-      RESOLVED_TOP_WRAPPER_FILE: '{{.TOP_WRAPPER_FILE | default (printf "%s/%s.v" .USER_DESIGN_DIR .TOP_WRAPPER)}}'
+      RESOLVED_DESIGN_FILES: '{{.DESIGN_FILES | default (printf "%s/%s.v" .DESIGN_DIR .DESIGN)}}'
+      RESOLVED_TOP_FILE: '{{.TOP_FILE | default (printf "%s/%s.v" .HARNESS_DIR .TOP)}}'
       RESOLVED_JSON_FILE: '{{.JSON_FILE | default (printf "%s/%s.json" .BUILD_DIR .DESIGN)}}'
     cmds:
       - task: compile:compile-yosys
         vars:
-          # top_wrapper.v instantiates the design named by USER_DESIGN.
+          # pcf_top.v instantiates the design named by USER_DESIGN.
           YOSYS_EXTRA_ARGS: '-D USER_DESIGN={{.DESIGN}} {{.YOSYS_EXTRA_ARGS | default ""}}'
-          SYNTH_CMD: 'synth_fabulous -top {{.TOP_WRAPPER}} -json {{.RESOLVED_JSON_FILE}} {{.SYNTH_LIB_ARGS}} {{.CUSTOM_PRIMS}} {{.SYNTH_EXTRA_ARGS | default ""}}'
+          # pcf_top.v instantiates its IOBUFs; iobuf_map.v turns the pad cells
+          # synth_fabulous infers on any other top's ports into IOBUF, the BEL
+          # whose PAD pin nextpnr binds a PCF set_io through.
+          SYNTH_CMD: 'synth_fabulous -top {{.TOP}} -json {{.RESOLVED_JSON_FILE}} {{.SYNTH_LIB_ARGS}} -extra-plib {{.HARNESS_DIR}}/custom_prims.v -extra-map {{.HARNESS_DIR}}/iobuf_map.v {{.SYNTH_EXTRA_ARGS | default ""}}'
           DESIGN_FILES: "{{.RESOLVED_DESIGN_FILES}}"
-          TOP_WRAPPER_FILE: "{{.RESOLVED_TOP_WRAPPER_FILE}}"
+          TOP_FILE: "{{.RESOLVED_TOP_FILE}}"
 
   run-nextpnr:
     desc: Run nextpnr place and route
@@ -92,7 +97,7 @@ tasks:
           JSON_FILE: '{{.JSON_FILE | default (printf "%s/%s.json" .BUILD_DIR .DESIGN)}}'
           FASM_FILE: '{{.FASM_FILE | default (printf "%s/%s.fasm" .BUILD_DIR .DESIGN)}}'
           LOG_FILE: '{{.LOG_FILE | default ""}}'
-          NEXTPNR_EXTRA_ARGS: '{{.NEXTPNR_EXTRA_ARGS | default ""}}'
+          NEXTPNR_EXTRA_ARGS: '-o pcf={{.PCF}} {{.NEXTPNR_EXTRA_ARGS | default ""}}'
           NEXTPNR_VERBOSE: '{{.NEXTPNR_VERBOSE | default ""}}'
 
   run-bitgen:
@@ -108,7 +113,7 @@ tasks:
           FASM_FILE: "{{.RESOLVED_FASM_FILE}}"
           BIN_FILE: "{{.RESOLVED_BIN_FILE}}"
       - >-
-        python3 makehex.py
+        python3 scripts/makehex.py
         {{.RESOLVED_BIN_FILE}}
         {{.MAX_BITBYTES}}
         {{.BUILD_DIR}}/{{.DESIGN}}.hex
@@ -118,7 +123,7 @@ tasks:
     deps: [mkdir-build]
     cmds:
       - mkdir -p {{.FAB_PROJ_ROOT}}/.FABulous
-      - for f in fabulous_model/*.gz; do gunzip -c "$f" > "{{.FAB_PROJ_ROOT}}/.FABulous/$(basename "$f" .gz)"; done
+      - for f in model/fabulous/*.gz; do gunzip -c "$f" > "{{.FAB_PROJ_ROOT}}/.FABulous/$(basename "$f" .gz)"; done
 
   rtl-filelist:
     internal: true
@@ -134,13 +139,13 @@ tasks:
         msg: 'BITSTREAM_HEX ("{{.BITSTREAM_HEX}}") is no file; run build-test-design and pass BITSTREAM_HEX=build/<design>.hex'
     cmds:
       - >-
-        iverilog -g2012 -I {{.USER_DESIGN_DIR}}
+        iverilog -g2012 -I {{.HARNESS_DIR}}
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}
         -o {{.BUILD_DIR}}/{{.DESIGN}}.vvp
         -c {{.RTL_FILELIST}}
-        {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
-        {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
+        {{.DESIGN_DIR}}/{{.DESIGN}}.v
+        {{.DESIGN_DIR}}/{{.TESTBENCH}}.v
       - >-
         set -o pipefail;
         vvp {{.BUILD_DIR}}/{{.DESIGN}}.vvp
@@ -155,14 +160,14 @@ tasks:
     deps: [mkdir-build, rtl-filelist]
     cmds:
       - >-
-        iverilog -g2012 -D EMULATION -I {{.USER_DESIGN_DIR}}
+        iverilog -g2012 -D EMULATION -I {{.HARNESS_DIR}}
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}
         -o {{.BUILD_DIR}}/{{.DESIGN}}.vvp
         {{.BUILD_DIR}}/{{.DESIGN}}.vh
         -c {{.RTL_FILELIST}}
-        {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
-        {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
+        {{.DESIGN_DIR}}/{{.DESIGN}}.v
+        {{.DESIGN_DIR}}/{{.TESTBENCH}}.v
       - >-
         vvp {{.BUILD_DIR}}/{{.DESIGN}}.vvp
         +output_waveform={{.BUILD_DIR}}/{{.DESIGN}}.{{.WAVEFORM_TYPE}}
@@ -196,7 +201,7 @@ tasks:
       - mkdir -p {{.GL_BUILD_DIR}}
       - for f in ../gl/*.v.gz; do gunzip -c "$f" > "{{.GL_BUILD_DIR}}/$(basename "$f" .gz)"; done
       - >-
-        python3 gen_gl_top.py
+        python3 scripts/gen_gl_top.py
         --rtl ../rtl/eFPGA/eFPGA_top.v
         --netlist {{.GL_BUILD_DIR}}/top_full.v {{.GL_BUILD_DIR}}/tile_*.v
         --liberty {{range $f := splitList " " .FLAVOURS}}{{$.LLSC}}/ics55_LLSC_{{$f}}/liberty/ics55_LLSC_{{$f}}_typ_tt_1p2_25_nldm.lib {{end}}
@@ -209,7 +214,7 @@ tasks:
       # -Dfunctional compiles the specify blocks out: zero-delay cells. The three
       # model files repeat the same UDPs, which iverilog accepts only as libraries (-l).
       - >-
-        iverilog -g2012 -Dfunctional -DGL_TOP {{if .GL_CHIP_TOP}}-DGL_CHIP{{end}} -I {{.USER_DESIGN_DIR}}
+        iverilog -g2012 -Dfunctional -DGL_TOP {{if .GL_CHIP_TOP}}-DGL_CHIP{{end}} -I {{.HARNESS_DIR}}
         -f {{.GL_BUILD_DIR}}/timescale.f
         {{.EXTRA_IVERILOG_FLAGS}}
         -s {{.TESTBENCH}}
@@ -218,8 +223,8 @@ tasks:
         {{if .GL_CHIP_TOP}}{{.GL_CHIP_TOP}} {{.GL_IO_MODEL}}{{end}}
         {{.GL_BUILD_DIR}}/top_full.v {{.GL_BUILD_DIR}}/tile_*.v
         {{range $f := splitList " " .FLAVOURS}}-l {{$.LLSC}}/ics55_LLSC_{{$f}}/verilog/ics55_LLSC_{{$f}}.v {{end}}
-        {{.USER_DESIGN_DIR}}/{{.DESIGN}}.v
-        {{.USER_DESIGN_DIR}}/{{.TESTBENCH}}.v
+        {{.DESIGN_DIR}}/{{.DESIGN}}.v
+        {{.DESIGN_DIR}}/{{.TESTBENCH}}.v
       - >-
         set -o pipefail;
         vvp -n {{.GL_BUILD_DIR}}/{{.DESIGN}}_gl_{{.GL_LEVEL}}.vvp

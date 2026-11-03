@@ -33,7 +33,7 @@
     eFPGA_chip_gl top_i (
         .A_OUT_top_drive    (oeb_gold         ),
 `elsif GL_TOP
-    // The hardened netlist's ports are per bit; test/gen_gl_top.py's wrapper in the submission restores the vectors.
+    // The hardened netlist's ports are per bit; test/scripts/gen_gl_top.py's wrapper in the submission restores the vectors.
     eFPGA_top_gl top_i (
 `else
     eFPGA_top top_i (
@@ -41,7 +41,7 @@
         .A_EN_top           (A_EN_top         ),
         .A_IN_top           (A_IN_top         ),
         .A_OUT_top          (A_OUT_top        ),
-        // The fabric clock is CLK on its own pad (see user_design/top_wrapper.v).
+        // The fabric clock is CLK on its own pad (see harness/pcf_top.v).
         .USER_CLK           (CLK              ),
         .USER_RESET         (user_reset       ),
         .CLK                (CLK              ),

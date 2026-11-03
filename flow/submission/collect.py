@@ -2,10 +2,10 @@
 
 The appendix is a snapshot, so it is rebuilt from its sources rather than
 edited by hand: every file under rtl/, fabric/, physical/, signoff/, sta/, gl/
-and chip/, and test/bitstream, test/results and test/fabulous_model, is copied (and large
+and chip/, and test/bitstream, test/results and test/model/fabulous, is copied (and large
 text views gzipped) by this script, and a rerun replaces those directories. The
 report, images/, the README and the rest of test/ are hand-written and are left
-alone; test/user_design is the design's only copy, which fabrics/nobram links to.
+alone; test/designs holds the designs' only copy, which fabrics/nobram links to.
 The bitstream and logs come from the harness's own runs in test/build.
 
 FABulous and Yosys write absolute source paths into eFPGA_geometry.csv and the
@@ -44,7 +44,7 @@ TEST = OUT / "test"
 SIM_BUILD = TEST / "build"
 GENERATED = (
     *(OUT / d for d in ("rtl", "fabric", "physical", "signoff", "sta", "gl", "chip")),
-    *(TEST / d for d in ("bitstream", "results", "fabulous_model")),
+    *(TEST / d for d in ("bitstream", "results", "model/fabulous")),
 )
 RC_CORNERS = (
     "Cbest_125C", "Cbest_m40C", "Cworst_125C", "Cworst_m40C", "RCbest_125C",
@@ -230,7 +230,7 @@ def collect_test() -> None:
         copy(SIM_BUILD / log, TEST / "results" / log)
     model = FABRIC / ".FABulous"
     for name in ("pips.txt", "bel.txt", "bel.v2.txt", "bel.v3.txt", "bitStreamSpec.bin"):
-        copy_gz(model / name, TEST / "fabulous_model")
+        copy_gz(model / name, TEST / "model" / "fabulous")
 
 
 def collect_physical(tiles: list[str]) -> None:

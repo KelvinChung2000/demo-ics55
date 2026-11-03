@@ -23,11 +23,11 @@ The five MACCs each do arithmetic the game needs. Two chained MACCs per ball tes
 | 8 | `p2_down` | in | Right paddle down |
 | 9 | `sound` | out | 983 Hz square wave for 6 frames after a paddle hit, wall hit or point |
 
-The clock enters on the `USER_CLK` pad through `GBUF` A and the reset on the `USER_RESET` pad through `GBUF` B, as `test/user_design/sequential_16bit_en_pcf.v` does. The reset `GBUF` reaches only a flip-flop's set/reset pin, so `user_reset` clears a 2-bit wake counter and the game resets from that counter's output.
+The clock enters on the `USER_CLK` pad through `GBUF` A and the reset on the `USER_RESET` pad through `GBUF` B, as `test/harness/pcf_top.v` does. The reset `GBUF` reaches only a flip-flop's set/reset pin, so `user_reset` clears a 2-bit wake counter and the game resets from that counter's output.
 
 ## Running it
 
-Every task runs from this directory with [Task](https://taskfile.dev). `build` calls the bitstream tasks of `../../test/Taskfile.yml`, so it uses the same Yosys, nextpnr and `bit_gen` set-up and the FABulous model in `../../test/fabulous_model/`.
+Every task runs from this directory with [Task](https://taskfile.dev). `build` calls the bitstream tasks of `../../test/Taskfile.yml`, so it uses the same Yosys, nextpnr and `bit_gen` set-up and the FABulous model in `../../test/model/fabulous/`.
 
 | Task | What it does | Time |
 |---|---|---|
@@ -53,6 +53,6 @@ Every task runs from this directory with [Task](https://taskfile.dev). `build` c
 
 ## Limits
 
-- Timing is not verified. nextpnr's maximum frequency comes from placeholder pip delays in `../../test/fabulous_model/`, so it says nothing about the silicon.
+- Timing is not verified. nextpnr's maximum frequency comes from placeholder pip delays in `../../test/model/fabulous/`, so it says nothing about the silicon.
 - The fabric runs are RTL simulations of `eFPGA_top`. paddle_ball has not run at gate level.
 - `paddle_ball_fabric_tb.v` also builds with `-D EMULATION` on the `.vh` that `bit_gen` writes beside the bitstream, skipping the SPI load. `eFPGA.v` leaves the `Emulate_Bitstream` override off the 26 border-row tiles, which leaves `USER_CLK` and `USER_RESET` unconnected under emulation, so the testbench sets it on them with `defparam`. No task uses this mode, because at about 100 cycles/s it is slower than the SPI load at about 200.

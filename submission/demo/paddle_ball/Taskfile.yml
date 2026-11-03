@@ -84,15 +84,15 @@ tasks:
         vars:
           DESIGN: paddle_ball
           BUILD_DIR: "{{.FROM_TEST}}/{{.OUT}}/fabric"
-          TOP_WRAPPER: paddle_ball_pcf
-          TOP_WRAPPER_FILE: "{{.FROM_TEST}}/paddle_ball_pcf.v"
+          TOP: paddle_ball_pcf
+          TOP_FILE: "{{.FROM_TEST}}/paddle_ball_pcf.v"
           DESIGN_FILES: "{{.FROM_TEST}}/paddle_ball.v"
-          SYNTH_EXTRA_ARGS: -extra-map user_design/iobuf_map.v
       - task: test:run-nextpnr
         vars:
           DESIGN: paddle_ball
           BUILD_DIR: "{{.FROM_TEST}}/{{.OUT}}/fabric"
-          NEXTPNR_EXTRA_ARGS: "-o pcf={{.FROM_TEST}}/paddle_ball.pcf --freq 6.29375"
+          PCF: "{{.FROM_TEST}}/paddle_ball.pcf"
+          NEXTPNR_EXTRA_ARGS: "--freq 6.29375"
           LOG_FILE: "{{.FROM_TEST}}/{{.OUT}}/fabric/nextpnr.log"
       - task: test:run-bitgen
         vars:

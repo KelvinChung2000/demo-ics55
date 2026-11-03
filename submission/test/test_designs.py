@@ -35,9 +35,9 @@ LOG: dict[Level, str] = {
     Level.GL_CHIP: "gl_chip_sim.log",
 }
 # Simulated from its submitted bitstream/, never rebuilt.
-SUBMITTED = "sequential_16bit_en"
+# SUBMITTED = "sequential_16bit_en"
 DESIGNS = [
-    SUBMITTED,
+    "sequential_16bit_en",
     "passthrough",
     "addition",
     "multiplication",
@@ -48,21 +48,31 @@ DESIGNS = [
 ]
 
 
+class Gbufs(StrEnum):
+    """The global buffers pcf_top.v takes the clock and reset through."""
+
+    AB = "ab"
+    CD = "cd"
+
+
+# The one design that also takes user_reset, into GSR, so its CD build puts a
+# load on both GBUF C and GBUF D.
+CASES = [(design, Gbufs.AB) for design in DESIGNS] + [("sequential_16bit_en", Gbufs.CD)]
+
+
 def task(*args: str) -> None:
     subprocess.run(["task", *args], cwd=HERE, check=True)
 
 
 @pytest.mark.parametrize("level", list(Level), ids=str)
-@pytest.mark.parametrize("design", DESIGNS)
-def test_design(design: str, level: Level) -> None:
+@pytest.mark.parametrize(("design", "gbufs"), CASES, ids=[f"{d}-{g}" for d, g in CASES])
+def test_design(design: str, gbufs: Gbufs, level: Level) -> None:
     # One BUILD_DIR per case, so cases can run concurrently.
-    build_dir = f"build/{design}-{level}"
+    build_dir = f"build/{design}-{gbufs}-{level}"
     design_args = [f"DESIGN={design}", f"BUILD_DIR={build_dir}"]
-    if design == SUBMITTED:
-        hex_file = f"bitstream/{design}.hex"
-    else:
-        hex_file = f"{build_dir}/{design}.hex"
-        task("build-test-design", *design_args)
+    hex_file = f"{build_dir}/{design}.hex"
+    build_args = ["YOSYS_EXTRA_ARGS=-D GBUF_CD"] if gbufs is Gbufs.CD else []
+    task("build-test-design", *design_args, *build_args)
     sim_args = [*design_args, f"BITSTREAM_HEX={hex_file}"]
     if level is Level.RTL:
         # A depth-0 dump of the SPI load fills the disk.

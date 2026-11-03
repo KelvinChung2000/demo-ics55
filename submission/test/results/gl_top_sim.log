@@ -475,7 +475,7 @@ ConfigBusy = 0 @ 433436500000
 [gl_census] X flop frontend.inst_config_UART.data_reg_6__reg_p
 [gl_census] X flop frontend.inst_config_UART.data_reg_7__reg_p
 [gl_census] Configured @ 433436501000: 8 of 30 flops in E_IO X
-[gl_census] Configured @ 433436501000: 758 of 800 flops in LUT4x8_ha X
+[gl_census] Configured @ 433436501000: 755 of 800 flops in LUT4x8_ha X
 [gl_census] Configured @ 433436501000: 280 of 280 flops in MACC X
 [gl_census] Configured @ 433436501000: 8 of 690 flops in eFPGA_top X
 [gl_census] Configured @ 433436501000: 0 of 1200 latches in E_IO X
@@ -613,4 +613,5 @@ fabric(A_IN_top) = 0x048 gold = 0x048, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x04c gold = 0x04c, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 fabric(A_IN_top) = 0x050 gold = 0x050, fabric(A_EN_top) = 0x3fc gold = 0x3fc
 total: 123 of 123 compares match
-user_design/sequential_16bit_en_tb.v:245: $finish called at 433676000000 (1ps)
+checks: 0 of 0 pass
+harness/fabric_tb.vh:244: $finish called at 433676000000 (1ps)

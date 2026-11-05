@@ -1,0 +1,1214 @@
+VERSION 5.8 ;
+DIVIDERCHAR "/" ;
+BUSBITCHARS "[]" ;
+
+MACRO NE_term
+  CLASS BLOCK ;
+  FOREIGN NE_term ;
+  ORIGIN 0.0 0.0 ;
+  SIZE 21.400 BY 22.400 ;
+  SYMMETRY X Y ;
+  PIN N_GBUF_END_0
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 2.050 0.000 2.150 0.550 ;
+    END
+  END N_GBUF_END_0
+  PIN N_GBUF_END_1
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 4.250 0.000 4.350 0.550 ;
+    END
+  END N_GBUF_END_1
+  PIN N_GBUF_END_2
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 4.850 0.000 4.950 0.550 ;
+    END
+  END N_GBUF_END_2
+  PIN N_GBUF_END_3
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 5.450 0.000 5.550 0.550 ;
+    END
+  END N_GBUF_END_3
+  PIN FrameData_0
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 4.850 0.550 4.950 ;
+    END
+  END FrameData_0
+  PIN FrameData_1
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 5.250 0.550 5.350 ;
+    END
+  END FrameData_1
+  PIN FrameData_2
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 5.650 0.550 5.750 ;
+    END
+  END FrameData_2
+  PIN FrameData_3
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 6.050 0.550 6.150 ;
+    END
+  END FrameData_3
+  PIN FrameData_4
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 6.450 0.550 6.550 ;
+    END
+  END FrameData_4
+  PIN FrameData_5
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 6.850 0.550 6.950 ;
+    END
+  END FrameData_5
+  PIN FrameData_6
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 7.250 0.550 7.350 ;
+    END
+  END FrameData_6
+  PIN FrameData_7
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 7.650 0.550 7.750 ;
+    END
+  END FrameData_7
+  PIN FrameData_8
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 8.050 0.550 8.150 ;
+    END
+  END FrameData_8
+  PIN FrameData_9
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 8.450 0.550 8.550 ;
+    END
+  END FrameData_9
+  PIN FrameData_10
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 8.850 0.550 8.950 ;
+    END
+  END FrameData_10
+  PIN FrameData_11
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 9.250 0.550 9.350 ;
+    END
+  END FrameData_11
+  PIN FrameData_12
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 9.650 0.550 9.750 ;
+    END
+  END FrameData_12
+  PIN FrameData_13
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 10.050 0.550 10.150 ;
+    END
+  END FrameData_13
+  PIN FrameData_14
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 10.450 0.550 10.550 ;
+    END
+  END FrameData_14
+  PIN FrameData_15
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 10.850 0.550 10.950 ;
+    END
+  END FrameData_15
+  PIN FrameData_16
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 11.250 0.550 11.350 ;
+    END
+  END FrameData_16
+  PIN FrameData_17
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 11.650 0.550 11.750 ;
+    END
+  END FrameData_17
+  PIN FrameData_18
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 12.050 0.550 12.150 ;
+    END
+  END FrameData_18
+  PIN FrameData_19
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 12.450 0.550 12.550 ;
+    END
+  END FrameData_19
+  PIN FrameData_20
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 12.850 0.550 12.950 ;
+    END
+  END FrameData_20
+  PIN FrameData_21
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 13.250 0.550 13.350 ;
+    END
+  END FrameData_21
+  PIN FrameData_22
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 13.650 0.550 13.750 ;
+    END
+  END FrameData_22
+  PIN FrameData_23
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 14.050 0.550 14.150 ;
+    END
+  END FrameData_23
+  PIN FrameData_24
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 14.450 0.550 14.550 ;
+    END
+  END FrameData_24
+  PIN FrameData_25
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 14.850 0.550 14.950 ;
+    END
+  END FrameData_25
+  PIN FrameData_26
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 15.250 0.550 15.350 ;
+    END
+  END FrameData_26
+  PIN FrameData_27
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 15.650 0.550 15.750 ;
+    END
+  END FrameData_27
+  PIN FrameData_28
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 16.050 0.550 16.150 ;
+    END
+  END FrameData_28
+  PIN FrameData_29
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 16.450 0.550 16.550 ;
+    END
+  END FrameData_29
+  PIN FrameData_30
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 16.850 0.550 16.950 ;
+    END
+  END FrameData_30
+  PIN FrameData_31
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 0.000 17.250 0.550 17.350 ;
+    END
+  END FrameData_31
+  PIN FrameData_O_0
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 4.850 21.400 4.950 ;
+    END
+  END FrameData_O_0
+  PIN FrameData_O_1
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 5.250 21.400 5.350 ;
+    END
+  END FrameData_O_1
+  PIN FrameData_O_2
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 5.650 21.400 5.750 ;
+    END
+  END FrameData_O_2
+  PIN FrameData_O_3
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 6.050 21.400 6.150 ;
+    END
+  END FrameData_O_3
+  PIN FrameData_O_4
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 6.450 21.400 6.550 ;
+    END
+  END FrameData_O_4
+  PIN FrameData_O_5
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 6.850 21.400 6.950 ;
+    END
+  END FrameData_O_5
+  PIN FrameData_O_6
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 7.250 21.400 7.350 ;
+    END
+  END FrameData_O_6
+  PIN FrameData_O_7
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 7.650 21.400 7.750 ;
+    END
+  END FrameData_O_7
+  PIN FrameData_O_8
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 8.050 21.400 8.150 ;
+    END
+  END FrameData_O_8
+  PIN FrameData_O_9
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 8.450 21.400 8.550 ;
+    END
+  END FrameData_O_9
+  PIN FrameData_O_10
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 8.850 21.400 8.950 ;
+    END
+  END FrameData_O_10
+  PIN FrameData_O_11
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 9.250 21.400 9.350 ;
+    END
+  END FrameData_O_11
+  PIN FrameData_O_12
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 9.650 21.400 9.750 ;
+    END
+  END FrameData_O_12
+  PIN FrameData_O_13
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 10.050 21.400 10.150 ;
+    END
+  END FrameData_O_13
+  PIN FrameData_O_14
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 10.450 21.400 10.550 ;
+    END
+  END FrameData_O_14
+  PIN FrameData_O_15
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 10.850 21.400 10.950 ;
+    END
+  END FrameData_O_15
+  PIN FrameData_O_16
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 11.250 21.400 11.350 ;
+    END
+  END FrameData_O_16
+  PIN FrameData_O_17
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 11.650 21.400 11.750 ;
+    END
+  END FrameData_O_17
+  PIN FrameData_O_18
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 12.050 21.400 12.150 ;
+    END
+  END FrameData_O_18
+  PIN FrameData_O_19
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 12.450 21.400 12.550 ;
+    END
+  END FrameData_O_19
+  PIN FrameData_O_20
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 12.850 21.400 12.950 ;
+    END
+  END FrameData_O_20
+  PIN FrameData_O_21
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 13.250 21.400 13.350 ;
+    END
+  END FrameData_O_21
+  PIN FrameData_O_22
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 13.650 21.400 13.750 ;
+    END
+  END FrameData_O_22
+  PIN FrameData_O_23
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 14.050 21.400 14.150 ;
+    END
+  END FrameData_O_23
+  PIN FrameData_O_24
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 14.450 21.400 14.550 ;
+    END
+  END FrameData_O_24
+  PIN FrameData_O_25
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 14.850 21.400 14.950 ;
+    END
+  END FrameData_O_25
+  PIN FrameData_O_26
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 15.250 21.400 15.350 ;
+    END
+  END FrameData_O_26
+  PIN FrameData_O_27
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 15.650 21.400 15.750 ;
+    END
+  END FrameData_O_27
+  PIN FrameData_O_28
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 16.050 21.400 16.150 ;
+    END
+  END FrameData_O_28
+  PIN FrameData_O_29
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 16.450 21.400 16.550 ;
+    END
+  END FrameData_O_29
+  PIN FrameData_O_30
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 16.850 21.400 16.950 ;
+    END
+  END FrameData_O_30
+  PIN FrameData_O_31
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET3 ;
+        RECT 20.850 17.250 21.400 17.350 ;
+    END
+  END FrameData_O_31
+  PIN FrameStrobe_0
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 6.050 0.000 6.150 0.550 ;
+    END
+  END FrameStrobe_0
+  PIN FrameStrobe_1
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 6.650 0.000 6.750 0.550 ;
+    END
+  END FrameStrobe_1
+  PIN FrameStrobe_2
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 7.250 0.000 7.350 0.550 ;
+    END
+  END FrameStrobe_2
+  PIN FrameStrobe_3
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 7.850 0.000 7.950 0.550 ;
+    END
+  END FrameStrobe_3
+  PIN FrameStrobe_4
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 8.450 0.000 8.550 0.550 ;
+    END
+  END FrameStrobe_4
+  PIN FrameStrobe_5
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 9.050 0.000 9.150 0.550 ;
+    END
+  END FrameStrobe_5
+  PIN FrameStrobe_6
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 9.650 0.000 9.750 0.550 ;
+    END
+  END FrameStrobe_6
+  PIN FrameStrobe_7
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 10.250 0.000 10.350 0.550 ;
+    END
+  END FrameStrobe_7
+  PIN FrameStrobe_8
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 12.450 0.000 12.550 0.550 ;
+    END
+  END FrameStrobe_8
+  PIN FrameStrobe_9
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 13.050 0.000 13.150 0.550 ;
+    END
+  END FrameStrobe_9
+  PIN FrameStrobe_10
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 13.650 0.000 13.750 0.550 ;
+    END
+  END FrameStrobe_10
+  PIN FrameStrobe_11
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 14.250 0.000 14.350 0.550 ;
+    END
+  END FrameStrobe_11
+  PIN FrameStrobe_12
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 14.850 0.000 14.950 0.550 ;
+    END
+  END FrameStrobe_12
+  PIN FrameStrobe_13
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 15.450 0.000 15.550 0.550 ;
+    END
+  END FrameStrobe_13
+  PIN FrameStrobe_14
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 16.050 0.000 16.150 0.550 ;
+    END
+  END FrameStrobe_14
+  PIN FrameStrobe_15
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 16.650 0.000 16.750 0.550 ;
+    END
+  END FrameStrobe_15
+  PIN FrameStrobe_16
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 17.250 0.000 17.350 0.550 ;
+    END
+  END FrameStrobe_16
+  PIN FrameStrobe_17
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 17.850 0.000 17.950 0.550 ;
+    END
+  END FrameStrobe_17
+  PIN FrameStrobe_18
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 18.450 0.000 18.550 0.550 ;
+    END
+  END FrameStrobe_18
+  PIN FrameStrobe_19
+    DIRECTION INPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 19.050 0.000 19.150 0.550 ;
+    END
+  END FrameStrobe_19
+  PIN FrameStrobe_O_0
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 4.050 21.850 4.150 22.400 ;
+    END
+  END FrameStrobe_O_0
+  PIN FrameStrobe_O_1
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 4.650 21.850 4.750 22.400 ;
+    END
+  END FrameStrobe_O_1
+  PIN FrameStrobe_O_2
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 5.250 21.850 5.350 22.400 ;
+    END
+  END FrameStrobe_O_2
+  PIN FrameStrobe_O_3
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 5.850 21.850 5.950 22.400 ;
+    END
+  END FrameStrobe_O_3
+  PIN FrameStrobe_O_4
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 6.450 21.850 6.550 22.400 ;
+    END
+  END FrameStrobe_O_4
+  PIN FrameStrobe_O_5
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 7.050 21.850 7.150 22.400 ;
+    END
+  END FrameStrobe_O_5
+  PIN FrameStrobe_O_6
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 7.650 21.850 7.750 22.400 ;
+    END
+  END FrameStrobe_O_6
+  PIN FrameStrobe_O_7
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 8.250 21.850 8.350 22.400 ;
+    END
+  END FrameStrobe_O_7
+  PIN FrameStrobe_O_8
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 8.850 21.850 8.950 22.400 ;
+    END
+  END FrameStrobe_O_8
+  PIN FrameStrobe_O_9
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 9.450 21.850 9.550 22.400 ;
+    END
+  END FrameStrobe_O_9
+  PIN FrameStrobe_O_10
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 10.050 21.850 10.150 22.400 ;
+    END
+  END FrameStrobe_O_10
+  PIN FrameStrobe_O_11
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 12.250 21.850 12.350 22.400 ;
+    END
+  END FrameStrobe_O_11
+  PIN FrameStrobe_O_12
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 12.850 21.850 12.950 22.400 ;
+    END
+  END FrameStrobe_O_12
+  PIN FrameStrobe_O_13
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 13.450 21.850 13.550 22.400 ;
+    END
+  END FrameStrobe_O_13
+  PIN FrameStrobe_O_14
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 14.050 21.850 14.150 22.400 ;
+    END
+  END FrameStrobe_O_14
+  PIN FrameStrobe_O_15
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 14.650 21.850 14.750 22.400 ;
+    END
+  END FrameStrobe_O_15
+  PIN FrameStrobe_O_16
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 15.250 21.850 15.350 22.400 ;
+    END
+  END FrameStrobe_O_16
+  PIN FrameStrobe_O_17
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 15.850 21.850 15.950 22.400 ;
+    END
+  END FrameStrobe_O_17
+  PIN FrameStrobe_O_18
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 16.450 21.850 16.550 22.400 ;
+    END
+  END FrameStrobe_O_18
+  PIN FrameStrobe_O_19
+    DIRECTION OUTPUT ;
+    USE SIGNAL ;
+    PORT
+      LAYER MET4 ;
+        RECT 17.050 21.850 17.150 22.400 ;
+    END
+  END FrameStrobe_O_19
+  PIN vdd_stripe_generate
+    DIRECTION INOUT ;
+    USE POWER ;
+    PORT
+      LAYER MET5 ;
+        RECT 0.000 2.500 21.400 3.500 ;
+    END
+  END vdd_stripe_generate
+  PIN vss_stripe_generate
+    DIRECTION INOUT ;
+    USE GROUND ;
+    PORT
+      LAYER MET5 ;
+        RECT 0.000 10.900 21.400 11.900 ;
+    END
+  END vss_stripe_generate
+  OBS
+    LAYER MET1 ;
+    RECT 0.000 0.000 21.400 22.400 ;
+    LAYER MET2 ;
+    RECT 0.000 0.000 21.400 22.400 ;
+    LAYER MET3 ;
+    RECT 0.000 0.000 21.400 4.750 ;
+    LAYER MET3 ;
+    RECT 0.650 4.750 20.750 5.050 ;
+    LAYER MET3 ;
+    RECT 0.000 5.050 21.400 5.150 ;
+    LAYER MET3 ;
+    RECT 0.650 5.150 20.750 5.450 ;
+    LAYER MET3 ;
+    RECT 0.000 5.450 21.400 5.550 ;
+    LAYER MET3 ;
+    RECT 0.650 5.550 20.750 5.850 ;
+    LAYER MET3 ;
+    RECT 0.000 5.850 21.400 5.950 ;
+    LAYER MET3 ;
+    RECT 0.650 5.950 20.750 6.250 ;
+    LAYER MET3 ;
+    RECT 0.000 6.250 21.400 6.350 ;
+    LAYER MET3 ;
+    RECT 0.650 6.350 20.750 6.650 ;
+    LAYER MET3 ;
+    RECT 0.000 6.650 21.400 6.750 ;
+    LAYER MET3 ;
+    RECT 0.650 6.750 20.750 7.050 ;
+    LAYER MET3 ;
+    RECT 0.000 7.050 21.400 7.150 ;
+    LAYER MET3 ;
+    RECT 0.650 7.150 20.750 7.450 ;
+    LAYER MET3 ;
+    RECT 0.000 7.450 21.400 7.550 ;
+    LAYER MET3 ;
+    RECT 0.650 7.550 20.750 7.850 ;
+    LAYER MET3 ;
+    RECT 0.000 7.850 21.400 7.950 ;
+    LAYER MET3 ;
+    RECT 0.650 7.950 20.750 8.250 ;
+    LAYER MET3 ;
+    RECT 0.000 8.250 21.400 8.350 ;
+    LAYER MET3 ;
+    RECT 0.650 8.350 20.750 8.650 ;
+    LAYER MET3 ;
+    RECT 0.000 8.650 21.400 8.750 ;
+    LAYER MET3 ;
+    RECT 0.650 8.750 20.750 9.050 ;
+    LAYER MET3 ;
+    RECT 0.000 9.050 21.400 9.150 ;
+    LAYER MET3 ;
+    RECT 0.650 9.150 20.750 9.450 ;
+    LAYER MET3 ;
+    RECT 0.000 9.450 21.400 9.550 ;
+    LAYER MET3 ;
+    RECT 0.650 9.550 20.750 9.850 ;
+    LAYER MET3 ;
+    RECT 0.000 9.850 21.400 9.950 ;
+    LAYER MET3 ;
+    RECT 0.650 9.950 20.750 10.250 ;
+    LAYER MET3 ;
+    RECT 0.000 10.250 21.400 10.350 ;
+    LAYER MET3 ;
+    RECT 0.650 10.350 20.750 10.650 ;
+    LAYER MET3 ;
+    RECT 0.000 10.650 21.400 10.750 ;
+    LAYER MET3 ;
+    RECT 0.650 10.750 20.750 11.050 ;
+    LAYER MET3 ;
+    RECT 0.000 11.050 21.400 11.150 ;
+    LAYER MET3 ;
+    RECT 0.650 11.150 20.750 11.450 ;
+    LAYER MET3 ;
+    RECT 0.000 11.450 21.400 11.550 ;
+    LAYER MET3 ;
+    RECT 0.650 11.550 20.750 11.850 ;
+    LAYER MET3 ;
+    RECT 0.000 11.850 21.400 11.950 ;
+    LAYER MET3 ;
+    RECT 0.650 11.950 20.750 12.250 ;
+    LAYER MET3 ;
+    RECT 0.000 12.250 21.400 12.350 ;
+    LAYER MET3 ;
+    RECT 0.650 12.350 20.750 12.650 ;
+    LAYER MET3 ;
+    RECT 0.000 12.650 21.400 12.750 ;
+    LAYER MET3 ;
+    RECT 0.650 12.750 20.750 13.050 ;
+    LAYER MET3 ;
+    RECT 0.000 13.050 21.400 13.150 ;
+    LAYER MET3 ;
+    RECT 0.650 13.150 20.750 13.450 ;
+    LAYER MET3 ;
+    RECT 0.000 13.450 21.400 13.550 ;
+    LAYER MET3 ;
+    RECT 0.650 13.550 20.750 13.850 ;
+    LAYER MET3 ;
+    RECT 0.000 13.850 21.400 13.950 ;
+    LAYER MET3 ;
+    RECT 0.650 13.950 20.750 14.250 ;
+    LAYER MET3 ;
+    RECT 0.000 14.250 21.400 14.350 ;
+    LAYER MET3 ;
+    RECT 0.650 14.350 20.750 14.650 ;
+    LAYER MET3 ;
+    RECT 0.000 14.650 21.400 14.750 ;
+    LAYER MET3 ;
+    RECT 0.650 14.750 20.750 15.050 ;
+    LAYER MET3 ;
+    RECT 0.000 15.050 21.400 15.150 ;
+    LAYER MET3 ;
+    RECT 0.650 15.150 20.750 15.450 ;
+    LAYER MET3 ;
+    RECT 0.000 15.450 21.400 15.550 ;
+    LAYER MET3 ;
+    RECT 0.650 15.550 20.750 15.850 ;
+    LAYER MET3 ;
+    RECT 0.000 15.850 21.400 15.950 ;
+    LAYER MET3 ;
+    RECT 0.650 15.950 20.750 16.250 ;
+    LAYER MET3 ;
+    RECT 0.000 16.250 21.400 16.350 ;
+    LAYER MET3 ;
+    RECT 0.650 16.350 20.750 16.650 ;
+    LAYER MET3 ;
+    RECT 0.000 16.650 21.400 16.750 ;
+    LAYER MET3 ;
+    RECT 0.650 16.750 20.750 17.050 ;
+    LAYER MET3 ;
+    RECT 0.000 17.050 21.400 17.150 ;
+    LAYER MET3 ;
+    RECT 0.650 17.150 20.750 17.450 ;
+    LAYER MET3 ;
+    RECT 0.000 17.450 21.400 22.400 ;
+    LAYER MET4 ;
+    RECT 0.000 0.000 1.950 22.400 ;
+    LAYER MET4 ;
+    RECT 1.950 0.650 2.250 22.400 ;
+    LAYER MET4 ;
+    RECT 2.250 0.000 3.950 22.400 ;
+    LAYER MET4 ;
+    RECT 3.950 0.000 4.150 21.750 ;
+    LAYER MET4 ;
+    RECT 4.150 0.650 4.250 21.750 ;
+    LAYER MET4 ;
+    RECT 4.250 0.650 4.450 22.400 ;
+    LAYER MET4 ;
+    RECT 4.450 0.000 4.550 22.400 ;
+    LAYER MET4 ;
+    RECT 4.550 0.000 4.750 21.750 ;
+    LAYER MET4 ;
+    RECT 4.750 0.650 4.850 21.750 ;
+    LAYER MET4 ;
+    RECT 4.850 0.650 5.050 22.400 ;
+    LAYER MET4 ;
+    RECT 5.050 0.000 5.150 22.400 ;
+    LAYER MET4 ;
+    RECT 5.150 0.000 5.350 21.750 ;
+    LAYER MET4 ;
+    RECT 5.350 0.650 5.450 21.750 ;
+    LAYER MET4 ;
+    RECT 5.450 0.650 5.650 22.400 ;
+    LAYER MET4 ;
+    RECT 5.650 0.000 5.750 22.400 ;
+    LAYER MET4 ;
+    RECT 5.750 0.000 5.950 21.750 ;
+    LAYER MET4 ;
+    RECT 5.950 0.650 6.050 21.750 ;
+    LAYER MET4 ;
+    RECT 6.050 0.650 6.250 22.400 ;
+    LAYER MET4 ;
+    RECT 6.250 0.000 6.350 22.400 ;
+    LAYER MET4 ;
+    RECT 6.350 0.000 6.550 21.750 ;
+    LAYER MET4 ;
+    RECT 6.550 0.650 6.650 21.750 ;
+    LAYER MET4 ;
+    RECT 6.650 0.650 6.850 22.400 ;
+    LAYER MET4 ;
+    RECT 6.850 0.000 6.950 22.400 ;
+    LAYER MET4 ;
+    RECT 6.950 0.000 7.150 21.750 ;
+    LAYER MET4 ;
+    RECT 7.150 0.650 7.250 21.750 ;
+    LAYER MET4 ;
+    RECT 7.250 0.650 7.450 22.400 ;
+    LAYER MET4 ;
+    RECT 7.450 0.000 7.550 22.400 ;
+    LAYER MET4 ;
+    RECT 7.550 0.000 7.750 21.750 ;
+    LAYER MET4 ;
+    RECT 7.750 0.650 7.850 21.750 ;
+    LAYER MET4 ;
+    RECT 7.850 0.650 8.050 22.400 ;
+    LAYER MET4 ;
+    RECT 8.050 0.000 8.150 22.400 ;
+    LAYER MET4 ;
+    RECT 8.150 0.000 8.350 21.750 ;
+    LAYER MET4 ;
+    RECT 8.350 0.650 8.450 21.750 ;
+    LAYER MET4 ;
+    RECT 8.450 0.650 8.650 22.400 ;
+    LAYER MET4 ;
+    RECT 8.650 0.000 8.750 22.400 ;
+    LAYER MET4 ;
+    RECT 8.750 0.000 8.950 21.750 ;
+    LAYER MET4 ;
+    RECT 8.950 0.650 9.050 21.750 ;
+    LAYER MET4 ;
+    RECT 9.050 0.650 9.250 22.400 ;
+    LAYER MET4 ;
+    RECT 9.250 0.000 9.350 22.400 ;
+    LAYER MET4 ;
+    RECT 9.350 0.000 9.550 21.750 ;
+    LAYER MET4 ;
+    RECT 9.550 0.650 9.650 21.750 ;
+    LAYER MET4 ;
+    RECT 9.650 0.650 9.850 22.400 ;
+    LAYER MET4 ;
+    RECT 9.850 0.000 9.950 22.400 ;
+    LAYER MET4 ;
+    RECT 9.950 0.000 10.150 21.750 ;
+    LAYER MET4 ;
+    RECT 10.150 0.650 10.250 21.750 ;
+    LAYER MET4 ;
+    RECT 10.250 0.650 10.450 22.400 ;
+    LAYER MET4 ;
+    RECT 10.450 0.000 12.150 22.400 ;
+    LAYER MET4 ;
+    RECT 12.150 0.000 12.350 21.750 ;
+    LAYER MET4 ;
+    RECT 12.350 0.650 12.450 21.750 ;
+    LAYER MET4 ;
+    RECT 12.450 0.650 12.650 22.400 ;
+    LAYER MET4 ;
+    RECT 12.650 0.000 12.750 22.400 ;
+    LAYER MET4 ;
+    RECT 12.750 0.000 12.950 21.750 ;
+    LAYER MET4 ;
+    RECT 12.950 0.650 13.050 21.750 ;
+    LAYER MET4 ;
+    RECT 13.050 0.650 13.250 22.400 ;
+    LAYER MET4 ;
+    RECT 13.250 0.000 13.350 22.400 ;
+    LAYER MET4 ;
+    RECT 13.350 0.000 13.550 21.750 ;
+    LAYER MET4 ;
+    RECT 13.550 0.650 13.650 21.750 ;
+    LAYER MET4 ;
+    RECT 13.650 0.650 13.850 22.400 ;
+    LAYER MET4 ;
+    RECT 13.850 0.000 13.950 22.400 ;
+    LAYER MET4 ;
+    RECT 13.950 0.000 14.150 21.750 ;
+    LAYER MET4 ;
+    RECT 14.150 0.650 14.250 21.750 ;
+    LAYER MET4 ;
+    RECT 14.250 0.650 14.450 22.400 ;
+    LAYER MET4 ;
+    RECT 14.450 0.000 14.550 22.400 ;
+    LAYER MET4 ;
+    RECT 14.550 0.000 14.750 21.750 ;
+    LAYER MET4 ;
+    RECT 14.750 0.650 14.850 21.750 ;
+    LAYER MET4 ;
+    RECT 14.850 0.650 15.050 22.400 ;
+    LAYER MET4 ;
+    RECT 15.050 0.000 15.150 22.400 ;
+    LAYER MET4 ;
+    RECT 15.150 0.000 15.350 21.750 ;
+    LAYER MET4 ;
+    RECT 15.350 0.650 15.450 21.750 ;
+    LAYER MET4 ;
+    RECT 15.450 0.650 15.650 22.400 ;
+    LAYER MET4 ;
+    RECT 15.650 0.000 15.750 22.400 ;
+    LAYER MET4 ;
+    RECT 15.750 0.000 15.950 21.750 ;
+    LAYER MET4 ;
+    RECT 15.950 0.650 16.050 21.750 ;
+    LAYER MET4 ;
+    RECT 16.050 0.650 16.250 22.400 ;
+    LAYER MET4 ;
+    RECT 16.250 0.000 16.350 22.400 ;
+    LAYER MET4 ;
+    RECT 16.350 0.000 16.550 21.750 ;
+    LAYER MET4 ;
+    RECT 16.550 0.650 16.650 21.750 ;
+    LAYER MET4 ;
+    RECT 16.650 0.650 16.850 22.400 ;
+    LAYER MET4 ;
+    RECT 16.850 0.000 16.950 22.400 ;
+    LAYER MET4 ;
+    RECT 16.950 0.000 17.150 21.750 ;
+    LAYER MET4 ;
+    RECT 17.150 0.650 17.250 21.750 ;
+    LAYER MET4 ;
+    RECT 17.250 0.650 17.450 22.400 ;
+    LAYER MET4 ;
+    RECT 17.450 0.000 17.750 22.400 ;
+    LAYER MET4 ;
+    RECT 17.750 0.650 18.050 22.400 ;
+    LAYER MET4 ;
+    RECT 18.050 0.000 18.350 22.400 ;
+    LAYER MET4 ;
+    RECT 18.350 0.650 18.650 22.400 ;
+    LAYER MET4 ;
+    RECT 18.650 0.000 18.950 22.400 ;
+    LAYER MET4 ;
+    RECT 18.950 0.650 19.250 22.400 ;
+    LAYER MET4 ;
+    RECT 19.250 0.000 21.400 22.400 ;
+    LAYER MET5 ;
+    RECT 0.000 0.000 21.400 2.400 ;
+    LAYER MET5 ;
+    RECT 0.000 3.600 21.400 10.800 ;
+    LAYER MET5 ;
+    RECT 0.000 12.000 21.400 22.400 ;
+  END
+
+END NE_term
+
+END LIBRARY

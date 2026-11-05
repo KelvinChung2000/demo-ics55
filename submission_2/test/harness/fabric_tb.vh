@@ -1,0 +1,255 @@
+// Body of every <design>_tb: the fabric loaded over SPI from +bitstream_hex,
+// the reference design `USER_DESIGN beside it on the same pads, and the
+// per-cycle compare. Include inside `module `USER_DESIGN_TB;` after defining
+// USER_DESIGN and USER_DESIGN_TB; the includer supplies `task stimulus`, which
+// starts on a falling CLK edge 100 cycles after configuration. The includer
+// defines DESIGN_PADS when the design's io_* ports are wider than 10.
+
+`ifndef DESIGN_PADS
+`define DESIGN_PADS 10
+`endif
+    localparam integer PADS = 30;
+
+    wire [PADS-1:0] A_IN_top ;
+    wire [PADS-1:0] A_EN_top ;
+    reg  [PADS-1:0] pad_in = 0;
+    wire [PADS-1:0] A_OUT_top;
+
+    reg         CLK                 = 1'b0 ;
+    reg         resetn              = 1'b1 ;
+    reg         spi_sck             = 1'b0 ;
+    reg         spi_cs_n            = 1'b1 ;
+    reg         spi_mosi            = 1'b0 ;
+    reg         rx                  = 1'b1 ;
+    wire        com_active                 ;
+    wire        receive_led                ;
+    reg         user_reset          = 1'b0 ;
+    reg         config_done         = 1'b0 ;
+    wire        config_busy                ;
+    wire        configured                 ;
+
+    assign A_OUT_top = pad_in;
+
+    wire [`DESIGN_PADS-1:0] A_IN_top_gold, oeb_gold, A_EN_top_gold;
+    // A design leaves the pads above DESIGN_PADS unconfigured; the tester holds them at pad_in.
+    wire [PADS-1:0] tester_drive = {{(PADS - `DESIGN_PADS){1'b1}}, oeb_gold};
+    wire [`DESIGN_PADS-1:0] design_in = A_IN_top[`DESIGN_PADS-1:0];
+    wire [`DESIGN_PADS-1:0] design_en = A_EN_top[`DESIGN_PADS-1:0];
+
+    // Instantiate both the fabric and the reference DUT
+`ifdef GL_CHIP
+    // Every signal crosses a pad of submission/chip/top.v. The tester drives
+    // only the user pins the reference design reads.
+    eFPGA_chip_gl top_i (
+        .A_OUT_top_drive    (tester_drive     ),
+`elsif GL_TOP
+    // The hardened netlist's ports are per bit; test/scripts/gen_gl_top.py's wrapper in the submission restores the vectors.
+    eFPGA_top_gl top_i (
+`else
+    eFPGA_top top_i (
+`endif
+        .A_EN_top           (A_EN_top         ),
+        .A_IN_top           (A_IN_top         ),
+        .A_OUT_top          (A_OUT_top        ),
+        // The fabric clock is CLK on its own pad (see harness/pcf_top.v).
+        .USER_CLK           (CLK              ),
+        .USER_RESET         (user_reset       ),
+        .CLK                (CLK              ),
+        .resetn             (resetn           ),
+        .Rx                 (rx               ),
+        .ComActive          (com_active       ),
+        .ReceiveLED         (receive_led      ),
+        .spi_sck            (spi_sck          ),
+        .spi_cs_n           (spi_cs_n         ),
+        .spi_mosi           (spi_mosi         ),
+        .ConfigBusy         (config_busy      ),
+        .Configured         (configured       )
+    );
+
+
+    `USER_DESIGN dut_i (
+        .clk   (CLK          ),
+        .user_reset(user_reset),
+        .io_out(A_IN_top_gold),
+        .io_oeb(oeb_gold     ),
+        .io_in (A_OUT_top[`DESIGN_PADS-1:0])
+    );
+
+    assign A_EN_top_gold = ~oeb_gold;
+
+    localparam integer       MAX_BITBYTES               = 16384;
+    reg                [7:0] bitstream   [MAX_BITBYTES]        ;
+    integer                  n_bytes                    = 0    ;
+    integer                  hex_fd                            ;
+    reg                [7:0] hex_byte                          ;
+
+    // a slower clock to make it easier to meet timing in gate-level sim
+    always #500000 CLK = (CLK === 1'b0);
+
+    integer i                 ;
+    integer spi_bit           ;
+    reg     [31:0] word       ;
+    reg     have_errors = 1'b0;
+    integer compares    = 0   ;
+    integer mismatches  = 0   ;
+    integer checks      = 0   ;
+    integer check_fails = 0   ;
+    // Fixed so a rerun drives the same random stimulus.
+    integer seed        = 32'h0FAB;
+
+    // One compare on the next falling edge, where the pads also change.
+    task automatic compare;
+        begin
+            @(negedge CLK);
+            $display("fabric(A_IN_top) = 0x%X gold = 0x%X, fabric(A_EN_top) = 0x%X gold = 0x%X",
+                design_in, A_IN_top_gold, design_en, A_EN_top_gold);
+            compares = compares + 1;
+            // A pad's output data is observable only while its output is enabled.
+            if ((design_in & A_EN_top_gold) !== (A_IN_top_gold & A_EN_top_gold)
+                || design_en !== A_EN_top_gold) begin
+                mismatches = mismatches + 1;
+                have_errors = 1'b1;
+            end
+        end
+    endtask
+
+    // A FABulous integration-test assertion: fabric output against the value
+    // the design must produce, independent of the reference model.
+    task automatic check(input [`DESIGN_PADS-1:0] fabric, input [`DESIGN_PADS-1:0] expected);
+        begin
+            checks = checks + 1;
+            if (fabric !== expected) begin
+                check_fails = check_fails + 1;
+                have_errors = 1'b1;
+                $display("check: fabric = 0x%X expected = 0x%X MISMATCH", fabric, expected);
+            end else $display("check: fabric = 0x%X expected = 0x%X", fabric, expected);
+        end
+    endtask
+
+    reg [2047:0] bitstream_hex_arg  ; // 256 bytes for characters
+    reg [2047:0] output_waveform_arg; // 256 bytes for characters
+    integer      waveform_depth     ;
+
+    // Gate-level only: the hardened fabric powers up X-pessimistic. The
+    // generated force_block.vh deposits 0 onto every fabric net and pulses the
+    // flop async resets once config_done is high.
+`ifdef GL_SIM
+    `include "force_block.vh"
+    `define GL_PROGRESS
+`endif
+`ifdef GL_TOP
+    `define GL_PROGRESS
+`endif
+
+`ifdef GL_PROGRESS
+    // Progress for runtime estimates of the (slow) whole-fabric GL run.
+    // +max_cycles=N ends a smoke run after N CLK cycles.
+    integer n_cycles = 0;
+    integer max_cycles;
+    initial if (!$value$plusargs("max_cycles=%d", max_cycles)) max_cycles = 0;
+    always @(posedge CLK) begin
+        n_cycles = n_cycles + 1;
+        if (n_cycles % 1000 == 0) $display("[gl] %0d cycles @ %0t", n_cycles, $time);
+        if (n_cycles == max_cycles) begin
+            $display("[gl] stopped at +max_cycles=%0d @ %0t", max_cycles, $time);
+            $finish;
+        end
+    end
+`endif
+
+    always @(config_busy) $display("ConfigBusy = %b @ %0t", config_busy, $time);
+    always @(configured) $display("Configured = %b @ %0t", configured, $time);
+
+    initial begin
+
+        // +waveform_depth=1 keeps the dump to this scope; a whole-fabric dump
+        // of the SPI load runs to tens of GB.
+        if (!$value$plusargs("waveform_depth=%d", waveform_depth)) waveform_depth = 0;
+        if ($value$plusargs("output_waveform=%s", output_waveform_arg)) begin
+            $dumpfile(output_waveform_arg);
+            $dumpvars(waveform_depth, `USER_DESIGN_TB);
+            $display("Output waveform set to %s", output_waveform_arg);
+        end
+
+`ifndef EMULATION
+
+        if ($value$plusargs("bitstream_hex=%s", bitstream_hex_arg)) begin
+            // Read to the end of the file, so the load stops where the
+            // bitstream does rather than at MAX_BITBYTES.
+            hex_fd = $fopen(bitstream_hex_arg, "r");
+            if (hex_fd == 0) begin
+                $display("Error: cannot open %s", bitstream_hex_arg);
+                $fatal;
+            end
+            while ($fscanf(hex_fd, "%h", hex_byte) == 1) begin
+                if (n_bytes == MAX_BITBYTES) begin
+                    $display("Error: the bitstream is longer than MAX_BITBYTES = %0d", MAX_BITBYTES);
+                    $fatal;
+                end
+                bitstream[n_bytes] = hex_byte;
+                n_bytes = n_bytes + 1;
+            end
+            if (!$feof(hex_fd) || n_bytes == 0 || n_bytes % 4 != 0) begin
+                $display("Error: %s holds %0d bytes before its first non-hex entry; expected whole 32-bit words to the end of the file",
+                    bitstream_hex_arg, n_bytes);
+                $fatal;
+            end
+            $fclose(hex_fd);
+            $display("Read %0d bitstream bytes from %s", n_bytes, bitstream_hex_arg);
+        end else begin
+            $display("Error: No bitstream provided as $plusargs bitstream_hex.");
+            $fatal;
+        end
+
+
+        #100;
+        resetn = 1'b0;
+        // fabric_config resets synchronously, so reset has to span clock edges.
+        repeat (2) @(posedge CLK);
+        resetn = 1'b1;
+        #10000;
+        repeat (20) @(posedge CLK);
+        #2500;
+        // SPI mode 0, MSB first, at the f_clk = 4 f_sck config_spi.v asks for:
+        // SCK low and high two CLK periods each, every change on a falling edge.
+        @(negedge CLK);
+        spi_cs_n = 1'b0;
+        repeat (4) @(negedge CLK);
+        for (i = 0; i < n_bytes; i = i + 4) begin
+            word = {bitstream[i], bitstream[i+1], bitstream[i+2], bitstream[i+3]};
+            for (spi_bit = 31; spi_bit >= 0; spi_bit = spi_bit - 1) begin
+                spi_mosi = word[spi_bit];
+                repeat (2) @(negedge CLK);
+                spi_sck = 1'b1;
+                repeat (2) @(negedge CLK);
+                spi_sck = 1'b0;
+            end
+        end
+        repeat (4) @(negedge CLK);
+        spi_cs_n = 1'b1;
+        repeat (8) @(posedge CLK);
+        if (configured !== 1'b1) begin
+            $display("Error: the bitstream finished loading but Configured is %b", configured);
+            $fatal;
+        end
+`endif
+        config_done = 1'b1;  // configuration upload complete -> trigger GL X-init
+`ifdef GL_TOP
+        // Gate-level flops power up X, and the gate-level LUT does not mask X the
+        // way the design's synchronous reset needs, so clear them through
+        // USER_RESET (GBUF and GSR) first, as a bring-up would.
+        user_reset = 1'b1;
+        repeat (2) @(posedge CLK);
+        user_reset = 1'b0;
+`endif
+        repeat (100) @(posedge CLK);
+        // Pads change on the falling edge so the gold and the fabric (whose
+        // clock arrives through the GBUF) sample the same value.
+        @(negedge CLK);
+        stimulus;
+        $display("total: %0d of %0d compares match", compares - mismatches, compares);
+        $display("checks: %0d of %0d pass", checks - check_fails, checks);
+
+        if (have_errors) $fatal;
+        else $finish;
+    end

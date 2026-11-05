@@ -1,0 +1,4 @@
+# S_IO without its IOBUF, so the bottom row carries no pad. The height is S_IO's
+# frozen row height; the width comes from LUT4x8_ha's column claim, as S_IO's did.
+[die]
+height_micron = 22.4

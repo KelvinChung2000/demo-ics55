@@ -1,0 +1,134 @@
+OpenSTA 2.7.0 GITDIR-NOT Copyright (c) 2025, Parallax Software, Inc.
+License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+
+This is free software, and you are free to change and redistribute it
+under certain conditions; type `show_copying' for details. 
+This program comes with ABSOLUTELY NO WARRANTY; for details type `show_warranty'.
+Warning: There are 30 unconstrained endpoints.
+  PAD_IO[0]
+  PAD_IO[10]
+  PAD_IO[11]
+  PAD_IO[12]
+  PAD_IO[13]
+  PAD_IO[14]
+  PAD_IO[15]
+  PAD_IO[16]
+  PAD_IO[17]
+  PAD_IO[18]
+  PAD_IO[19]
+  PAD_IO[1]
+  PAD_IO[20]
+  PAD_IO[21]
+  PAD_IO[22]
+  PAD_IO[23]
+  PAD_IO[24]
+  PAD_IO[25]
+  PAD_IO[26]
+  PAD_IO[27]
+  PAD_IO[28]
+  PAD_IO[29]
+  PAD_IO[2]
+  PAD_IO[3]
+  PAD_IO[4]
+  PAD_IO[5]
+  PAD_IO[6]
+  PAD_IO[7]
+  PAD_IO[8]
+  PAD_IO[9]
+max_delay/setup group CLK
+
+                                     Required   Actual
+Endpoint                                Delay    Delay    Slack
+---------------------------------------------------------------
+PAD_CFG_LED (output)                   10.000    5.714    4.286 (MET)
+PAD_CFG_BUSY (output)                  10.000    5.645    4.355 (MET)
+PAD_UART_ACTIVE (output)               10.000    5.299    4.701 (MET)
+PAD_CFG_DONE (output)                  10.000    5.279    4.721 (MET)
+u_efpga/resetn (eFPGA_top)             10.735    2.037    8.698 (MET)
+u_efpga/spi_cs_n (eFPGA_top)           12.314    1.996   10.317 (MET)
+u_efpga/spi_mosi (eFPGA_top)           12.297    1.976   10.321 (MET)
+u_efpga/Rx (eFPGA_top)                 12.314    1.987   10.326 (MET)
+u_efpga/spi_sck (eFPGA_top)            12.297    1.930   10.367 (MET)
+
+min_delay/hold group CLK
+
+                                     Required   Actual
+Endpoint                                Delay    Delay    Slack
+---------------------------------------------------------------
+PAD_UART_ACTIVE (output)                0.050    5.230    5.180 (MET)
+PAD_CFG_DONE (output)                   0.050    5.241    5.191 (MET)
+PAD_CFG_BUSY (output)                   0.050    5.572    5.522 (MET)
+PAD_CFG_LED (output)                    0.050    5.651    5.601 (MET)
+
+Startpoint: u_efpga (rising edge-triggered flip-flop clocked by CLK)
+Endpoint: PAD_CFG_DONE (output port clocked by CLK)
+Path Group: CLK
+Path Type: max
+
+   Delay     Time   Description
+-----------------------------------------------------------
+   0.000    0.000   clock CLK (rise edge)
+   0.000    0.000   clock source latency
+   0.000    0.000 ^ PAD_CLK (in)
+   1.869    1.869 ^ u_pad_0/C (P65_1233_PBMUX)
+   0.027    1.896 v CTS_ccl_inv_00002/Y (INVX20H7L)
+   0.037    1.933 ^ CTS_ccl_a_inv_00001/Y (INVX20H7L)
+   0.000    1.933 ^ u_efpga/CLK (eFPGA_top)
+   0.689    2.622 ^ u_efpga/Configured (eFPGA_top)
+   0.083    2.705 ^ placeFE_OFC62_Configured/Y (BUFX5H7L)
+   0.049    2.754 ^ placeFE_OFC12_Configured/Y (BUFX5H7L)
+   0.043    2.798 ^ placeFE_OFC84_Configured/Y (BUFX7H7L)
+   0.041    2.838 ^ placeFE_OFC14_Configured/Y (BUFX8H7L)
+   0.043    2.882 ^ placeFE_OFC16_Configured/Y (BUFX7H7L)
+   0.044    2.926 ^ placeFE_OFC88_FE_OFN16_Configured/Y (BUFX10H7L)
+   0.052    2.978 ^ placeFE_OFC89_FE_OFN16_Configured/Y (BUFX16H7L)
+   2.301    5.279 ^ u_pad_3/PAD (P65_1233_PBMUX)
+   0.000    5.279 ^ PAD_CFG_DONE (out)
+            5.279   data arrival time
+
+  10.000   10.000   clock CLK (rise edge)
+   0.000   10.000   clock network delay (propagated)
+   0.000   10.000   clock reconvergence pessimism
+   0.000   10.000   output external delay
+           10.000   data required time
+-----------------------------------------------------------
+           10.000   data required time
+           -5.279   data arrival time
+-----------------------------------------------------------
+            4.721   slack (MET)
+
+
+Startpoint: PAD_SPI_MOSI (input port clocked by CLK)
+Endpoint: u_efpga (rising edge-triggered flip-flop clocked by CLK)
+Path Group: CLK
+Path Type: max
+
+   Delay     Time   Description
+-----------------------------------------------------------
+   0.000    0.000   clock CLK (rise edge)
+   0.000    0.000   clock network delay (propagated)
+   0.000    0.000 ^ input external delay
+   0.000    0.000 ^ PAD_SPI_MOSI (in)
+   1.864    1.864 ^ u_pad_10/C (P65_1233_PBMUX)
+   0.059    1.923 ^ placeFE_OFC79_spi_mosi/Y (BUFX5H7L)
+   0.052    1.976 ^ placeFE_OFC55_spi_mosi/Y (BUFX3P5H7L)
+   0.000    1.976 ^ u_efpga/spi_mosi (eFPGA_top)
+            1.976   data arrival time
+
+  10.000   10.000   clock CLK (rise edge)
+   0.000   10.000   clock source latency
+   0.000   10.000 ^ PAD_CLK (in)
+   1.867   11.867 ^ u_pad_0/C (P65_1233_PBMUX)
+   0.024   11.892 v CTS_ccl_inv_00002/Y (INVX20H7L)
+   0.036   11.928 ^ CTS_ccl_a_inv_00001/Y (INVX20H7L)
+   0.000   11.928 ^ u_efpga/CLK (eFPGA_top)
+   0.000   11.928   clock reconvergence pessimism
+   0.369   12.297   library setup time
+           12.297   data required time
+-----------------------------------------------------------
+           12.297   data required time
+           -1.976   data arrival time
+-----------------------------------------------------------
+           10.321   slack (MET)
+
+

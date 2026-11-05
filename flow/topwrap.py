@@ -10,11 +10,12 @@ it takes come from `config_frontend`, which serves UART, bitbang and SPI. Its
 32-bit parallel port and the bitbang port are tied off, since the MPW allows 36
 pads: only UART and SPI reach a pin.
 
-A tile port `eFPGA.v` marks `//EXTERNAL` becomes one bit of a top-level bus
-named after the port, numbered the way FABulous numbers them: bottom row first,
-west to east within a row. A user design's pin constraints index those buses, so
-keeping FABulous's order is what lets a wrapper written against the old top load
-unchanged. `CONFIGURED_top` is the exception. It tells a BEL the fabric has
+A tile port `eFPGA.v` marks `//EXTERNAL` becomes one bit of a top-level bus. The
+east column comes first, then the west column, then the rest, each bottom row
+first and west to east within a row. A user design's pin constraints index those
+buses, so east first keeps bits 0 to 9 on the east IO that the chip's existing
+pads already reach when a grid adds IO on other edges. `CONFIGURED_top` is the
+exception. It tells a BEL the fabric has
 finished loading, which only the loader knows, so `configured_o` drives it
 rather than a pin. A one-bit port in `PAD_NAMES` is the other exception: it
 becomes a scalar named for what the pad carries.
@@ -59,16 +60,17 @@ class External:
 
 
 def read_externals(text: str) -> dict[str, list[External]]:
-    """Group `eFPGA.v`'s external scalars by port, each bus in FABulous's order."""
+    """Group `eFPGA.v`'s external scalars by port, each bus east column first."""
     buses: dict[str, list[External]] = {}
     for direction, x, y, port in EXTERNAL_RE.findall(text):
         buses.setdefault(port, []).append(External(direction, int(x), int(y), port))
     if not buses:
         raise ValueError("eFPGA.v declares no //EXTERNAL tile port")
+    east = max(bit.x for bits in buses.values() for bit in bits)
     for port, bits in buses.items():
         if len({bit.direction for bit in bits}) != 1:
             raise ValueError(f"{port} is an input on one tile and an output on another")
-        bits.sort(key=lambda bit: (-bit.y, bit.x))
+        bits.sort(key=lambda bit: (0 if bit.x == east else 1 if bit.x == 0 else 2, -bit.y, bit.x))
     return buses
 
 

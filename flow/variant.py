@@ -25,6 +25,7 @@ class Variant(str, Enum):
 
     BRAM = "bram"
     NOBRAM = "nobram"
+    IO30 = "io30"
 
 
 ENVIRONMENT = "FLOW_VARIANT"

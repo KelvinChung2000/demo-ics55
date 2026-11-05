@@ -9,3 +9,8 @@
 # with 0 DRC. Round r2, 2026-09-21.
 [die]
 height_micron = 22.4
+
+[synthesis]
+# ABC sizes against abc_load alone and leaves X0P5 drivers on nets that route
+# to 0.03 to 0.1 pF; the weak drives it may not use cost no area to ban.
+avoid_weak_drives = true

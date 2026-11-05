@@ -14,7 +14,8 @@ read_verilog top_full.v
 link_design eFPGA_top
 
 set user [get_ports {A_OUT_top_* A_IN_top_* A_EN_top_* USER_CLK USER_RESET}]
-if {[llength $user] != 32} { error "expected 32 user-side ports, found [llength $user]" }
+set expected [expr {3 * [llength [get_ports A_IN_top_*]] + 2}]
+if {[llength $user] != $expected} { error "expected $expected user-side ports, found [llength $user]" }
 foreach port $user {
   set name [get_name $port]
   disconnect_pin $name $port

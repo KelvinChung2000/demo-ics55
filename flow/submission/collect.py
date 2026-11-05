@@ -1,11 +1,11 @@
-"""Assemble the submission appendix from the working tree and build/nobram.
+"""Assemble a submission appendix from the working tree and build/<variant>.
 
 The appendix is a snapshot, so it is rebuilt from its sources rather than
 edited by hand: every file under rtl/, fabric/, physical/, signoff/, sta/, gl/
 and chip/, and test/bitstream, test/results and test/model/fabulous, is copied (and large
 text views gzipped) by this script, and a rerun replaces those directories. The
 report, images/, the README and the rest of test/ are hand-written and are left
-alone; test/designs holds the designs' only copy, which fabrics/nobram links to.
+alone; test/designs holds the designs' only copy, which fabrics/<variant> links to.
 The bitstream and logs come from the harness's own runs in test/build.
 
 FABulous and Yosys write absolute source paths into eFPGA_geometry.csv and the
@@ -18,7 +18,7 @@ vendor model among them) never enter the appendix. fabric/ is the FABulous
 project of the fabric with its symlinks resolved, holding the grid's tiles and
 only the primitives that closure reaches, so it survives a zip.
 
-    python3 flow/submission/collect.py
+    python3 flow/submission/collect.py <variant> <directory>
 """
 
 import csv
@@ -33,9 +33,12 @@ from collections.abc import Iterator
 from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / "submission"
-FABRIC = ROOT / "fabrics" / "nobram"
-BUILD = ROOT / "build" / "nobram"
+if len(sys.argv) != 3:
+    raise SystemExit(__doc__)
+VARIANT, DIRECTORY = sys.argv[1:]
+OUT = ROOT / DIRECTORY
+FABRIC = ROOT / "fabrics" / VARIANT
+BUILD = ROOT / "build" / VARIANT
 TOP = BUILD / "top" / "default"
 FULLSTA = BUILD / "fullsta"
 CHIP = BUILD / "chip"
@@ -313,6 +316,9 @@ def collect_chip() -> None:
         copy(f, out / "etm" / f.name)
     for f in sorted(CHIP.glob("sta_*.log")):
         copy(f, out / "sta" / f.name)
+    # Only a build extended from the foundry's top.v has a pad plan.
+    for f in CHIP.glob("pad_plan.csv"):
+        copy(f, out / f.name)
 
 
 def main() -> None:

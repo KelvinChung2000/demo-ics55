@@ -281,6 +281,27 @@ def chip_top(
 
 
 @app.command()
+def extend_top(
+    foundry_netlist: Path,
+    foundry_def: Path,
+    directory: Path | None = None,
+    out: Path | None = None,
+) -> None:
+    """Add the macro's new IO pads to the foundry's top.v and write pad_plan.csv."""
+    from flow import extendtop
+
+    directory = directory or paths().build / "top"
+    out = out or paths().build / "chip"
+    plan = extendtop.write(
+        foundry_netlist=foundry_netlist,
+        foundry_def=foundry_def,
+        lef=directory / "default" / "Harden_ecc" / "output" / "eFPGA_top_Harden.lef",
+        out=out,
+    )
+    typer.echo(f"{out}: {len(plan)} pads and corners placed")
+
+
+@app.command()
 def check() -> None:
     """Test the plan's four wiring properties without running anything."""
     from flow import verify

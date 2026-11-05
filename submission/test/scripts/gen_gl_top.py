@@ -16,8 +16,9 @@ only; it forces and deposits nothing.
 With ``--chip``, the wrapper is ``eFPGA_chip_gl`` instead: the same RTL port
 list, but driving and reading only the ``PAD_*`` ports of the chip-level
 ``top`` (submission/chip/top.v), so every signal crosses a P65_1233_PBMUX model.
-The pad each RTL bit uses is read from ``top``'s connections, and every netlist
-port must reach exactly one pad. A bidirectional pad is the tester's pin: the
+The pad each RTL bit uses is read from ``top``'s connections, through any
+buffers and even inverter chains, and every netlist port must reach exactly one
+pad. A bidirectional pad is the tester's pin: the
 tester drives it with the RTL input bit where ``<input>_drive`` is 1 and leaves
 it at Z elsewhere. The output enable is then what the pad shows, Z or not, but
 only on undriven pins; on a driven pin an enabled output shows only as the X of
@@ -62,6 +63,7 @@ CHIP_TOP = "top"
 CHIP_WRAPPER = "eFPGA_chip_gl"
 CHIP_INSTANCE = "chip"
 PAD_CELL = "P65_1233_PBMUX"
+TIE_VALUE = {"TIELOH7R": "0", "TIEHIH7R": "1"}
 LC_CELL = "FABULOUS_LC"
 CONFIG_LATCH = "config_latch"
 LATCH_Q = "Q"
@@ -409,23 +411,42 @@ def chip_pads(modules: dict, pairs: list[tuple[str, str]]) -> tuple[str, list[Pa
         raise ValueError(
             f"{CHIP_TOP} instantiates {TOP} {len(macro)} times; expected once"
         )
-    others = {c["type"] for c in top["cells"].values()} - {TOP, PAD_CELL}
-    if others:
-        raise ValueError(
-            f"{CHIP_TOP} holds cells other than {TOP} and {PAD_CELL}: {sorted(others)}"
-        )
+    # Place and route leaves buffers, inverter pairs and tie cells between the
+    # macro and the pads, so a pin is known by the net its value starts from.
+    source: dict[int, tuple[int | str, bool]] = {}
+    constant: dict[int, str] = {}
+    for inst, cell in top["cells"].items():
+        kind, conn = cell["type"], cell["connections"]
+        if kind in {TOP, PAD_CELL}:
+            continue
+        if kind in TIE_VALUE:
+            constant[conn["Z"][0]] = TIE_VALUE[kind]
+        elif kind.startswith(("BUFX", "INVX")):
+            source[conn["Y"][0]] = (conn["A"][0], kind.startswith("INVX"))
+        else:
+            raise ValueError(f"{CHIP_TOP} holds {inst} of unknown type {kind}")
+
+    def origin(bit: int | str) -> int | str:
+        inverted = False
+        while bit in source:
+            bit, inverts = source[bit]
+            inverted ^= inverts
+        if inverted:
+            raise ValueError(f"net {bit} of {CHIP_TOP} reaches a pin inverted")
+        return constant.get(bit, bit)
+
     conn = top["cells"][macro[0]]["connections"]
     rtl_of: dict[int | str, str] = {}
     for gl, rtl in pairs:
         bits = conn.get(gl, [])
         if len(bits) != 1 or not isinstance(bits[0], int):
             raise ValueError(f"{TOP} port {gl} is not wired to a net in {CHIP_TOP}")
-        rtl_of[bits[0]] = rtl
-    pad_of = {b: n for name, p in top["ports"].items() for b, n in bit_names(p, name)}
+        rtl_of[origin(bits[0])] = rtl
+    pad_of ={b: n for name, p in top["ports"].items() for b, n in bit_names(p, name)}
 
     def pin(cell: dict, name: str) -> int | str | None:
         bits = cell["connections"].get(name, [])
-        return bits[0] if bits else None
+        return origin(bits[0]) if bits else None
 
     pads: list[Pad] = []
     for inst, cell in sorted(top["cells"].items()):

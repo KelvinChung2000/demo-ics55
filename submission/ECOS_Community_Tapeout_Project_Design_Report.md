@@ -188,7 +188,7 @@ Programming will reuse the bring-up flow of the wafer.space gf180mcu FABulous FP
 | Metric | Target | Latest result | Conditions |
 |---|---:|---:|---|
 | Configuration clock | 100 MHz | Met at all six corners; worst setup slack +6.229 ns, +4.494 ns through the pads | Full-chip OpenSTA at ss 1.08 V 125 °C Cworst; the pad figure is chip-level STA at that corner only (Section 6.3) |
-| User-mode operating frequency | [Target] | Pending, unmeasured | No routed user design has been timed (Section 6.3) |
+| User-mode operating frequency | [Target] | 14.3 MHz `paddle_ball`, 88.8 MHz `sequential_16bit_en`, both limited by flop to pad | Full-chip OpenSTA of each bitstream at ss 1.08 V 125 °C Cworst, the worst of three corners run; the frequency is set by the design, not the fabric (Section 6.3) |
 | Processing latency | Not applicable | Not applicable | Set by the configured user design |
 | Throughput | Not applicable | Not applicable | Set by the configured user design |
 | Standard-cell count/area | ≤ 1 mm² footprint | 911,687 µm² `eFPGA_top`; synthesis 179,772 cells, 682,405 µm² | Breakdown in Sections 6.1 and 6.2 |
@@ -289,7 +289,7 @@ A clean checkout does not yet reproduce the build, for five reasons.
 |---|---|---|
 | Environment reproducibility | The applicable build, verification, or export flow completes in the specified environment, and all versions and dependencies are traceable | Pending verification, with the five gaps of Section 4.6 open |
 | Functional verification | Basic tests and regression tests pass | Pass for basic tests (Section 5.3); no regression suite exists |
-| Timing closure | The target frequency is met; otherwise, the failing paths and their impact are documented | `CLK` meets 100 MHz at all six corners and through the pads at ss 125 °C Cworst. User-clock hold, `USER_RESET` timing, slew, capacitance and pulse width pass, while user-clock Fmax is unmeasured (Section 6.3). |
+| Timing closure | The target frequency is met; otherwise, the failing paths and their impact are documented | `CLK` meets 100 MHz at all six corners and through the pads at ss 125 °C Cworst. User-clock hold, `USER_RESET` timing, slew, capacitance and pulse width pass. User-clock Fmax at ss 125 °C Cworst is 14.3 MHz for `paddle_ball` and 88.8 MHz for `sequential_16bit_en`, and synchronous inputs need a stated board delay to meet hold (Section 6.3). |
 | Physical verification/signoff | DRC, LVS, antenna, and PDN checks meet the project requirements; all remaining violations and approved waivers are documented | Pass per tile and on `eFPGA_top` signal nets. The top has 278 power opens, iRT's 620 metal shorts are unresolved against iDRC's 0 and antenna is not run (Sections 6.2 and 6.3). All checks run on ECC abstracts, not mask GDS. |
 | Physical interface conformance | Dimensions, pin locations, metal layers, coordinates, and PDN match the baseline specification | Pass. All 151 tiles sit fixed at their planned coordinates in the `eFPGA_top` DEF with every pin at its planned position. |
 | Reference integration | The IP can be instantiated and connected in the minimal example project | Partly met. The chip-level `top.v` instantiates `eFPGA_top` with 22 pads and links in OpenSTA, with only the 10 `PAD_IO` bits unconstrained by design. Pad placement is pending. |
@@ -451,6 +451,7 @@ Per-tile and `eFPGA_top` signoff come from ECC. Full-chip OpenSTA times the hier
 | Hold timing, tiles (iSTA) | Fail, waived | Every type, worst-corner WNS −0.456 to −0.500 ns; 265 endpoints on `LUT4x8_ha` and 441 on `MACC` | 0.5 ns uncertainty on an ideal clock (tile timing below) |
 | Setup and hold, `eFPGA_top` alone (iSTA) | Pass | 0 | Setup +6.200 ns at ss 125 °C Cworst, hold +0.071 ns at ff −40 °C Cbest |
 | Full-chip setup and hold (OpenSTA) | Pass | 0 | Six corners, the figure of record (table below) |
+| User-clock timing of routed bitstreams (OpenSTA) | Reg-to-reg hold pass, Fmax measured | 0 reg-to-reg hold violations; 0 pulse-width, slew and capacitance violations | Two bitstreams at three corners. No user-clock target exists, and inputs at zero board delay fail hold by up to 0.400 ns (user-clock timing below) |
 | Chip-level setup and hold through the pads (OpenSTA) | Pass at ss 125 °C Cworst | 0 | Worst setup +4.494 ns to `PAD_CFG_LED`, worst hold +4.849 ns (chip-level STA below) |
 | Chip-level setup and hold through the pads (iSTA cross-check) | Pass at ss 125 °C Cworst | 0 | Worst setup +0.254 ns, worst hold +4.602 ns, more pessimistic than OpenSTA at every endpoint (iSTA cross-check below) |
 | Minimum pulse width (OpenSTA) | Pass | 0 | Six corners, full chip and the 11 tile types other than `SW_term` |
@@ -462,7 +463,7 @@ Per-tile and `eFPGA_top` signoff come from ECC. Full-chip OpenSTA times the hier
 
 **Tile timing.** The failing tile setup paths are combinational loops of up to 122 stages (`MACC`) through the unconfigured switch matrix and transparent configuration latches, which no configured design forms. OpenSTA breaks the loops differently and reports −14.337 and −67.463 ns at ss 125 °C Cworst. ECC's totals of 387 and 2,331 violations sum the 13 corners. The hold failures come from the ECC SDC, which puts 0.5 ns uncertainty (5% of 10 ns) on an ideal clock, so every feedthrough under 0.5 ns and every flip-flop self-loop fails. The worst `LUT4x8_ha` hold path in OpenSTA is a 0.6 ps wire at −0.499 ns. Under the full chip's 50 ps uncertainty the tile registers pass. The `eFPGA_top` iSTA run reads the ss-only tile Liberty, which has no hold arc, with no hold uncertainty. It agrees with full-chip OpenSTA on setup within 29 ps, both worst paths starting at `ComActive_reg_p`.
 
-**Full-chip OpenSTA.** The full-chip script times both clocks at 10 ns with 50 ps hold uncertainty (`HOLD_UNC`). The user clock `uclk` starts at the `USER_CLK` port, with case analysis selecting it on all four `GBUF` input multiplexers and the `GBUF` and `MACC` clock-inversion bits at 0. Its setup depends on the configured design and is not timed. `USER_RESET` is timed as data launched by `uclk` at its port and captured through the `GSR` multiplexer of every `LUT4x8_ha`, the path a reset taken through `GBUF` B follows.
+**Full-chip OpenSTA.** The full-chip script times both clocks at 10 ns with 50 ps hold uncertainty (`HOLD_UNC`). The user clock `uclk` starts at the `USER_CLK` port, with case analysis selecting it on all four `GBUF` input multiplexers and the `GBUF` and `MACC` clock-inversion bits at 0. Its setup depends on the configured design, so this table omits it and the user-clock timing below gives it per bitstream. `USER_RESET` is timed as data launched by `uclk` at its port and captured through the `GSR` multiplexer of every `LUT4x8_ha`, the path a reset taken through `GBUF` B follows.
 
 | Corner (liberty, SPEF) | `CLK` setup | `CLK` hold | User-clock hold, `LUT4x8_ha` | User-clock hold, IO | User-clock hold, `MACC` | `USER_RESET` setup | `USER_RESET` hold |
 |---|---:|---:|---:|---:|---:|---:|---:|
@@ -478,6 +479,24 @@ All 1,110 user-clock flip-flops (800 in the logic cells, 280 in `MACC`, 30 in `E
 **Chip-level STA.** OpenSTA times `top.v` and `top.sdc` against the IO ss Liberty and `eFPGA_top_ss_125_Cworst.lib`, which OpenSTA `write_timing_model` extracts after cutting the 32 user-side ports. The worst setup path, to `PAD_CFG_LED`, arrives at 5.506 ns. `resetn` setup is +8.798 ns. The input pad adds 1.865 ns, the output pad 2.310 ns into 10 pF and the `PAD_CLK` pad 1.875 ns. The SDC false-paths hold from the five configuration inputs, which `CLK` samples through synchronisers. Timed, they fail hold by about 1.5 ns, because the clock pad and macro clock tree outrun one data pad. The 10 `PAD_IO` bits carry user timing and stay unconstrained. The other five corners are not extracted.
 
 **iSTA cross-check.** iSTA through `ecc_py` reads the same inputs with no SPEF and gives setup into `eFPGA_top` of +8.177 to +9.850 ns against OpenSTA's +8.798 to +10.471 ns. Three iSTA defects each need a workaround on an iSTA-only copy of the inputs. iSTA compares the Liberty `capacitive_load_unit` case-sensitively with `pf` (`LibParserCpp.cc:721`), so it reads the `pF` that `write_timing_model` writes as fF and the run uses a copy of the model with `pf`. iSTA cannot build the timing graph through an inout port (`GraphBuilder.cpp:244`), so the run uses a Yosys copy of `top.v` without the 10 `PAD_IO` pads, which `top.sdc` false-paths. iSTA never reads the Liberty `when` condition, so the `DS0`, `DS1` and `CS` tie-offs leave every conditional `P65_1233_PBMUX` arc enabled and iSTA times the slowest. On `PAD_CFG_LED` that arc takes 6.773 ns through `u_pad_4`, where OpenSTA keeps a 2.354 ns arc and `report_edges` shows the others disabled by constant. The 4.419 ns difference is the 4.240 ns setup gap plus the 0.18 ns by which iSTA's clock latency and `eFPGA_top` output arc are smaller, so OpenSTA's figure is the correct one. iSTA's `PAD_CLK` latency of 1.783 ns against OpenSTA's 1.875 ns is unexplained. Full-chip STA is OpenSTA only, because iSTA reads one SPEF file and the per-tile SPEFs are not stitched into the top-level seam nets.
+
+**User-clock timing.** OpenSTA times two routed bitstreams on the foundry's routed `top.v`, with the `eFPGA_top` gate netlist and per-tile SPEF in place of the extracted model, so `USER_CLK` reaches real flip-flops from its pad. The foundry's top-level SPEF exists at ss 125 °C only, so the two other corners run without top-level parasitics. The FASM of each bitstream fixes all 69,746 configuration latches by case analysis.
+
+Case analysis alone overstates the delay. An unrouted multiplexer still passes its default input into a LUT input that the truth table ignores, so STA follows connections the design does not have. `paddle_ball` then shows a 297 ns arrival through 62 unrouted multiplexer outputs. The runs therefore disable every switch-matrix cell whose output wire the FASM does not route, 25,585 cells for `paddle_ball` and 45,580 for `sequential_16bit_en`, after a check that no LUT's truth table depends on an unrouted input. The worst `paddle_ball` path then holds 19 logic-cell outputs against 18 logic stages in nextpnr's critical path, though nextpnr's delays are placeholders and the two need not be one path.
+
+The minimum period is the 10 ns constraint less the worst slack. The flop-to-pad figure assumes an external flip-flop on the same `USER_CLK` edge at the pad, with no setup time or board delay, into 10 pF.
+
+| Corner | `paddle_ball` reg-to-reg | `paddle_ball` flop to pad | `sequential_16bit_en` reg-to-reg | `sequential_16bit_en` flop to pad |
+|---|---:|---:|---:|---:|
+| ss 1.08 V 125 °C, Cworst | 59.980 ns (16.7 MHz) | 70.075 ns (14.3 MHz) | 8.837 ns (113.2 MHz) | 11.267 ns (88.8 MHz) |
+| ss 1.08 V −40 °C, Cworst | 58.330 ns (17.1 MHz) | 67.837 ns (14.7 MHz) | 8.579 ns (116.6 MHz) | 10.326 ns (96.8 MHz) |
+| ff 1.32 V −40 °C, RCbest | 18.607 ns (53.7 MHz) | 22.655 ns (44.1 MHz) | 2.809 ns (356.0 MHz) | 4.209 ns (237.6 MHz) |
+
+These periods belong to each bitstream, and another design or placement gives others. The clock reaches the flip-flops 3.03 to 4.58 ns after the pad at ss 125 °C with no deskew, so flop-to-pad delay includes that insertion delay. Reg-to-reg hold passes at +0.231, +0.218 and +0.046 ns for `paddle_ball` and +0.249, +0.239 and +0.046 ns for `sequential_16bit_en`, in table order.
+
+`paddle_ball` needs only its 6.29375 MHz pixel clock, a 158.888 ns period, and at ss 125 °C the colour pads allow 2.27 times that rate. Those pads settle 70.075 ns after the edge and change no earlier than 13.740 ns after it, so each pixel holds stable for 102.553 ns. STA treats every path as single-cycle, but the game registers update only on `frame_tick`, so the figures are conservative for those paths. No multicycle exception is applied.
+
+A synchronous input with delay `d` from the `USER_CLK` edge at the pad must meet hold, which sets the minimum of `d`, and setup, which sets its maximum. At zero board delay `sequential_16bit_en` fails hold on `PAD_IO[1]` by 0.351, 0.242 and 0.252 ns, `paddle_ball` fails on `p2_down` by 0.063 ns at ff −40 °C only, and `USER_RESET` fails by up to 0.400 and 0.383 ns respectively. Across the three corners `sequential_16bit_en` needs 0.351 ns ≤ `d` ≤ `T` − 4.303 ns on its input pads and `paddle_ball` needs 0.063 ns ≤ `d` ≤ `T` − 18.565 ns on its buttons. `USER_RESET` setup slack at 10 ns is at least +8.912 ns. The `paddle_ball` buttons are asynchronous and reach the game logic with no synchroniser, so these limits do not describe them in use.
 
 **Drive strength.** ECC sizes no cell after ABC, so drive buffers in the techmap `ics55_models.v` and OpenROAD repair between legalisation and routing set the drive strengths that close slew, capacitance and hold.
 
@@ -531,7 +550,7 @@ In the planned setup, pending MPW package and board information, a host builds b
 | Basic functionality | Load a counter bitstream over SPI, clock it through the `USER_CLK` pad, pulse `USER_RESET` | `ConfigBusy` high during the load, `Configured` high after it; counter value on the IO bits, cleared by the pulse | Output matches the simulated design cycle for cycle |
 | Boundary conditions | Load a design that uses all 5 `MACC` and the carry chain across a full column | Products and sums match the reference model | [Criteria] |
 | Partial reconfiguration | Load a counter, then rewrite the frames of one column while the counter runs elsewhere | The untouched region keeps counting; the rewritten region takes its new function | [Criteria] |
-| Frequency/voltage sweep | Raise the user clock until the counter fails, at several supplies | Pending: no Fmax prediction exists | [Criteria] |
+| Frequency/voltage sweep | Raise the user clock until the counter fails, at several supplies | STA predicts a reg-to-reg limit of 113.2 MHz at ss 125 °C Cworst and 356.0 MHz at ff −40 °C RCbest, 88.8 and 237.6 MHz through the pads (Section 6.3) | [Criteria] |
 
 ## 9. Open-Source Contribution
 
@@ -589,17 +608,17 @@ Per-tile STA sees each tile's `GBUF` feedthrough as a wire, so a global clock cr
 
 ### 10.3 Planned Improvements
 
-The next revision targets a mask-ready GDS with the pad ring and seal ring, a partial-reconfiguration simulation, `ComRate` matched to the 100 MHz `CLK` and a routed user design timed across the tiles' extracted Liberty, all on an ECC build with no uncommitted edits.
+The next revision targets a mask-ready GDS with the pad ring and seal ring, a partial-reconfiguration simulation and `ComRate` matched to the 100 MHz `CLK`, all on an ECC build with no uncommitted edits.
 
 ## 11. Additional Information
 
 ### 11.1 Known Limitations
 
-- User-mode Fmax is unmeasured. The tile-level `sta_frequency_mhz` 40 on `LUT4x8_ha` reflects a loop through the unconfigured switch matrix.
+- User-mode Fmax is measured for two bitstreams at three of the six corners, by STA only, with no multicycle exceptions and no check that each path can be sensitised (Section 6.3). The tile-level `sta_frequency_mhz` 40 on `LUT4x8_ha` reflects a loop through the unconfigured switch matrix.
 - Simulation at RTL, `eFPGA_top` and the chip pads shows the user clock on `GBUF` A or C and the user reset into `GSR` on `GBUF` B or D. `GBUF` B and D as clocks are untested. The `E_IO` and `MACC` clock multiplexers and the `MACC` clock inversion are programmed by the same bit_gen path but no test design uses them.
 - `A_EN_top` is not gated by `Configured`. The configuration latches have no reset, so before and during configuration any of the 10 IO pads may drive (Section 2.5).
 - Gate-level simulation passes only with the 788 constant logic cells forced, which masks a fault inside an unused LUT. No equivalence check of the tile netlists against RTL exists (Section 5.3). No partial-reconfiguration run exists.
-- `paddle_ball` has run on the fabric only as an untimed RTL simulation of `eFPGA_top`, over 2 frames in the appendix log and 9 frames of a run still going (Section 5.3). No gate-level run of it exists, and its nextpnr maximum frequency rests on placeholder pip delays (Section 5.3).
+- `paddle_ball` has run on the fabric only as an untimed RTL simulation of `eFPGA_top`, over 2 frames in the appendix log and 9 frames of a run still going (Section 5.3). No gate-level run of it exists. Its timing comes from the STA of Section 6.3, because its nextpnr maximum frequency rests on placeholder pip delays.
 - `ComRate` = 217 is mismatched to the 100 MHz `CLK` (Section 2.5).
 - Mask-layer GDS for `SE_term` only, with no cell boundary layer, pad ring or seal ring. The PDK's Calibre decks have not been run and no open deck exists (Sections 5.2 and 7).
 - 10 user IO bits in total, all in column 12.

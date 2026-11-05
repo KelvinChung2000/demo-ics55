@@ -53,6 +53,6 @@ Every task runs from this directory with [Task](https://taskfile.dev). `build` c
 
 ## Limits
 
-- Timing is not verified. nextpnr's maximum frequency comes from placeholder pip delays in `../../test/model/fabulous/`, so it says nothing about the silicon.
+- Timing comes from full-chip OpenSTA of this bitstream, 16.7 MHz reg-to-reg and 14.3 MHz through the colour pads at ss 125 °C Cworst, 2.27 times the pixel clock (report Section 6.3). nextpnr's maximum frequency comes from placeholder pip delays in `../../test/model/fabulous/`, so it says nothing about the silicon.
 - The fabric runs are RTL simulations of `eFPGA_top`. paddle_ball has not run at gate level.
 - `paddle_ball_fabric_tb.v` also builds with `-D EMULATION` on the `.vh` that `bit_gen` writes beside the bitstream, skipping the SPI load. `eFPGA.v` leaves the `Emulate_Bitstream` override off the 26 border-row tiles, which leaves `USER_CLK` and `USER_RESET` unconnected under emulation, so the testbench sets it on them with `defparam`. No task uses this mode, because at about 100 cycles/s it is slower than the SPI load at about 200.
